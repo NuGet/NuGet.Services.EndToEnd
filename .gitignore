@@ -250,3 +250,20 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+#####################
+# Custom directives #
+#####################
+.nuget/CredentialProvider.VSS.exe
+.nuget/CredentialProviderBundle.zip
+.nuget/EULA_Microsoft Visual Studio Team Services Credential Provider.docx
+.nuget/NuGet.exe
+.nuget/ThirdPartyNotices.txt
+build/common.ps1
+build/init.ps1
+build/Queue-Build.ps1
+build/sign.targets
+AssemblyInfo.g.cs
+TestResults.*.xml
+tools/7zip/7-zip.chm
+tools/7zip/7za.exe
