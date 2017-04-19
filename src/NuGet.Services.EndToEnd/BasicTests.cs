@@ -8,7 +8,7 @@ using Xunit;
 
 namespace NuGet.Services.EndToEnd
 {
-    public class BasicTests
+    public class BasicTests : IClassFixture<TrustedHttpsCertificatesFixture>
     {
         [Fact]
         public async Task NuGetDotOrgIsReachableOverHttps()
@@ -20,4 +20,5 @@ namespace NuGet.Services.EndToEnd
             }
         }
     }
+
 }

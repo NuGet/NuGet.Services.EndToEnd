@@ -15,15 +15,33 @@ namespace NuGet.Services.EndToEnd
             EnvironmentVariableTarget.Machine
         };
 
-        public static string GalleryBaseUrl => GetEnvironmentVariable("GalleryBaseUrl");
+        public static string GalleryBaseUrl => GetEnvironmentVariable("GalleryBaseUrl", required: true);
 
-        private static string GetEnvironmentVariable(string key)
+        public static string[] TrustedHttpsCertificates
+        {
+            get
+            {
+                var value = GetEnvironmentVariable("TrustedHttpsCertificates", required: false);
+                if (value == null)
+                {
+                    return new string[0];
+                }
+                
+                return value
+                    .Split(',')
+                    .Select(p => p.Trim())
+                    .Where(p => p.Length > 0)
+                    .ToArray();
+            }
+        }
+
+        private static string GetEnvironmentVariable(string key, bool required)
         {
             var output = Targets
                 .Select(target => Environment.GetEnvironmentVariable(key, target))
                 .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
 
-            if (output == null)
+            if (required && output == null)
             {
                 throw new ArgumentException($"The environment variable '{key}' is not defined.");
             }
