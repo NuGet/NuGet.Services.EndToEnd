@@ -14,7 +14,7 @@ namespace NuGet.Services.EndToEnd
         public async Task NuGetDotOrgIsReachableOverHttps()
         {
             using (var httpClient = new HttpClient())
-            using (var response = await httpClient.GetAsync("https://www.nuget.org/"))
+            using (var response = await httpClient.GetAsync(EnvironmentSettings.GalleryBaseUrl))
             {
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
