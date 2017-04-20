@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
@@ -12,7 +13,7 @@ namespace NuGet.Services.EndToEnd
     {
         public TrustedHttpsCertificatesFixture()
         {
-
+            ServicePointManager.ServerCertificateValidationCallback += ServerCertificateValidationCallback;
         }
 
         private static bool ServerCertificateValidationCallback(
@@ -41,7 +42,7 @@ namespace NuGet.Services.EndToEnd
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            ServicePointManager.ServerCertificateValidationCallback -= ServerCertificateValidationCallback;
         }
     }
 
