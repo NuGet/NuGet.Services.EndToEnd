@@ -14,7 +14,7 @@ Function Get-BaseUrl
 {
     param (
         [string]$ApplicationId,
-        [string]$AzureCertificateThumbprint,
+        [string]$CertificateThumbprint,
         [string]$SubscriptionId,
         [string]$TenantId,
         [string]$BaseUrl,
@@ -32,7 +32,7 @@ Function Get-BaseUrl
 
             $login = Add-AzureRmAccount `
                 -ApplicationId $ApplicationId `
-                -CertificateThumbprint $AzureCertificateThumbprint `
+                -CertificateThumbprint $CertificateThumbprint `
                 -ServicePrincipal `
                 -SubscriptionId $SubscriptionId `
                 -TenantId $TenantId
@@ -59,7 +59,7 @@ Function Get-BaseUrl
 
 $GalleryBaseUrl = Get-BaseUrl `
     -ApplicationId $ApplicationId `
-    -AzureCertificateThumbprint $AzureCertificateThumbprint `
+    -CertificateThumbprint $CertificateThumbprint `
     -SubscriptionId $SubscriptionId `
     -TenantId $TenantId `
     -BaseUrl $GalleryBaseUrl `
