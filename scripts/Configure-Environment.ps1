@@ -7,7 +7,7 @@ param (
     [string]$SubscriptionId,
     [string]$ApplicationId,
     [string]$TenantId,
-    [string]$AzureCertificateThumbprint
+    [string]$CertificateThumbprint
 )
 
 Function Get-BaseUrl
