@@ -6,6 +6,11 @@ using System.Linq;
 
 namespace NuGet.Services.EndToEnd
 {
+    /// <summary>
+    /// This code duplicates some existing infrastructure in gallery's functional test suite. It should be
+    /// consolidated at some point.
+    /// https://github.com/NuGet/NuGetGallery/blob/master/tests/NuGetGallery.FunctionalTests.Core/EnvironmentSettings.cs
+    /// </summary>
     public static class EnvironmentSettings
     {
         private static EnvironmentVariableTarget[] Targets = new[]
@@ -21,13 +26,13 @@ namespace NuGet.Services.EndToEnd
         {
             get
             {
-                var value = GetEnvironmentVariable("TrustedHttpsCertificates", required: false);
-                if (value == null)
+                var fingerprints = GetEnvironmentVariable("TrustedHttpsCertificates", required: false);
+                if (fingerprints == null)
                 {
                     return new string[0];
                 }
                 
-                return value
+                return fingerprints
                     .Split(',')
                     .Select(p => p.Trim())
                     .Where(p => p.Length > 0)
