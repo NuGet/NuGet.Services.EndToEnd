@@ -12,7 +12,7 @@ namespace NuGet.Services.EndToEnd
     public class ConnectivityTests : IClassFixture<TrustedHttpsCertificatesFixture>
     {
         [Fact]
-        public async Task NuGetDotOrgIsReachable()
+        public async Task GalleryIsReachable()
         {
             using (var httpClient = new HttpClient())
             using (var response = await httpClient.GetAsync(EnvironmentSettings.GalleryBaseUrl))
