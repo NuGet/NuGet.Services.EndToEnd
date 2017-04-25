@@ -44,7 +44,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// <example>
         /// http://nuget-int-0-v2v3search.cloudapp.net
         /// </example>
-        public static string SearchBaseUrl => GetEnvironmentVariable("SearchBaseUrl", required: false).TrimEnd('/');
+        public static string SearchBaseUrl => GetEnvironmentVariable("SearchBaseUrl", required: false)?.TrimEnd('/');
 
         /// <summary>
         /// An optional comma-seperated list of SHA1 certificate fingerprints to trust. In this case, trust means to
