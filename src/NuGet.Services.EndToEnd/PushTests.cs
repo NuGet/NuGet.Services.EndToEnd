@@ -23,42 +23,20 @@ namespace NuGet.Services.EndToEnd
         }
 
         /// <summary>
-        /// Push a package to the gallery and wait for it to be available in search.
+        /// Push a SemVer 1.0.0 package to the gallery and wait for it to be available in V3.
         /// </summary>
         [Fact]
-        public async Task NewlyPushedPackageIsAvailableInV3Search()
-        {
-            // Arrange
-            var package = await _pushedPackages.PushAsync(PackageType.SemVer1, _logger);
-
-            // Act & Assert
-            await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
-        }
-
-        /// <summary>
-        /// Push a package to the gallery and wait for it to be available in the flat container.
-        /// </summary>
-        [Fact]
-        public async Task NewlyPushedPackageIsAvailableInFlatContainer()
+        public async Task NewlyPushedSemVer1PackageIsAvailableInV3()
         {
             // Arrange
             var package = await _pushedPackages.PushAsync(PackageType.SemVer1, _logger);
 
             // Act & Assert
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.Version, _logger);
-        }
 
-        /// <summary>
-        /// Push a package to the gallery and wait for it to be available in the flat container.
-        /// </summary>
-        [Fact]
-        public async Task NewlyPushedPackageIsAvailableInRegistration()
-        {
-            // Arrange
-            var package = await _pushedPackages.PushAsync(PackageType.SemVer1, _logger);
-
-            // Act & Assert
             await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, _logger);
+
+            await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
         }
     }
 }
