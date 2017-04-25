@@ -28,9 +28,9 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task WaitForPackageAsync(string id, string version, ITestOutputHelper logger)
         {
             var v3SearchUrls = new List<string>();
-            if (_testSettings.V3SearchUrl != null)
+            if (_testSettings.SearchBaseUrl != null)
             {
-                v3SearchUrls.Add(_testSettings.V3SearchUrl);
+                v3SearchUrls.Add($"{_testSettings.SearchBaseUrl}/query");
             }
             else
             {

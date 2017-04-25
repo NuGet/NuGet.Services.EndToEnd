@@ -13,19 +13,19 @@ namespace NuGet.Services.EndToEnd.Support
             string v3IndexUrl,
             IReadOnlyList<string> trustedHttpsCertificates,
             string apiKey,
-            string v3SearchUrl)
+            string searchBaseUrl)
         {
             GalleryBaseUrl = galleryBaseUrl ?? throw new ArgumentNullException(nameof(galleryBaseUrl));
             V3IndexUrl = v3IndexUrl ?? throw new ArgumentNullException(nameof(v3IndexUrl));
             TrustedHttpsCertificates = trustedHttpsCertificates ?? throw new ArgumentNullException(nameof(trustedHttpsCertificates));
             ApiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
 
-            V3SearchUrl = v3SearchUrl;
+            SearchBaseUrl = searchBaseUrl;
         }
 
         public string GalleryBaseUrl { get; }
         public string V3IndexUrl { get; }
-        public string V3SearchUrl { get; }
+        public string SearchBaseUrl { get; }
         public IReadOnlyList<string> TrustedHttpsCertificates { get; }
         public string ApiKey { get; }
 
@@ -36,7 +36,7 @@ namespace NuGet.Services.EndToEnd.Support
                 EnvironmentSettings.V3IndexUrl,
                 EnvironmentSettings.TrustedHttpsCertificates,
                 EnvironmentSettings.ApiKey,
-                EnvironmentSettings.V3SearchUrl);
+                EnvironmentSettings.SearchBaseUrl);
         }
     }
 }

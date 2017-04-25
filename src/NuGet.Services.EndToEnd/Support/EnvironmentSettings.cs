@@ -38,14 +38,13 @@ namespace NuGet.Services.EndToEnd.Support
         public static string V3IndexUrl => GetEnvironmentVariable("V3IndexUrl", required: true);
 
         /// <summary>
-        /// The URL to the V3 search endpoint. This value is optional. If not provided, the search services that will
-        /// be tested will be found in the V3 index.json (via <see cref="V3IndexUrl"/>). Note that this is NOT the
-        /// search service base URL.
+        /// The base URL to search service. This value is optional. If not provided, the search services that will
+        /// be tested will be found in the V3 index.json (via <see cref="V3IndexUrl"/>).
         /// </summary>
         /// <example>
-        /// http://nuget-int-0-v2v3search.cloudapp.net/query
+        /// http://nuget-int-0-v2v3search.cloudapp.net
         /// </example>
-        public static string V3SearchUrl => GetEnvironmentVariable("V3SearchUrl", required: false);
+        public static string SearchBaseUrl => GetEnvironmentVariable("SearchBaseUrl", required: false).TrimEnd('/');
 
         /// <summary>
         /// An optional comma-seperated list of SHA1 certificate fingerprints to trust. In this case, trust means to
