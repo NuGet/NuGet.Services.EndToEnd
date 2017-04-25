@@ -11,6 +11,9 @@ using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd.Support
 {
+    /// <summary>
+    /// A simple interface for interacting with flat container.
+    /// </summary>
     public class FlatContainerClient
     {
         private readonly SimpleHttpClient _httpClient;
@@ -22,6 +25,13 @@ namespace NuGet.Services.EndToEnd.Support
             _v3IndexClient = v3IndexClient;
         }
 
+        /// <summary>
+        /// Polls all flat container base URLs until the provided ID and version are available.
+        /// </summary>
+        /// <param name="id">The package ID.</param>
+        /// <param name="version">The package version.</param>
+        /// <param name="logger">The logger.</param>
+        /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
         public async Task WaitForPackageAsync(string id, string version, ITestOutputHelper logger)
         {
             var baseUrls = await _v3IndexClient.GetFlatContainerBaseUrls();

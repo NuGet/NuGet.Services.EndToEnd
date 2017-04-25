@@ -20,16 +20,16 @@ namespace NuGet.Services.EndToEnd.Support
             _testSettings = testSettings;
         }
 
-        public async Task<IReadOnlyList<string>> GetV3SearchUrls()
+        public async Task<IReadOnlyList<string>> GetSearchBaseUrls()
         {
             var v3Index = await GetV3IndexAsync();
-            return GetResourceUrls(v3Index, t => t.StartsWith("SearchQueryService/"));
+            return GetResourceUrls(v3Index, t => t.StartsWith("SearchGalleryQueryService/"));
         }
 
         public async Task<IReadOnlyList<string>> GetFlatContainerBaseUrls()
         {
             var v3Index = await GetV3IndexAsync();
-            return GetResourceUrls(v3Index, t => t.Equals("PackageBaseAddress/3.0.0"));
+            return GetResourceUrls(v3Index, t => t.StartsWith("PackageBaseAddress/"));
         }
 
         public async Task<IReadOnlyList<string>> GetRegistrationBaseUrls()
