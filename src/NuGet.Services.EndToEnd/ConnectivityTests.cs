@@ -4,14 +4,15 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using NuGet.Services.EndToEnd.Support;
 using Xunit;
 
 namespace NuGet.Services.EndToEnd
 {
-    public class BasicTests : IClassFixture<TrustedHttpsCertificatesFixture>
+    public class ConnectivityTests : IClassFixture<TrustedHttpsCertificatesFixture>
     {
         [Fact]
-        public async Task NuGetDotOrgIsReachableOverHttps()
+        public async Task GalleryIsReachable()
         {
             using (var httpClient = new HttpClient())
             using (var response = await httpClient.GetAsync(EnvironmentSettings.GalleryBaseUrl))
@@ -19,6 +20,15 @@ namespace NuGet.Services.EndToEnd
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
-    }
 
+        [Fact]
+        public async Task V3IndexIsReachable()
+        {
+            using (var httpClient = new HttpClient())
+            using (var response = await httpClient.GetAsync(EnvironmentSettings.V3IndexUrl))
+            {
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+    }
 }
