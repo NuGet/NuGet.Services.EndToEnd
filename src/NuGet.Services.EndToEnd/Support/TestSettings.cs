@@ -13,7 +13,8 @@ namespace NuGet.Services.EndToEnd.Support
             string v3IndexUrl,
             IReadOnlyList<string> trustedHttpsCertificates,
             string apiKey,
-            string searchBaseUrl)
+            string searchBaseUrl,
+            bool semVer2Enabled)
         {
             GalleryBaseUrl = galleryBaseUrl ?? throw new ArgumentNullException(nameof(galleryBaseUrl));
             V3IndexUrl = v3IndexUrl ?? throw new ArgumentNullException(nameof(v3IndexUrl));
@@ -21,6 +22,7 @@ namespace NuGet.Services.EndToEnd.Support
             ApiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
 
             SearchBaseUrl = searchBaseUrl;
+            SemVer2Enabled = semVer2Enabled;
         }
 
         public string GalleryBaseUrl { get; }
@@ -28,6 +30,7 @@ namespace NuGet.Services.EndToEnd.Support
         public string SearchBaseUrl { get; }
         public IReadOnlyList<string> TrustedHttpsCertificates { get; }
         public string ApiKey { get; }
+        public bool SemVer2Enabled { get; }
 
         public static TestSettings CreateFromEnvironment()
         {
@@ -36,7 +39,8 @@ namespace NuGet.Services.EndToEnd.Support
                 EnvironmentSettings.V3IndexUrl,
                 EnvironmentSettings.TrustedHttpsCertificates,
                 EnvironmentSettings.ApiKey,
-                EnvironmentSettings.SearchBaseUrl);
+                EnvironmentSettings.SearchBaseUrl,
+                EnvironmentSettings.SemVer2Enabled);
         }
     }
 }

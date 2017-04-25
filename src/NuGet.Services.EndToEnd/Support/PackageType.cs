@@ -9,6 +9,7 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public enum PackageType
     {
-        SemVer1,
+        SemVer1Stable,
+        SemVer2Prerelease,
     }
 }
