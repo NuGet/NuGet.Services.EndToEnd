@@ -11,7 +11,7 @@ namespace NuGet.Services.EndToEnd.Support
         private Clients(
             GalleryClient gallery,
             V3IndexClient v3Index,
-            V3SearchClient v3Search,
+            V2V3SearchClient v3Search,
             FlatContainerClient flatContainer,
             RegistrationClient registration)
         {
@@ -24,7 +24,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public GalleryClient Gallery { get; }
         public V3IndexClient V3Index { get; }
-        public V3SearchClient V3Search { get; }
+        public V2V3SearchClient V3Search { get; }
         public FlatContainerClient FlatContainer { get; }
         public RegistrationClient Registration { get; }
 
@@ -37,7 +37,7 @@ namespace NuGet.Services.EndToEnd.Support
             var httpClient = new SimpleHttpClient();
             var gallery = new GalleryClient(testSettings);
             var v3Index = new V3IndexClient(httpClient, testSettings);
-            var v3Search = new V3SearchClient(httpClient, v3Index, testSettings);
+            var v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings);
             var flatContainer = new FlatContainerClient(httpClient, v3Index);
             var registration = new RegistrationClient(httpClient, v3Index);
 

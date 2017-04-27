@@ -55,5 +55,30 @@ namespace NuGet.Services.EndToEnd
 
             await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
         }
+
+        public async Task NewSemVer2PackageIsFilteredButAvailableInV3()
+        {
+            // Arrange
+            var package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
+
+            // Wait for package to become available
+            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.Version, _logger);
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, _logger);
+            await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
+
+            var shouldBeEmptyV3 = await _clients.V3Search.Query($"q={package.Id}");
+            var shouldBeEmptyV2 = await _clients.V3Search.SearchQuery($"q={package.Id}");
+            var shouldBeEmptyAutocomplete = await _clients.V3Search.Autocomplete($"q={package.Id}");
+            Assert.Equal(0, shouldBeEmptyV3.Data.Count);
+            Assert.Equal(0, shouldBeEmptyV2.Data.Count);
+            Assert.Equal(0, shouldBeEmptyAutocomplete.Data.Count);
+
+            var shouldNotBeEmptyV3 = await _clients.V3Search.Query($"q={package.Id}&semVerLevel=2.0.0");
+            var shouldNotBeEmptyV2 = await _clients.V3Search.SearchQuery($"q={package.Id}&semVerLevel=2.0.0");
+            var shouldNotBeEmptyAutocomplete = await _clients.V3Search.Autocomplete($"q={package.Id}&semVerLevel=2.0.0");
+            Assert.NotEqual(0, shouldNotBeEmptyV3.Data.Count);
+            Assert.NotEqual(0, shouldNotBeEmptyV2.Data.Count);
+            Assert.NotEqual(0, shouldNotBeEmptyAutocomplete.Data.Count);
+        }
     }
 }
