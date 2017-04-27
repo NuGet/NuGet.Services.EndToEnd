@@ -28,7 +28,7 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly IGalleryClient _galleryClient;
         private readonly TestSettings _testSettings;
 
-        public PushedPackagesFixture() : this(Clients.Initialize().Gallery, TestSettings.CreateFromEnvironment())
+        public PushedPackagesFixture() : this(Clients.Initialize().Gallery, TestSettings.Create())
         {
         }
 

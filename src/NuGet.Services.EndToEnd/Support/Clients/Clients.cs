@@ -33,7 +33,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         public static Clients Initialize()
         {
-            var testSettings = TestSettings.CreateFromEnvironment();
+            var testSettings = TestSettings.Create();
             var httpClient = new SimpleHttpClient();
             var gallery = new GalleryClient(testSettings);
             var v3Index = new V3IndexClient(httpClient, testSettings);

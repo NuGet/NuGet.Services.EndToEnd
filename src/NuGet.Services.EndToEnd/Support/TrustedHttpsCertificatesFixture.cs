@@ -11,7 +11,7 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class TrustedHttpsCertificatesFixture : IDisposable
     {
-        private static readonly TestSettings TestSettings = TestSettings.CreateFromEnvironment();
+        private static readonly TestSettings TestSettings = TestSettings.Create();
 
         static TrustedHttpsCertificatesFixture()
         {

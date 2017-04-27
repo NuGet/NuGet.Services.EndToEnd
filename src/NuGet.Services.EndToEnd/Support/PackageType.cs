@@ -11,5 +11,7 @@ namespace NuGet.Services.EndToEnd.Support
     {
         SemVer1Stable,
         SemVer2Prerelease,
+        SemVer1Unlisted,
+        SemVer2Unlisted,
     }
 }

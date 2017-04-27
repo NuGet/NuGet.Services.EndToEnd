@@ -12,14 +12,14 @@ using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd.Support
 {
-    public class PushedPackagesFixtureTest
+    public class PushedPackagesFixtureTests
     {
         private readonly Mock<IGalleryClient> _galleryClient;
         private readonly TestSettings _testSettings;
         private readonly PushedPackagesFixture _fixture;
         private readonly Mock<ITestOutputHelper> _logger;
 
-        public PushedPackagesFixtureTest()
+        public PushedPackagesFixtureTests()
         {
             _galleryClient = new Mock<IGalleryClient>();
             _testSettings = new TestSettings(
