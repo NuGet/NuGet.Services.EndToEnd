@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectivityTests.cs" />
+    <Compile Include="SearchResultTests.cs" />
     <Compile Include="Support\Clients\Clients.cs" />
     <Compile Include="Support\Clients\FlatContainerClient.cs" />
     <Compile Include="Support\Clients\RegistrationClient.cs" />
