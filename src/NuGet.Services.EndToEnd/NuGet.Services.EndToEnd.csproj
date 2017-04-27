@@ -55,6 +55,7 @@
     <Compile Include="PushTests.cs" />
     <Compile Include="Support\Clients\V3SearchClient.cs" />
     <Compile Include="Support\Clients\SimpleHttpClient.cs" />
+    <Compile Include="Support\SemVer2FactAttribute.cs" />
     <Compile Include="Support\TestSettings.cs" />
     <Compile Include="Support\TrustedHttpsCertificatesFixture.cs" />
     <Compile Include="Support\TestData.cs" />

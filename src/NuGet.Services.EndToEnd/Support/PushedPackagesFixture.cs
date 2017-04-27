@@ -81,12 +81,14 @@ namespace NuGet.Services.EndToEnd.Support
         {
         }
 
-        private Package CreatePackage(PackageType packageLabel)
+        private Package CreatePackage(PackageType packageType)
         {
-            switch (packageLabel)
+            switch (packageType)
             {
+                case PackageType.SemVer2Prerelease:
+                    return Package.Create(packageType.ToString(), "1.0.0-alpha.1");
                 default:
-                    return Package.Create(packageLabel.ToString(), "1.0.0");
+                    return Package.Create(packageType.ToString(), "1.0.0");
             }
         }
 

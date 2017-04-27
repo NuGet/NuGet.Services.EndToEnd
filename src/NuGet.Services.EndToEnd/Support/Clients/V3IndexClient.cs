@@ -6,11 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NuGet.Versioning;
 
 namespace NuGet.Services.EndToEnd.Support
 {
     public class V3IndexClient
     {
+        private static readonly NuGetVersion Version430Alpha = NuGetVersion.Parse("4.3.0-alpha");
+
         private readonly TestSettings _testSettings;
         private readonly SimpleHttpClient _httpClient;
 
@@ -23,26 +26,36 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task<IReadOnlyList<string>> GetSearchBaseUrls()
         {
             var v3Index = await GetV3IndexAsync();
-            return GetResourceUrls(v3Index, t => t.StartsWith("SearchGalleryQueryService/"));
+            return GetResourceUrls(v3Index, t => t.Type.StartsWith("SearchGalleryQueryService/"));
         }
 
         public async Task<IReadOnlyList<string>> GetFlatContainerBaseUrls()
         {
             var v3Index = await GetV3IndexAsync();
-            return GetResourceUrls(v3Index, t => t.StartsWith("PackageBaseAddress/"));
+            return GetResourceUrls(v3Index, t => t.Type.StartsWith("PackageBaseAddress/"));
         }
 
         public async Task<IReadOnlyList<string>> GetRegistrationBaseUrls()
         {
             var v3Index = await GetV3IndexAsync();
-            return GetResourceUrls(v3Index, t => t.StartsWith("RegistrationsBaseUrl"));
+            return GetResourceUrls(v3Index, t => t.Type.StartsWith("RegistrationsBaseUrl/"));
         }
 
-        private static List<string> GetResourceUrls(V3Index v3Index, Func<string, bool> isMatch)
+        public async Task<IReadOnlyList<string>> GetSemVer2RegistrationBaseUrls()
+        {
+            var v3Index = await GetV3IndexAsync();
+            return GetResourceUrls(
+                v3Index,
+                t => t.Type == "RegistrationsBaseUrl/Versioned" &&
+                     t.ClientVersion != null &&
+                     NuGetVersion.Parse(t.ClientVersion) >= Version430Alpha);
+        }
+
+        private static List<string> GetResourceUrls(V3Index v3Index, Func<Resource, bool> isMatch)
         {
             return v3Index
                 .Resources
-                .Where(r => isMatch(r.Type))
+                .Where(r => isMatch(r))
                 .Select(r => r.Id.TrimEnd('/'))
                 .Distinct()
                 .OrderBy(u => u)
@@ -66,6 +79,9 @@ namespace NuGet.Services.EndToEnd.Support
 
             [JsonProperty("@type")]
             public string Type { get; set; }
+
+            [JsonProperty("clientVersion")]
+            public string ClientVersion { get; set; }
         }
     }
 }

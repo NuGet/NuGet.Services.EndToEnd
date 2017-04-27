@@ -36,15 +36,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
         public async Task WaitForPackageAsync(string id, string version, ITestOutputHelper logger)
         {
-            var searchBaseUrls = new List<string>();
-            if (_testSettings.SearchBaseUrl != null)
-            {
-                searchBaseUrls.Add(_testSettings.SearchBaseUrl);
-            }
-            else
-            {
-                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrls());
-            }
+            var searchBaseUrls = await GetSearchBaseUrlsAsync();
 
             var v2SearchUrls = searchBaseUrls
                 .Select(u => $"{u}/search/query")
@@ -61,6 +53,21 @@ namespace NuGet.Services.EndToEnd.Support
                 .ToList();
 
             await Task.WhenAll(tasks);
+        }
+
+        public async Task<IReadOnlyList<string>> GetSearchBaseUrlsAsync()
+        {
+            var searchBaseUrls = new List<string>();
+            if (_testSettings.SearchBaseUrl != null)
+            {
+                searchBaseUrls.Add(_testSettings.SearchBaseUrl);
+            }
+            else
+            {
+                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrls());
+            }
+
+            return searchBaseUrls;
         }
 
         private async Task WaitForPackageAsync(string v2SearchUrl, string id, string version, ITestOutputHelper logger)
