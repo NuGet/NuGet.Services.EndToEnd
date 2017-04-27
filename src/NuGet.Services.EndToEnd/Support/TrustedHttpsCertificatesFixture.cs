@@ -11,15 +11,14 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class TrustedHttpsCertificatesFixture : IDisposable
     {
-        private readonly TestSettings _testSettings;
+        private static readonly TestSettings TestSettings = TestSettings.CreateFromEnvironment();
 
-        public TrustedHttpsCertificatesFixture()
+        static TrustedHttpsCertificatesFixture()
         {
-            _testSettings = TestSettings.CreateFromEnvironment();
-            ServicePointManager.ServerCertificateValidationCallback += ServerCertificateValidationCallback;
+            ServicePointManager.ServerCertificateValidationCallback += ValidationCallback;
         }
         
-        private bool ServerCertificateValidationCallback(
+        private static bool ValidationCallback(
             object sender,
             X509Certificate certificate,
             X509Chain chain,
@@ -35,7 +34,7 @@ namespace NuGet.Services.EndToEnd.Support
             var x509certificate2 = certificate as X509Certificate2;
             if (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch &&
                 x509certificate2 != null &&
-                _testSettings.TrustedHttpsCertificates.Contains(x509certificate2.Thumbprint, StringComparer.OrdinalIgnoreCase))
+                TestSettings.TrustedHttpsCertificates.Contains(x509certificate2.Thumbprint, StringComparer.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -45,8 +44,6 @@ namespace NuGet.Services.EndToEnd.Support
 
         public void Dispose()
         {
-            ServicePointManager.ServerCertificateValidationCallback -= ServerCertificateValidationCallback;
         }
     }
-
 }
