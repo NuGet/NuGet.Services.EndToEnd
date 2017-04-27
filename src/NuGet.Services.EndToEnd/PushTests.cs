@@ -63,7 +63,9 @@ namespace NuGet.Services.EndToEnd
 
             // Wait for package to become available
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.Version, _logger);
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, _logger);
+            // wait for package to be in both registrations
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, /*semver2*/ true, _logger);
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, /*semver2*/ false, _logger);
             await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
 
             var shouldBeEmptyV3 = await _clients.V3Search.Query($"q={package.Id}");
