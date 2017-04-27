@@ -25,61 +25,25 @@ namespace NuGet.Services.EndToEnd.Support
             _testSettings = testSettings;
         }
 
-        public async Task<V2SearchResponse> SearchQuery(string queryString)
+        public async Task<V2SearchResponse> SearchQueryAsync(string searchBaseUrl, string queryString)
         {
-            var searchBaseUrls = new List<string>();
-            if (_testSettings.SearchBaseUrl != null)
-            {
-                searchBaseUrls.Add(_testSettings.SearchBaseUrl);
-            }
-            else
-            {
-                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrls());
-            }
-
-            var queryUrl = searchBaseUrls
-                .Select(u => $"{u}/search/query?{queryString}")
-                .ToList().First();
-
-            return await _httpClient.GetJsonAsync<V2SearchResponse>(queryUrl);
+            var baseUri = new Uri(searchBaseUrl);
+            var queryUrl = new Uri(baseUri, $"search/query?{queryString}");
+            return await _httpClient.GetJsonAsync<V2SearchResponse>(queryUrl.AbsoluteUri);
         }
 
-        public async Task<V3SearchResponse> Query(string queryString)
+        public async Task<V3SearchResponse> QueryAsync(string searchBaseUrl, string queryString)
         {
-            var searchBaseUrls = new List<string>();
-            if (_testSettings.SearchBaseUrl != null)
-            {
-                searchBaseUrls.Add(_testSettings.SearchBaseUrl);
-            }
-            else
-            {
-                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrls());
-            }
-
-            var queryUrl = searchBaseUrls
-                .Select(u => $"{u}/query?{queryString}")
-                .ToList().First();
-
-            return await _httpClient.GetJsonAsync<V3SearchResponse>(queryUrl);
+            var baseUri = new Uri(searchBaseUrl);
+            var queryUrl = new Uri(baseUri, $"query?{queryString}");
+            return await _httpClient.GetJsonAsync<V3SearchResponse>(queryUrl.AbsoluteUri);
         }
 
-        public async Task<AutocompleteResponse> Autocomplete(string queryString)
+        public async Task<AutocompleteResponse> AutocompleteAsync(string searchBaseUrl, string queryString)
         {
-            var searchBaseUrls = new List<string>();
-            if (_testSettings.SearchBaseUrl != null)
-            {
-                searchBaseUrls.Add(_testSettings.SearchBaseUrl);
-            }
-            else
-            {
-                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrls());
-            }
-
-            var queryUrl = searchBaseUrls
-                .Select(u => $"{u}/autocomplete?{queryString}")
-                .ToList().First();
-
-            return await _httpClient.GetJsonAsync<AutocompleteResponse>(queryUrl);
+            var baseUri = new Uri(searchBaseUrl);
+            var queryUrl = new Uri(baseUri, $"autocomplete?{queryString}");
+            return await _httpClient.GetJsonAsync<AutocompleteResponse>(queryUrl.AbsoluteUri);
         }
 
         /// <summary>
