@@ -14,9 +14,11 @@ namespace NuGet.Services.EndToEnd
     {
         private readonly Clients _clients;
         private readonly ITestOutputHelper _logger;
+        private readonly TestSettings _testSettings;
 
         public ConnectivityTests(ITestOutputHelper logger)
         {
+            _testSettings = TestSettings.CreateFromEnvironment();
             _clients = Clients.Initialize();
             _logger = logger;
         }
@@ -25,7 +27,7 @@ namespace NuGet.Services.EndToEnd
         public async Task GalleryIsReachable()
         {
             using (var httpClient = new HttpClient())
-            using (var response = await httpClient.GetAsync(EnvironmentSettings.GalleryBaseUrl))
+            using (var response = await httpClient.GetAsync(_testSettings.GalleryBaseUrl))
             {
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
@@ -35,7 +37,7 @@ namespace NuGet.Services.EndToEnd
         public async Task V3IndexIsReachable()
         {
             using (var httpClient = new HttpClient())
-            using (var response = await httpClient.GetAsync(EnvironmentSettings.V3IndexUrl))
+            using (var response = await httpClient.GetAsync(_testSettings.V3IndexUrl))
             {
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
