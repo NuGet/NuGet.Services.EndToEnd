@@ -43,6 +43,8 @@
     <Compile Include="ConnectivityTests.cs" />
     <Compile Include="Support\Clients\Clients.cs" />
     <Compile Include="Support\Clients\FlatContainerClient.cs" />
+    <Compile Include="Support\Clients\RegistrationClient.cs" />
+    <Compile Include="Support\Clients\SimpleHttpClient.cs" />
     <Compile Include="Support\PackageType.cs" />
     <Compile Include="Support\PushedPackagesCollection.cs" />
     <Compile Include="Support\PushedPackagesFixture.cs" />
