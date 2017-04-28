@@ -27,7 +27,9 @@ Function Run-Tests {
 
     $xUnitExe = (Join-Path $PSScriptRoot "packages\xunit.runner.console.2.2.0\tools\xunit.console.exe")
 
-    $TestAssemblies = @("src\NuGet.Services.EndToEnd\bin\$Configuration\NuGet.Services.EndToEnd.dll")
+    $TestAssemblies = `
+		"src\NuGet.Services.EndToEnd\bin\$Configuration\NuGet.Services.EndToEnd.dll",
+		"test\NuGet.Services.EndToEnd.Test\bin\$Configuration\NuGet.Services.EndToEnd.Test.dll"
 
     $TestCount = 0
 

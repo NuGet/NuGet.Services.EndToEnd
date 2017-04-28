@@ -25,17 +25,21 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly SemaphoreSlim _pushLock;
         private readonly object _packagesLock = new object();
         private readonly IDictionary<PackageType, Package> _packages;
-        private readonly Clients _clients;
+        private readonly IGalleryClient _galleryClient;
         private readonly TestSettings _testSettings;
 
-        public PushedPackagesFixture()
+        public PushedPackagesFixture() : this(Clients.Initialize().Gallery, TestSettings.CreateFromEnvironment())
         {
-            _clients = Clients.Initialize();
-            _testSettings = TestSettings.CreateFromEnvironment();
+        }
+
+        public PushedPackagesFixture(IGalleryClient galleryClient, TestSettings testSettings)
+        {
+            _galleryClient = galleryClient;
+            _testSettings = testSettings;
             _pushLock = new SemaphoreSlim(initialCount: 1);
             _packages = new Dictionary<PackageType, Package>();
         }
-        
+
         public async Task<Package> PushAsync(PackageType requestedPackageType, ITestOutputHelper logger)
         {
             var pushedPackage = GetPushedPackage(requestedPackageType, logger);
@@ -119,7 +123,7 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 using (var nupkgStream = new MemoryStream(package.NupkgBytes.ToArray()))
                 {
-                    await _clients.Gallery.PushAsync(nupkgStream);
+                    await _galleryClient.PushAsync(nupkgStream);
                 }
                 logger.WriteLine($"Package {package} has been pushed.");
             }
