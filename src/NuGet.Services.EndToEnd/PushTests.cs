@@ -69,11 +69,11 @@ namespace NuGet.Services.EndToEnd
 
             foreach (var searchBaseAddress in searchBaseAddresses)
             {
-                var shouldBeEmptyV3 = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&prerelease=true");
-                var shouldBeEmptyAutocomplete = await _clients.V3Search.AutocompleteAsync(searchBaseAddress, $"q=packageid:{package.Id}");
+                var shouldBeEmptyV3 = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&prerelease=true", _logger);
+                var shouldBeEmptyAutocomplete = await _clients.V3Search.AutocompleteAsync(searchBaseAddress, $"q=packageid:{package.Id}", _logger);
 
-                var shouldNotBeEmptyV3 = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&semVerLevel=2.0.0&prerelease=true");
-                var shouldNotBeEmptyAutocomplete = await _clients.V3Search.AutocompleteAsync(searchBaseAddress, $"q={package.Id}&semVerLevel=2.0.0");
+                var shouldNotBeEmptyV3 = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&semVerLevel=2.0.0&prerelease=true", _logger);
+                var shouldNotBeEmptyAutocomplete = await _clients.V3Search.AutocompleteAsync(searchBaseAddress, $"q={package.Id}&semVerLevel=2.0.0", _logger);
 
                 // Assert
                 Assert.Equal(0, shouldBeEmptyV3.Data.Count);

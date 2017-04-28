@@ -9,7 +9,7 @@ param (
     [string]$SemanticVersion = '1.0.0-zlocal',
     [string]$Branch,
     [string]$CommitSHA,
-    [string]$BuildBranch = 'ed0316f287f23a48b0b9b7909eadd62b0c73aa73'
+    [string]$BuildBranch = '37ff6e758c38b3f513af39f881399ce85f4ff20b'
 )
 
 # For TeamCity - If any issue occurs, this script fail the build. - By default, TeamCity returns an exit code of 0 for all powershell scripts, even if they fail
@@ -55,7 +55,8 @@ Invoke-BuildStep 'Restoring solution packages' { `
 
 Invoke-BuildStep 'Set version metadata in AssemblyInfo.cs' {
         $Paths = `
-            (Join-Path $PSScriptRoot "src\NuGet.Services.EndToEnd\Properties\AssemblyInfo.g.cs")
+            (Join-Path $PSScriptRoot "src\NuGet.Services.EndToEnd\Properties\AssemblyInfo.g.cs"),
+            (Join-Path $PSScriptRoot "test\NuGet.Services.EndToEnd.Test\Properties\AssemblyInfo.g.cs")
 
         Foreach ($Path in $Paths) {
             Set-VersionInfo -Path $Path -Version $SimpleVersion -Branch $Branch -Commit $CommitSHA

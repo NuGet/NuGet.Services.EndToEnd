@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26411.1
+VisualStudioVersion = 15.0.26424.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D505F569-4DF7-42EE-BAA0-472FEC55B28F}"
 EndProject
@@ -22,6 +22,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		test.ps1 = test.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E8BAB621-E8D9-4994-BE47-F63B74C76927}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Services.EndToEnd.Test", "test\NuGet.Services.EndToEnd.Test\NuGet.Services.EndToEnd.Test.csproj", "{B69317BE-FA10-4458-A083-D9CECDABD61D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,11 +36,16 @@ Global
 		{35CA0B78-DE1A-4C4E-A97F-85E84DB17A2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35CA0B78-DE1A-4C4E-A97F-85E84DB17A2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35CA0B78-DE1A-4C4E-A97F-85E84DB17A2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B69317BE-FA10-4458-A083-D9CECDABD61D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B69317BE-FA10-4458-A083-D9CECDABD61D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B69317BE-FA10-4458-A083-D9CECDABD61D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B69317BE-FA10-4458-A083-D9CECDABD61D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{35CA0B78-DE1A-4C4E-A97F-85E84DB17A2F} = {D505F569-4DF7-42EE-BAA0-472FEC55B28F}
+		{B69317BE-FA10-4458-A083-D9CECDABD61D} = {E8BAB621-E8D9-4994-BE47-F63B74C76927}
 	EndGlobalSection
 EndGlobal

@@ -8,8 +8,8 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class Clients
     {
-        private Clients(
-            GalleryClient gallery,
+        public Clients(
+            IGalleryClient gallery,
             V3IndexClient v3Index,
             V2V3SearchClient v3Search,
             FlatContainerClient flatContainer,
@@ -22,7 +22,7 @@ namespace NuGet.Services.EndToEnd.Support
             Registration = registration;
         }
 
-        public GalleryClient Gallery { get; }
+        public IGalleryClient Gallery { get; }
         public V3IndexClient V3Index { get; }
         public V2V3SearchClient V3Search { get; }
         public FlatContainerClient FlatContainer { get; }

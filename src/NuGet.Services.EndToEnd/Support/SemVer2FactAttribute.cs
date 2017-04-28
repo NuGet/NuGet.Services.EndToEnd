@@ -13,7 +13,8 @@ namespace NuGet.Services.EndToEnd.Support
     {
         public SemVer2FactAttribute()
         {
-            if (!EnvironmentSettings.SemVer2Enabled)
+            var testSettings = TestSettings.CreateFromEnvironment();
+            if (!testSettings.SemVer2Enabled)
             {
                 Skip = "SemVer 2.0.0 is not enabled. Set the SemVer2Enabled environment variable to true to enable this test.";
             }

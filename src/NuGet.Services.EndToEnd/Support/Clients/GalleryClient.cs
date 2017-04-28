@@ -10,7 +10,7 @@ namespace NuGet.Services.EndToEnd.Support
     /// <summary>
     /// A simple interface for interacting with the gallery.
     /// </summary>
-    public class GalleryClient
+    public class GalleryClient : IGalleryClient
     {
         private readonly TestSettings _testSettings;
 

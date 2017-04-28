@@ -64,7 +64,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         private async Task<V3Index> GetV3IndexAsync()
         {
-            return await _httpClient.GetJsonAsync<V3Index>(_testSettings.V3IndexUrl);
+            return await _httpClient.GetJsonAsync<V3Index>(_testSettings.V3IndexUrl, logger: null);
         }
 
         private class V3Index

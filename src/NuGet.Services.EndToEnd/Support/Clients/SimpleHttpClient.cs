@@ -1,11 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd.Support
 {
@@ -14,12 +17,12 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class SimpleHttpClient
     {
-        public async Task<T> GetJsonAsync<T>(string url)
+        public async Task<T> GetJsonAsync<T>(string url, ITestOutputHelper logger)
         {
-            return await GetJsonAsync<T>(url, allowNotFound: false);
+            return await GetJsonAsync<T>(url, allowNotFound: false, logger: logger);
         }
 
-        public async Task<T> GetJsonAsync<T>(string url, bool allowNotFound)
+        public async Task<T> GetJsonAsync<T>(string url, bool allowNotFound, ITestOutputHelper logger)
         {
             using (var httpClientHander = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip })
             using (var httpClient = new HttpClient(httpClientHander))
@@ -36,6 +39,13 @@ namespace NuGet.Services.EndToEnd.Support
                 using (var streamReader = new StreamReader(stream))
                 {
                     var json = await streamReader.ReadToEndAsync();
+                    if (logger != null)
+                    {
+                        // Make sure the JSON is a single line.
+                        var parsedJson = JToken.Parse(json);
+                        logger.WriteLine($"URL: {url}{Environment.NewLine}Response:{Environment.NewLine}{parsedJson.ToString(Formatting.None)}");
+                    }
+
                     return JsonConvert.DeserializeObject<T>(json);
                 }
             }
