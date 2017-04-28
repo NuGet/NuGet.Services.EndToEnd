@@ -50,18 +50,10 @@ namespace NuGet.Services.EndToEnd.Support
         /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
         public async Task WaitForPackageAsync(string id, string version, ITestOutputHelper logger)
         {
-            var searchBaseUrls = new List<string>();
-            if (_testSettings.SearchBaseUrl != null)
-            {
-                searchBaseUrls.Add(_testSettings.SearchBaseUrl);
-            }
-            else
-            {
-                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrls());
-            }
+            var searchBaseUrls = await GetSearchBaseUrlsAsync();
 
             var v2SearchUrls = searchBaseUrls
-                .Select(u => $"{u}/search/query")
+                .SelectMany(u => GetSearchUrlsForPolling(u))
                 .ToList();
 
             Assert.True(v2SearchUrls.Count > 0, "At least one search base URL must be configured.");
@@ -76,7 +68,23 @@ namespace NuGet.Services.EndToEnd.Support
 
             await Task.WhenAll(tasks);
         }
-        
+
+        private IEnumerable<string> GetSearchUrlsForPolling(string originalBaseUrl)
+        {
+            for (var instanceIndex = 0; instanceIndex < _testSettings.SearchInstanceCount; instanceIndex++)
+            {
+                var port = 8080 + instanceIndex;
+                var uriBuilder = new UriBuilder(originalBaseUrl)
+                {
+                    Scheme = "http",
+                    Port = port,
+                    Path = "/search/query"
+                };
+
+                yield return uriBuilder.Uri.ToString();
+            }
+        }
+
         public async Task<IReadOnlyList<string>> GetSearchBaseUrlsAsync()
         {
             var searchBaseUrls = new List<string>();
@@ -86,7 +94,7 @@ namespace NuGet.Services.EndToEnd.Support
             }
             else
             {
-                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrls());
+                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrlsAsync());
             }
 
             return searchBaseUrls;

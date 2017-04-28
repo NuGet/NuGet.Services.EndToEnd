@@ -43,7 +43,7 @@ namespace NuGet.Services.EndToEnd.Support
                     {
                         // Make sure the JSON is a single line.
                         var parsedJson = JToken.Parse(json);
-                        logger.WriteLine($"URL: {url}{Environment.NewLine}Response:{Environment.NewLine}{parsedJson.ToString(Formatting.None)}");
+                        logger.WriteLine($" - URL: {url}{Environment.NewLine} - Response: {parsedJson.ToString(Formatting.None)}");
                     }
 
                     return JsonConvert.DeserializeObject<T>(json);

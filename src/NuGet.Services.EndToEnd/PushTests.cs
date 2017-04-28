@@ -61,19 +61,19 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
-            var searchBaseAddresses = await _clients.V3Index.GetSearchBaseUrls();
+            var searchBaseAddresses = await _clients.V3Search.GetSearchBaseUrlsAsync();
 
-            // Act
             // Wait for package to become available
             await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
 
+            // Act
             foreach (var searchBaseAddress in searchBaseAddresses)
             {
                 var shouldBeEmptyV3 = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&prerelease=true", _logger);
-                var shouldBeEmptyAutocomplete = await _clients.V3Search.AutocompleteAsync(searchBaseAddress, $"q=packageid:{package.Id}", _logger);
+                var shouldBeEmptyAutocomplete = await _clients.V3Search.AutocompleteAsync(searchBaseAddress, $"q=packageid:{package.Id}&prerelease=true", _logger);
 
                 var shouldNotBeEmptyV3 = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&semVerLevel=2.0.0&prerelease=true", _logger);
-                var shouldNotBeEmptyAutocomplete = await _clients.V3Search.AutocompleteAsync(searchBaseAddress, $"q={package.Id}&semVerLevel=2.0.0", _logger);
+                var shouldNotBeEmptyAutocomplete = await _clients.V3Search.AutocompleteAsync(searchBaseAddress, $"q={package.Id}&semVerLevel=2.0.0&prerelease=true", _logger);
 
                 // Assert
                 Assert.Equal(0, shouldBeEmptyV3.Data.Count);

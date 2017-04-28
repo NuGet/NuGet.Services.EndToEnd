@@ -34,7 +34,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
         public async Task WaitForPackageAsync(string id, string version, bool semVer2, ITestOutputHelper logger)
         {
-            var baseUrls = await (semVer2 ? _v3IndexClient.GetSemVer2RegistrationBaseUrls() : _v3IndexClient.GetRegistrationBaseUrls());
+            var baseUrls = await (semVer2 ? _v3IndexClient.GetSemVer2RegistrationBaseUrlsAsync() : _v3IndexClient.GetRegistrationBaseUrlsAsync());
 
             Assert.True(baseUrls.Count > 0, "At least one registration base URL must be configured.");
 

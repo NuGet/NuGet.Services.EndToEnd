@@ -27,9 +27,9 @@ namespace NuGet.Services.EndToEnd
         public async Task RegistrationValuesInResultMatchRequestSemVerLevel()
         {
             // Arrange
-            var allRegistrationAddresses = await _clients.V3Index.GetRegistrationBaseUrls();
-            var semVer2RegistrationAddresses = await _clients.V3Index.GetSemVer2RegistrationBaseUrls();
-            var searchBaseAddresses = await _clients.V3Index.GetSearchBaseUrls();
+            var allRegistrationAddresses = await _clients.V3Index.GetRegistrationBaseUrlsAsync();
+            var semVer2RegistrationAddresses = await _clients.V3Index.GetSemVer2RegistrationBaseUrlsAsync();
+            var searchBaseAddresses = await _clients.V3Search.GetSearchBaseUrlsAsync();
             
             var semVer2Package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
             var semVer1Package = await _pushedPackages.PushAsync(PackageType.SemVer1Stable, _logger);

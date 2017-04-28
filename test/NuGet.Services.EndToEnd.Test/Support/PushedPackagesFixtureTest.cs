@@ -28,7 +28,8 @@ namespace NuGet.Services.EndToEnd.Support
                 trustedHttpsCertificates: new List<string>(),
                 apiKey: "API_KEY",
                 searchBaseUrl: null,
-                semVer2Enabled: true);
+                semVer2Enabled: true,
+                searchInstanceCount: 2);
             _fixture = new PushedPackagesFixture(_galleryClient.Object, _testSettings);
             _logger = new Mock<ITestOutputHelper>();
         }
