@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Services.EndToEnd.Support;
@@ -42,6 +43,11 @@ namespace NuGet.Services.EndToEnd
 
             foreach (var searchBaseAddress in searchBaseAddresses)
             {
+                // Search service changes the registration URL scheme to match the request URL. Modify what we found in
+                // the index.json so match this.
+                var allReg = allRegistrationAddresses.Select(u => MatchSchemeAndPort(searchBaseAddress, u));
+                var semVer2Reg = semVer2RegistrationAddresses.Select(u => MatchSchemeAndPort(searchBaseAddress, u));
+
                 // Act
                 var semVer1Query = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=", _logger);
                 var semVer2Query = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=&semVerLevel=2.0.0", _logger);
@@ -52,15 +58,30 @@ namespace NuGet.Services.EndToEnd
 
                 for (var i = 0; i < semVer1Query.Data.Count; i++)
                 {
-                    Assert.False(semVer2RegistrationAddresses.Any(a => semVer1Query.Data[i].Registration.Contains(a)));
-                    Assert.True(allRegistrationAddresses.Any(a => semVer1Query.Data[i].Registration.Contains(a)));
+                    Assert.False(
+                        semVer2Reg.Any(a => semVer1Query.Data[i].Registration.Contains(a)),
+                        $"{semVer1Query.Data[i].Id} has a SemVer 2.0.0 registration base URL.");
+                    Assert.True(
+                        allReg.Any(a => semVer1Query.Data[i].Registration.Contains(a)),
+                        $"{semVer1Query.Data[i].Id} has should have an expected registration base URL.");
                 }
 
                 for (var i = 0; i < semVer2Query.Data.Count; i++)
                 {
-                    Assert.True(semVer2RegistrationAddresses.Any(a => semVer2Query.Data[i].Registration.Contains(a)));
+                    Assert.True(
+                        semVer2Reg.Any(a => semVer2Query.Data[i].Registration.Contains(a)),
+                        $"{semVer2Query.Data[i].Id} should have an expected SemVer 2.0.0 registration base URL.");
                 }
             }
+        }
+
+        private static string MatchSchemeAndPort(string reference, string toChange)
+        {
+            var parsedReference = new Uri(reference);
+            var builder = new UriBuilder(toChange);
+            builder.Scheme = parsedReference.Scheme;
+            builder.Port = parsedReference.Port;
+            return builder.Uri.ToString();
         }
     }
 }
