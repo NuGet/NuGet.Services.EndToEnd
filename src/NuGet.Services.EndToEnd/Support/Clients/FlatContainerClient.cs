@@ -59,7 +59,7 @@ namespace NuGet.Services.EndToEnd.Support
             var found = false;
             do
             {
-                var response = await _httpClient.GetJsonAsync<FlatContainerIndexResponse>(url, allowNotFound: true);
+                var response = await _httpClient.GetJsonAsync<FlatContainerIndexResponse>(url, allowNotFound: true, logger: null);
                 if (response != null)
                 {
                     found = response.Versions.Contains(version.ToLowerInvariant());

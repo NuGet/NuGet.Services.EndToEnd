@@ -25,25 +25,18 @@ namespace NuGet.Services.EndToEnd.Support
             _testSettings = testSettings;
         }
 
-        public async Task<V2SearchResponse> SearchQueryAsync(string searchBaseUrl, string queryString)
-        {
-            var baseUri = new Uri(searchBaseUrl);
-            var queryUrl = new Uri(baseUri, $"search/query?{queryString}");
-            return await _httpClient.GetJsonAsync<V2SearchResponse>(queryUrl.AbsoluteUri);
-        }
-
-        public async Task<V3SearchResponse> QueryAsync(string searchBaseUrl, string queryString)
+        public async Task<V3SearchResponse> QueryAsync(string searchBaseUrl, string queryString, ITestOutputHelper logger)
         {
             var baseUri = new Uri(searchBaseUrl);
             var queryUrl = new Uri(baseUri, $"query?{queryString}");
-            return await _httpClient.GetJsonAsync<V3SearchResponse>(queryUrl.AbsoluteUri);
+            return await _httpClient.GetJsonAsync<V3SearchResponse>(queryUrl.AbsoluteUri, logger);
         }
 
-        public async Task<AutocompleteResponse> AutocompleteAsync(string searchBaseUrl, string queryString)
+        public async Task<AutocompleteResponse> AutocompleteAsync(string searchBaseUrl, string queryString, ITestOutputHelper logger)
         {
             var baseUri = new Uri(searchBaseUrl);
             var queryUrl = new Uri(baseUri, $"autocomplete?{queryString}");
-            return await _httpClient.GetJsonAsync<AutocompleteResponse>(queryUrl.AbsoluteUri);
+            return await _httpClient.GetJsonAsync<AutocompleteResponse>(queryUrl.AbsoluteUri, logger);
         }
 
         /// <summary>
@@ -110,7 +103,7 @@ namespace NuGet.Services.EndToEnd.Support
             var found = false;
             do
             {
-                var response = await _httpClient.GetJsonAsync<V2SearchResponse>(url);
+                var response = await _httpClient.GetJsonAsync<V2SearchResponse>(url, logger: null);
                 found = response
                     .Data
                     .Where(d => d.PackageRegistration?.Id == id && d.Version == version)

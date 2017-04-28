@@ -63,7 +63,7 @@ namespace NuGet.Services.EndToEnd.Support
                 // pages. This is acceptable right now because the test packages never have more than 64 versions, which
                 // is the threshold that catalog2registration uses when deciding whether to break the registration index
                 // into pages.
-                var response = await _httpClient.GetJsonAsync<RegistrationIndexResponse>(url, allowNotFound: true);
+                var response = await _httpClient.GetJsonAsync<RegistrationIndexResponse>(url, allowNotFound: true, logger: null);
                 if (response != null)
                 {
                     found = response

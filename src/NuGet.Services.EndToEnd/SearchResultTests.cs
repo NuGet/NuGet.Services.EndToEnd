@@ -43,8 +43,8 @@ namespace NuGet.Services.EndToEnd
             foreach (var searchBaseAddress in searchBaseAddresses)
             {
                 // Act
-                var semVer1Query = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=");
-                var semVer2Query = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=&semVerLevel=2.0.0");
+                var semVer1Query = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=", _logger);
+                var semVer2Query = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=&semVerLevel=2.0.0", _logger);
 
                 // Assert
                 Assert.True(semVer1Query.Data.Count > 0);
