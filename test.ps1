@@ -2,7 +2,8 @@
 param (
     [ValidateSet("debug", "release")]
     [string]$Configuration = 'debug',
-    [int]$BuildNumber
+    [int]$BuildNumber,
+    [switch]$OnlyUnitTests
 )
 
 # For TeamCity - If any issue occurs, this script fails the build. - By default, TeamCity returns an exit code of 0 for all powershell scripts, even if they fail
@@ -26,14 +27,19 @@ Function Run-Tests {
     Trace-Log 'Running tests'
 
     $xUnitExe = (Join-Path $PSScriptRoot "packages\xunit.runner.console.2.2.0\tools\xunit.console.exe")
+	
+	$UnitTestAssemblies = @("test\NuGet.Services.EndToEnd.Test\bin\$Configuration\NuGet.Services.EndToEnd.Test.dll")
 
-    $TestAssemblies = `
-		"src\NuGet.Services.EndToEnd\bin\$Configuration\NuGet.Services.EndToEnd.dll",
-		"test\NuGet.Services.EndToEnd.Test\bin\$Configuration\NuGet.Services.EndToEnd.Test.dll"
+    $AllTestAssemblies = @("src\NuGet.Services.EndToEnd\bin\$Configuration\NuGet.Services.EndToEnd.dll") `
+		+ $UnitTestAssemblies
+
+	if ($OnlyUnitTests) {
+		$AllTestAssemblies = $UnitTestAssemblies
+	}
 
     $TestCount = 0
 
-    foreach ($TestAssembly in $TestAssemblies) {
+    foreach ($TestAssembly in $AllTestAssemblies) {
         & $xUnitExe (Join-Path $PSScriptRoot $TestAssembly) -xml "TestResults.$TestCount.xml" -Verbose
         $TestCount++
     }

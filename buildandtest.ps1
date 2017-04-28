@@ -8,10 +8,11 @@ param (
     [string]$SimpleVersion = '1.0.0',
     [string]$SemanticVersion = '1.0.0-zlocal',
     [string]$Branch,
-    [string]$CommitSHA
+    [string]$CommitSHA,
+    [switch]$OnlyUnitTests
 )
 
 $ScriptPath = Split-Path $MyInvocation.InvocationName
 
 & "$ScriptPath\build.ps1" -Configuration $Configuration -BuildNumber $BuildNumber -SkipRestore:$SkipRestore -CleanCache:$CleanCache -SimpleVersion "$SimpleVersion" -SemanticVersion "$SemanticVersion" -Branch "$Branch" -CommitSHA "$CommitSHA"
-& "$ScriptPath\test.ps1" -Configuration $Configuration -BuildNumber $BuildNumber
+& "$ScriptPath\test.ps1" -Configuration $Configuration -BuildNumber $BuildNumber -OnlyUnitTests:$OnlyUnitTests
