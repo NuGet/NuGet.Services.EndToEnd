@@ -63,10 +63,10 @@ namespace NuGet.Services.EndToEnd
             var package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
             var searchBaseAddresses = await _clients.V3Index.GetSearchBaseUrls();
 
-            // Act
             // Wait for package to become available
             await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
 
+            // Act
             foreach (var searchBaseAddress in searchBaseAddresses)
             {
                 var shouldBeEmptyV3 = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&prerelease=true", _logger);
