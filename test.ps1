@@ -30,8 +30,8 @@ Function Run-Tests {
 	
 	$UnitTestAssemblies = @("test\NuGet.Services.EndToEnd.Test\bin\$Configuration\NuGet.Services.EndToEnd.Test.dll")
 
-    $AllTestAssemblies = @("src\NuGet.Services.EndToEnd\bin\$Configuration\NuGet.Services.EndToEnd.dll") `
-		+ $UnitTestAssemblies
+    $AllTestAssemblies = $UnitTestAssemblies + `
+		@("src\NuGet.Services.EndToEnd\bin\$Configuration\NuGet.Services.EndToEnd.dll") 
 
 	if ($OnlyUnitTests) {
 		$AllTestAssemblies = $UnitTestAssemblies
