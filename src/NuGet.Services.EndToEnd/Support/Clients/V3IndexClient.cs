@@ -23,25 +23,25 @@ namespace NuGet.Services.EndToEnd.Support
             _testSettings = testSettings;
         }
 
-        public async Task<IReadOnlyList<string>> GetSearchBaseUrls()
+        public async Task<IReadOnlyList<string>> GetSearchBaseUrlsAsync()
         {
             var v3Index = await GetV3IndexAsync();
             return GetResourceUrls(v3Index, t => t.Type.StartsWith("SearchGalleryQueryService/"));
         }
 
-        public async Task<IReadOnlyList<string>> GetFlatContainerBaseUrls()
+        public async Task<IReadOnlyList<string>> GetFlatContainerBaseUrlsAsync()
         {
             var v3Index = await GetV3IndexAsync();
             return GetResourceUrls(v3Index, t => t.Type.StartsWith("PackageBaseAddress/"));
         }
 
-        public async Task<IReadOnlyList<string>> GetRegistrationBaseUrls()
+        public async Task<IReadOnlyList<string>> GetRegistrationBaseUrlsAsync()
         {
             var v3Index = await GetV3IndexAsync();
             return GetResourceUrls(v3Index, t => t.Type.StartsWith("RegistrationsBaseUrl/"));
         }
 
-        public async Task<IReadOnlyList<string>> GetSemVer2RegistrationBaseUrls()
+        public async Task<IReadOnlyList<string>> GetSemVer2RegistrationBaseUrlsAsync()
         {
             var v3Index = await GetV3IndexAsync();
             return GetResourceUrls(

@@ -61,7 +61,7 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
-            var searchBaseAddresses = await _clients.V3Index.GetSearchBaseUrls();
+            var searchBaseAddresses = await _clients.V3Search.GetSearchBaseUrlsAsync();
 
             // Wait for package to become available
             await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);

@@ -34,7 +34,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
         public async Task WaitForPackageAsync(string id, string version, ITestOutputHelper logger)
         {
-            var baseUrls = await _v3IndexClient.GetFlatContainerBaseUrls();
+            var baseUrls = await _v3IndexClient.GetFlatContainerBaseUrlsAsync();
 
             Assert.True(baseUrls.Count > 0, "At least one flat container base URL must be configured.");
 

@@ -94,7 +94,7 @@ namespace NuGet.Services.EndToEnd.Support
             }
             else
             {
-                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrls());
+                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrlsAsync());
             }
 
             return searchBaseUrls;
