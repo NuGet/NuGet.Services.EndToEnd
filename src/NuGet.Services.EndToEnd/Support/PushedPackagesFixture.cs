@@ -56,6 +56,7 @@ namespace NuGet.Services.EndToEnd.Support
                 {
                     logger.WriteLine("Another test is already pushing the packages. Waiting.");
                     await _pushLock.WaitAsync();
+                    acquired = true;
                 }
 
                 // Has the package already been pushed?
@@ -69,29 +70,19 @@ namespace NuGet.Services.EndToEnd.Support
 
                 // Push all of the package types that have not been pushed yet.
                 var pushTasks = new Dictionary<PackageType, Task<Package>>();
-                foreach (var packageType in packageTypes)
-                {
-                    if (!_packages.TryGetValue(packageType, out Package package))
-                    {
-                        pushTasks.Add(packageType, UncachedPushAsync(requestedPackageType, packageType, logger));
-                    }
-                }
-
-                await Task.WhenAll(pushTasks.Values);
-
-                // Add the pushed packages to the cache.
                 lock (_packagesLock)
                 {
-                    foreach (var packageType in pushTasks.Keys)
+                    foreach (var packageType in packageTypes)
                     {
-                        var result = pushTasks[packageType].Result;
-                        if (result != null)
+                        if (!_packages.TryGetValue(packageType, out Package package))
                         {
-                            _packages[packageType] = result;
+                            pushTasks.Add(packageType, UncachedPushAsync(requestedPackageType, packageType, logger));
                         }
                     }
                 }
 
+                await Task.WhenAll(pushTasks.Values);
+                
                 // Use the package that we just pushed.
                 return _packages[requestedPackageType];
             }
@@ -147,6 +138,11 @@ namespace NuGet.Services.EndToEnd.Support
                 }
             }
             
+            lock (_packagesLock)
+            {
+                _packages[packageType] = package;
+            }
+
             return package;
         }
 
@@ -158,11 +154,7 @@ namespace NuGet.Services.EndToEnd.Support
         {
             var selectedPackageTypes = Enum
                 .GetValues(typeof(PackageType))
-                .Cast<PackageType>()
-                .Concat(new[] { requestedPackageType })
-                .Distinct()
-                .OrderBy(x => x)
-                .AsEnumerable();
+                .Cast<PackageType>();
 
             // If SemVer 2.0.0 is not enabled, don't automatically push SemVer 2.0.0 packages.
             if (!_testSettings.SemVer2Enabled)
@@ -170,6 +162,11 @@ namespace NuGet.Services.EndToEnd.Support
                 selectedPackageTypes = selectedPackageTypes
                     .Except(SemVer2PackageTypes);
             }
+
+            selectedPackageTypes = selectedPackageTypes
+                .Concat(new[] { requestedPackageType })
+                .Distinct()
+                .OrderBy(x => x);
 
             return selectedPackageTypes;
         }
