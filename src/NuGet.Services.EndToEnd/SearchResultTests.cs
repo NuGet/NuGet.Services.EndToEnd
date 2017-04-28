@@ -9,13 +9,16 @@ using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd
 {
+    [Collection(nameof(PushedPackagesCollection))]
     public class SearchResultTests : IClassFixture<TrustedHttpsCertificatesFixture>
     {
+        private readonly PushedPackagesFixture _pushedPackages;
         private readonly ITestOutputHelper _logger;
         private readonly Clients _clients;
 
-        public SearchResultTests(ITestOutputHelper logger)
+        public SearchResultTests(PushedPackagesFixture pushedPackages, ITestOutputHelper logger)
         {
+            _pushedPackages = pushedPackages;
             _clients = Clients.Initialize();
             _logger = logger;
         }
@@ -27,6 +30,15 @@ namespace NuGet.Services.EndToEnd
             var allRegistrationAddresses = await _clients.V3Index.GetRegistrationBaseUrls();
             var semVer2RegistrationAddresses = await _clients.V3Index.GetSemVer2RegistrationBaseUrls();
             var searchBaseAddresses = await _clients.V3Index.GetSearchBaseUrls();
+            
+            var semVer2Package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
+            var semVer1Package = await _pushedPackages.PushAsync(PackageType.SemVer1Stable, _logger);
+
+            // wait for all packages to become available to ensure that we have results.
+            await _clients.Registration.WaitForPackageAsync(semVer2Package.Id, semVer2Package.Version, semVer2: true, logger: _logger);
+            await _clients.V3Search.WaitForPackageAsync(semVer2Package.Id, semVer2Package.Version, _logger);
+            await _clients.Registration.WaitForPackageAsync(semVer1Package.Id, semVer1Package.Version, semVer2: false, logger: _logger);
+            await _clients.V3Search.WaitForPackageAsync(semVer1Package.Id, semVer1Package.Version, _logger);
 
             foreach (var searchBaseAddress in searchBaseAddresses)
             {
