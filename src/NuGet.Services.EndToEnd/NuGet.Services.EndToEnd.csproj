@@ -41,9 +41,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectivityTests.cs" />
+    <Compile Include="SearchResultTests.cs" />
     <Compile Include="Support\Clients\Clients.cs" />
     <Compile Include="Support\Clients\FlatContainerClient.cs" />
     <Compile Include="Support\Clients\RegistrationClient.cs" />
+    <Compile Include="Support\Clients\SimpleHttpClient.cs" />
     <Compile Include="Support\PackageType.cs" />
     <Compile Include="Support\PushedPackagesCollection.cs" />
     <Compile Include="Support\PushedPackagesFixture.cs" />
@@ -53,8 +55,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.*.cs" />
     <Compile Include="PushTests.cs" />
-    <Compile Include="Support\Clients\V3SearchClient.cs" />
-    <Compile Include="Support\Clients\SimpleHttpClient.cs" />
+    <Compile Include="Support\Clients\V2V3SearchClient.cs" />
     <Compile Include="Support\SemVer2FactAttribute.cs" />
     <Compile Include="Support\TestSettings.cs" />
     <Compile Include="Support\TrustedHttpsCertificatesFixture.cs" />

@@ -55,5 +55,32 @@ namespace NuGet.Services.EndToEnd
 
             await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
         }
+        
+        [SemVer2Fact]
+        public async Task NewSemVer2PackageIsFiltered()
+        {
+            // Arrange
+            var package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
+            var searchBaseAddresses = await _clients.V3Index.GetSearchBaseUrls();
+
+            // Act
+            // Wait for package to become available
+            await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
+
+            foreach (var searchBaseAddress in searchBaseAddresses)
+            {
+                var shouldBeEmptyV3 = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&prerelease=true");
+                var shouldBeEmptyAutocomplete = await _clients.V3Search.AutocompleteAsync(searchBaseAddress, $"q=packageid:{package.Id}");
+
+                var shouldNotBeEmptyV3 = await _clients.V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&semVerLevel=2.0.0&prerelease=true");
+                var shouldNotBeEmptyAutocomplete = await _clients.V3Search.AutocompleteAsync(searchBaseAddress, $"q={package.Id}&semVerLevel=2.0.0");
+
+                // Assert
+                Assert.Equal(0, shouldBeEmptyV3.Data.Count);
+                Assert.Equal(0, shouldBeEmptyAutocomplete.Data.Count);
+                Assert.Equal(1, shouldNotBeEmptyV3.Data.Count);
+                Assert.Equal(1, shouldNotBeEmptyAutocomplete.Data.Count);
+            }
+        }
     }
 }
