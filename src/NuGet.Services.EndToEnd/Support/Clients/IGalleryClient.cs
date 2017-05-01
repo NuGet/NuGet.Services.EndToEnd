@@ -9,5 +9,6 @@ namespace NuGet.Services.EndToEnd.Support
     public interface IGalleryClient
     {
         Task PushAsync(Stream nupkgStream);
+        Task UnlistAsync(string id, string version);
     }
 }

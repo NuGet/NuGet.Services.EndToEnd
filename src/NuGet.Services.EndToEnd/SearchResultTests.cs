@@ -32,8 +32,8 @@ namespace NuGet.Services.EndToEnd
             var semVer2RegistrationAddresses = await _clients.V3Index.GetSemVer2RegistrationBaseUrlsAsync();
             var searchBaseAddresses = await _clients.V3Search.GetSearchBaseUrlsAsync();
             
-            var semVer2Package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
-            var semVer1Package = await _pushedPackages.PushAsync(PackageType.SemVer1Stable, _logger);
+            var semVer2Package = await _pushedPackages.PrepareAsync(PackageType.SemVer2Prerelease, _logger);
+            var semVer1Package = await _pushedPackages.PrepareAsync(PackageType.SemVer1Stable, _logger);
 
             // wait for all packages to become available to ensure that we have results.
             await _clients.Registration.WaitForPackageAsync(semVer2Package.Id, semVer2Package.Version, semVer2: true, logger: _logger);

@@ -18,7 +18,7 @@ namespace NuGet.Services.EndToEnd
 
         public ConnectivityTests(ITestOutputHelper logger)
         {
-            _testSettings = TestSettings.CreateFromEnvironment();
+            _testSettings = TestSettings.Create();
             _clients = Clients.Initialize();
             _logger = logger;
         }

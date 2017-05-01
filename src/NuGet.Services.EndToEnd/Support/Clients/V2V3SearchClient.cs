@@ -50,23 +50,43 @@ namespace NuGet.Services.EndToEnd.Support
         /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
         public async Task WaitForPackageAsync(string id, string version, ITestOutputHelper logger)
         {
-            var searchBaseUrls = await GetSearchBaseUrlsAsync();
+            await PollAsync(
+                id,
+                version,
+                response => response
+                    .Data
+                    .Where(d => d.PackageRegistration?.Id == id && d.Version == version)
+                    .Any(),
+                $"Waiting for package {id} {version} to be available on search endpoints:",
+                $"Package {id} {version} was found on {{0}} after waiting {{1}}.",
+                $"Package {id} {version} was not found on {{0}} after waiting {{1}}.",
+                logger);
+        }
 
-            var v2SearchUrls = searchBaseUrls
-                .SelectMany(u => GetSearchUrlsForPolling(u))
-                .ToList();
+        /// <summary>
+        /// Polls all V2 search URLs until the package has the specified listed state.
+        /// </summary>
+        /// <param name="id">The package ID.</param>
+        /// <param name="version">The package version.</param>
+        /// <param name="listed">The listed state to wait for.</param>
+        /// <param name="logger">The logger.</param>
+        /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
+        public async Task WaitForListedStateAsync(string id, string version, bool listed, ITestOutputHelper logger)
+        {
+            var successState = listed ? "listed" : "unlisted";
+            var failureState = listed ? "unlisted" : "listed";
 
-            Assert.True(v2SearchUrls.Count > 0, "At least one search base URL must be configured.");
-
-            logger.WriteLine(
-                $"Waiting for package {id} {version} to be available on search endpoints:" + Environment.NewLine +
-                string.Join(Environment.NewLine, v2SearchUrls.Select(u => $" - {u}")));
-
-            var tasks = v2SearchUrls
-                .Select(u => WaitForPackageAsync(u, id, version, logger))
-                .ToList();
-
-            await Task.WhenAll(tasks);
+            await PollAsync(
+                id,
+                version,
+                response => response
+                    .Data
+                    .Where(d => d.PackageRegistration?.Id == id && d.Version == version && d.Listed == listed)
+                    .Any(),
+                $"Waiting for package {id} {version} to be {successState} on search endpoints:",
+                $"Package {id} {version} became {successState} on {{0}} after waiting {{1}}.",
+                $"Package {id} {version} was still {failureState} on {{0}} after waiting {{1}}.",
+                logger);
         }
 
         private IEnumerable<string> GetSearchUrlsForPolling(string originalBaseUrl)
@@ -99,8 +119,51 @@ namespace NuGet.Services.EndToEnd.Support
 
             return searchBaseUrls;
         }
+        
+        private async Task PollAsync(
+            string id,
+            string version,
+            Func<V2SearchResponse, bool> isComplete,
+            string startingMessage,
+            string successMessageFormat,
+            string failureMessageFormat,
+            ITestOutputHelper logger)
+        {
+            var searchBaseUrls = await GetSearchBaseUrlsAsync();
 
-        private async Task WaitForPackageAsync(string v2SearchUrl, string id, string version, ITestOutputHelper logger)
+            var v2SearchUrls = searchBaseUrls
+                .SelectMany(u => GetSearchUrlsForPolling(u))
+                .ToList();
+
+            Assert.True(v2SearchUrls.Count > 0, "At least one search base URL must be configured.");
+
+            logger.WriteLine(
+                startingMessage +
+                Environment.NewLine +
+                string.Join(Environment.NewLine, v2SearchUrls.Select(u => $" - {u}")));
+
+            var tasks = v2SearchUrls
+                .Select(u => PollAsync(
+                    u,
+                    id,
+                    version,
+                    isComplete,
+                    successMessageFormat,
+                    failureMessageFormat,
+                    logger))
+                .ToList();
+
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task PollAsync(
+            string v2SearchUrl,
+            string id,
+            string version,
+            Func<V2SearchResponse, bool> isComplete,
+            string successMessageFormat,
+            string failureMessageFormat,
+            ITestOutputHelper logger)
         {
             await Task.Yield();
 
@@ -108,24 +171,21 @@ namespace NuGet.Services.EndToEnd.Support
             url = QueryHelpers.AddQueryString(url, "ignoreFilter", "true");
 
             var duration = Stopwatch.StartNew();
-            var found = false;
+            var complete = false;
             do
             {
                 var response = await _httpClient.GetJsonAsync<V2SearchResponse>(url, logger: null);
-                found = response
-                    .Data
-                    .Where(d => d.PackageRegistration?.Id == id && d.Version == version)
-                    .Any();
+                complete = isComplete(response);
 
-                if (!found && duration.Elapsed + TestData.V3SleepDuration < TestData.V3WaitDuration)
+                if (!complete && duration.Elapsed + TestData.V3SleepDuration < TestData.V3WaitDuration)
                 {
                     await Task.Delay(TestData.V3SleepDuration);
                 }
             }
-            while (!found && duration.Elapsed < TestData.V3WaitDuration);
+            while (!complete && duration.Elapsed < TestData.V3WaitDuration);
 
-            Assert.True(found, $"Package {id} {version} was not found on {v2SearchUrl} after waiting {TestData.V3WaitDuration}.");
-            logger.WriteLine($"Package {id} {version} was found on {v2SearchUrl} after waiting {duration.Elapsed}.");
+            Assert.True(complete, string.Format(failureMessageFormat, v2SearchUrl, duration.Elapsed));
+            logger.WriteLine(string.Format(successMessageFormat, v2SearchUrl, duration.Elapsed));
         }
 
         public class V2SearchResponse

@@ -1,23 +1,32 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Xunit;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using Xunit.Sdk;
 
 namespace NuGet.Services.EndToEnd.Support
 {
-    /// <summary>
-    /// Used to skip a test when SemVer 2.0.0 is not enabled. This should only be used on tests that explicitly require
-    /// SemVer 2.0.0 packages.
-    /// </summary>
-    public class SemVer2FactAttribute : FactAttribute
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public sealed class SemVer2InlineDataAttribute : DataAttribute
     {
-        public SemVer2FactAttribute()
+        private readonly object[] _data;
+
+        public SemVer2InlineDataAttribute(params object[] data)
         {
+            _data = data;
+
             var testSettings = TestSettings.Create();
             if (!testSettings.SemVer2Enabled)
             {
                 Skip = "SemVer 2.0.0 is not enabled. Set the SemVer2Enabled environment variable to true to enable this test.";
             }
+        }
+
+        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+        {
+            return new[] { _data };
         }
     }
 }

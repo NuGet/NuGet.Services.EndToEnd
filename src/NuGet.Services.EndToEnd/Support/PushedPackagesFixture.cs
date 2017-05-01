@@ -28,7 +28,7 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly IGalleryClient _galleryClient;
         private readonly TestSettings _testSettings;
 
-        public PushedPackagesFixture() : this(Clients.Initialize().Gallery, TestSettings.CreateFromEnvironment())
+        public PushedPackagesFixture() : this(Clients.Initialize().Gallery, TestSettings.Create())
         {
         }
 
@@ -40,18 +40,18 @@ namespace NuGet.Services.EndToEnd.Support
             _packages = new Dictionary<PackageType, Package>();
         }
 
-        public async Task<Package> PushAsync(PackageType requestedPackageType, ITestOutputHelper logger)
+        public async Task<Package> PrepareAsync(PackageType requestedPackageType, ITestOutputHelper logger)
         {
-            var pushedPackage = GetPushedPackage(requestedPackageType, logger);
+            var pushedPackage = GetCachedPackage(requestedPackageType, logger);
             if (pushedPackage != null)
             {
                 return pushedPackage;
             }
 
-            return await PushUnpushedPackagesAsync(requestedPackageType, logger);
+            return await PreparePackagesAsync(requestedPackageType, logger);
         }
 
-        private async Task<Package> PushUnpushedPackagesAsync(PackageType requestedPackageType, ITestOutputHelper logger)
+        private async Task<Package> PreparePackagesAsync(PackageType requestedPackageType, ITestOutputHelper logger)
         {
             var acquired = await _pushLock.WaitAsync(0);
             try
@@ -64,7 +64,7 @@ namespace NuGet.Services.EndToEnd.Support
                 }
 
                 // Has the package already been pushed?
-                var pushedPackage = GetPushedPackage(requestedPackageType, logger);
+                var pushedPackage = GetCachedPackage(requestedPackageType, logger);
                 if (pushedPackage != null)
                 {
                     return pushedPackage;
@@ -80,7 +80,7 @@ namespace NuGet.Services.EndToEnd.Support
                     {
                         if (!_packages.TryGetValue(packageType, out Package package))
                         {
-                            pushTasks.Add(packageType, UncachedPushAsync(requestedPackageType, packageType, logger));
+                            pushTasks.Add(packageType, UncachedPrepareAsync(requestedPackageType, packageType, logger));
                         }
                     }
                 }
@@ -99,7 +99,7 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        private Package GetPushedPackage(PackageType requestedPackageType, ITestOutputHelper logger)
+        private Package GetCachedPackage(PackageType requestedPackageType, ITestOutputHelper logger)
         {
             lock (_packagesLock)
             {
@@ -113,19 +113,26 @@ namespace NuGet.Services.EndToEnd.Support
             return null;
         }
 
-        private async Task<Package> UncachedPushAsync(PackageType requestedPackageType, PackageType packageType, ITestOutputHelper logger)
+        private async Task<Package> UncachedPrepareAsync(PackageType requestedPackageType, PackageType packageType, ITestOutputHelper logger)
         {
             await Task.Yield();
 
-            Package package = CreatePackage(packageType);
-            logger.WriteLine($"Package of type {packageType} has not been pushed yet. Pushing {package}.");
+            var packageToPrepare = InitializePackage(packageType);
+            logger.WriteLine($"Package of type {packageType} has not been pushed yet. Pushing {packageToPrepare}.");
             try
             {
-                using (var nupkgStream = new MemoryStream(package.NupkgBytes.ToArray()))
+                using (var nupkgStream = new MemoryStream(packageToPrepare.Package.NupkgBytes.ToArray()))
                 {
                     await _galleryClient.PushAsync(nupkgStream);
                 }
-                logger.WriteLine($"Package {package} has been pushed.");
+                logger.WriteLine($"Package {packageToPrepare} has been pushed.");
+
+                if (packageToPrepare.Unlist)
+                {
+                    logger.WriteLine($"Package of type {packageType} need to be unlisted. Unlisting {packageToPrepare}.");
+                    await _galleryClient.UnlistAsync(packageToPrepare.Package.Id, packageToPrepare.Package.Version);
+                    logger.WriteLine($"Package {packageToPrepare} has been unlisted.");
+                }
             }
             catch (Exception ex)
             {
@@ -136,7 +143,7 @@ namespace NuGet.Services.EndToEnd.Support
                 else
                 {
                     logger.WriteLine(
-                        $"The package {package} failed to be pushed. Since this package was not explicitly requested " +
+                        $"The package {packageToPrepare} failed to be pushed. Since this package was not explicitly requested " +
                         $"by the running test, this failure will be ignored. Exception:{Environment.NewLine}{ex}");
                     return null;
                 }
@@ -144,10 +151,10 @@ namespace NuGet.Services.EndToEnd.Support
             
             lock (_packagesLock)
             {
-                _packages[packageType] = package;
+                _packages[packageType] = packageToPrepare.Package;
             }
 
-            return package;
+            return packageToPrepare.Package;
         }
 
         public void Dispose()
@@ -175,15 +182,44 @@ namespace NuGet.Services.EndToEnd.Support
             return selectedPackageTypes;
         }
 
-        private Package CreatePackage(PackageType packageType)
+        private PackageToPrepare InitializePackage(PackageType packageType)
         {
             switch (packageType)
             {
+                case PackageType.SemVer1Unlisted:
+                    return new PackageToPrepare(
+                        Package.Create(packageType.ToString(), "1.0.0"),
+                        unlist: true);
+                case PackageType.SemVer2Unlisted:
+                    return new PackageToPrepare(
+                        Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
+                        unlist: true);
                 case PackageType.SemVer2Prerelease:
-                    return Package.Create(packageType.ToString(), "1.0.0-alpha.1");
+                    return new PackageToPrepare(
+                        Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
+                        unlist: false);
                 case PackageType.SemVer1Stable:
                 default:
-                    return Package.Create(packageType.ToString(), "1.0.0");
+                    return new PackageToPrepare(
+                        Package.Create(packageType.ToString(), "1.0.0"),
+                        unlist: false);
+            }
+        }
+
+        private class PackageToPrepare
+        {
+            public PackageToPrepare(Package package, bool unlist)
+            {
+                Package = package;
+                Unlist = unlist;
+            }
+            
+            public Package Package { get; }
+            public bool Unlist { get; }
+
+            public override string ToString()
+            {
+                return Package.ToString();
             }
         }
     }

@@ -58,11 +58,13 @@
     <Compile Include="PushTests.cs" />
     <Compile Include="Support\Clients\V2V3SearchClient.cs" />
     <Compile Include="Support\SemVer2FactAttribute.cs" />
+    <Compile Include="Support\SemVer2InlineDataAttribute.cs" />
     <Compile Include="Support\TestSettings.cs" />
     <Compile Include="Support\TrustedHttpsCertificatesFixture.cs" />
     <Compile Include="Support\TestData.cs" />
     <Compile Include="Support\TestDirectory.cs" />
     <Compile Include="Support\Clients\V3IndexClient.cs" />
+    <Compile Include="UnlistTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

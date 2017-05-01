@@ -8,6 +8,20 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class TestSettings
     {
+        public enum Mode
+        {
+            EnvironmentVariables,
+            Dev,
+            Int,
+            Prod,
+        };
+
+        /// <summary>
+        /// Manually override this value to easily test end-to-end tests against on of the deployed environments. The
+        /// checked in value should always be <see cref="Mode.EnvironmentVariables"/>.
+        /// </summary>
+        public static Mode CurrentMode => Mode.EnvironmentVariables;
+
         public TestSettings(
             string galleryBaseUrl,
             string v3IndexUrl,
@@ -35,16 +49,52 @@ namespace NuGet.Services.EndToEnd.Support
         public bool SemVer2Enabled { get; }
         public int SearchInstanceCount { get; }
 
-        public static TestSettings CreateFromEnvironment()
+        public static TestSettings Create()
         {
-            return new TestSettings(
-                EnvironmentSettings.GalleryBaseUrl,
-                EnvironmentSettings.V3IndexUrl,
-                EnvironmentSettings.TrustedHttpsCertificates,
-                EnvironmentSettings.ApiKey,
-                EnvironmentSettings.SearchBaseUrl,
-                EnvironmentSettings.SemVer2Enabled,
-                EnvironmentSettings.SearchInstanceCount);
+            return Create(CurrentMode);
+        }
+
+        public static TestSettings Create(Mode mode)
+        {
+            switch (mode)
+            {
+                case Mode.Dev:
+                    return new TestSettings(
+                        "https://dev.nugettest.org",
+                        "http://api.dev.nugettest.org/v3-index/index.json",
+                        new List<string>(),
+                        "API_KEY",
+                        searchBaseUrl: null,
+                        semVer2Enabled: true,
+                        searchInstanceCount: 2);
+                case Mode.Int:
+                    return new TestSettings(
+                        "https://int.nugettest.org",
+                        "http://api.int.nugettest.org/v3-index/index.json",
+                        new List<string>(),
+                        "API_KEY",
+                        searchBaseUrl: null,
+                        semVer2Enabled: false,
+                        searchInstanceCount: 2);
+                case Mode.Prod:
+                    return new TestSettings(
+                        "https://www.nuget.org",
+                        "https://api.nuget.org/v3/index.json",
+                        new List<string>(),
+                        "API_KEY",
+                        searchBaseUrl: null,
+                        semVer2Enabled: false,
+                        searchInstanceCount: 5);
+                default:
+                    return new TestSettings(
+                        EnvironmentSettings.GalleryBaseUrl,
+                        EnvironmentSettings.V3IndexUrl,
+                        EnvironmentSettings.TrustedHttpsCertificates,
+                        EnvironmentSettings.ApiKey,
+                        EnvironmentSettings.SearchBaseUrl,
+                        EnvironmentSettings.SemVer2Enabled,
+                        EnvironmentSettings.SearchInstanceCount);
+            }
         }
     }
 }

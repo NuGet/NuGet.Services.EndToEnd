@@ -23,35 +23,20 @@ namespace NuGet.Services.EndToEnd
         }
 
         /// <summary>
-        /// Push a SemVer 1.0.0 package to the gallery and wait for it to be available in V3.
+        /// Push a package to the gallery and wait for it to be available in V3.
         /// </summary>
-        [Fact]
-        public async Task NewlyPushedSemVer1PackageIsAvailableInV3()
+        [Theory]
+        [InlineData(PackageType.SemVer1Stable, false)]
+        [SemVer2InlineData(PackageType.SemVer2Prerelease, true)]
+        public async Task NewlyPushedIsAvailableInV3(PackageType packageType, bool semVer2)
         {
             // Arrange
-            var package = await _pushedPackages.PushAsync(PackageType.SemVer1Stable, _logger);
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
             // Act & Assert
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.Version, _logger);
 
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, semVer2: false, logger: _logger);
-
-            await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
-        }
-
-        /// <summary>
-        /// Push a SemVer 2.0.0 package to the gallery and wait for it to be available in V3.
-        /// </summary>
-        [SemVer2Fact]
-        public async Task NewlyPushedSemVer2PackageIsAvailableInV3()
-        {
-            // Arrange
-            var package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
-
-            // Act & Assert
-            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.Version, _logger);
-
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, semVer2: true, logger: _logger);
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, semVer2, logger: _logger);
 
             await _clients.V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
         }
@@ -60,7 +45,7 @@ namespace NuGet.Services.EndToEnd
         public async Task NewSemVer2PackageIsFiltered()
         {
             // Arrange
-            var package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
+            var package = await _pushedPackages.PrepareAsync(PackageType.SemVer2Prerelease, _logger);
             var searchBaseAddresses = await _clients.V3Search.GetSearchBaseUrlsAsync();
 
             // Wait for package to become available
