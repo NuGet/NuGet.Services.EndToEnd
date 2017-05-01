@@ -31,7 +31,7 @@ namespace NuGet.Services.EndToEnd
         public async Task NewlyPushedIsAvailableInV3(PackageType packageType, bool semVer2)
         {
             // Arrange
-            var package = await _pushedPackages.PushAsync(packageType, _logger);
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
             // Act & Assert
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.Version, _logger);
@@ -45,7 +45,7 @@ namespace NuGet.Services.EndToEnd
         public async Task NewSemVer2PackageIsFiltered()
         {
             // Arrange
-            var package = await _pushedPackages.PushAsync(PackageType.SemVer2Prerelease, _logger);
+            var package = await _pushedPackages.PrepareAsync(PackageType.SemVer2Prerelease, _logger);
             var searchBaseAddresses = await _clients.V3Search.GetSearchBaseUrlsAsync();
 
             // Wait for package to become available

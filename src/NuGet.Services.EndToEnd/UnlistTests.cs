@@ -32,7 +32,7 @@ namespace NuGet.Services.EndToEnd
         public async Task PackageInitiallyShowsAsListedInRegistration(PackageType packageType, bool semVer2)
         {
             // Arrange
-            var package = await _pushedPackages.PushAsync(packageType, _logger);
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
             // Act & Assert
             await _clients.Registration.WaitForListedStateAsync(
@@ -52,8 +52,7 @@ namespace NuGet.Services.EndToEnd
         public async Task UnlistedPackageShowsAsUnlistedInRegistration(PackageType packageType, bool semVer2)
         {
             // Arrange
-            var package = await _pushedPackages.PushAsync(packageType, _logger);
-            await _clients.Gallery.UnlistAsync(package.Id, package.Version);
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
             // Act & Assert
             await _clients.Registration.WaitForListedStateAsync(
@@ -73,8 +72,7 @@ namespace NuGet.Services.EndToEnd
         public async Task UnlistedPackageIsHiddenFromSearch(PackageType packageType)
         {
             // Arrange
-            var package = await _pushedPackages.PushAsync(packageType, _logger);
-            await _clients.Gallery.UnlistAsync(package.Id, package.Version);
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
             await _clients.V3Search.WaitForListedStateAsync(package.Id, package.Version, listed: false, logger: _logger);
 

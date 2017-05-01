@@ -40,7 +40,7 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task ProducesExpectedPackage(PackageType packageType, string idPrefix, string version)
         {
             // Act
-            var package = await _fixture.PushAsync(packageType, _logger.Object);
+            var package = await _fixture.PrepareAsync(packageType, _logger.Object);
 
             // Assert
             Assert.StartsWith(idPrefix, package.Id);
@@ -51,7 +51,7 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task PushesAllPackagesOnFirstPush()
         {
             // Act
-            await _fixture.PushAsync(PackageType.SemVer1Stable, _logger.Object);
+            await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger.Object);
 
             // Assert
             _galleryClient.Verify(
@@ -63,9 +63,9 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task CachesPushedPackage()
         {
             // Act
-            var packageA = await _fixture.PushAsync(PackageType.SemVer1Stable, _logger.Object);
+            var packageA = await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger.Object);
             _galleryClient.Reset();
-            var packageB = await _fixture.PushAsync(PackageType.SemVer1Stable, _logger.Object);
+            var packageB = await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger.Object);
 
             // Assert
             Assert.Same(packageA, packageB);
@@ -78,11 +78,11 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task CanPushUnnamedPackageType()
         {
             // Arrange
-            await _fixture.PushAsync(PackageType.SemVer1Stable, _logger.Object);
+            await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger.Object);
             _galleryClient.Reset();
 
             // Act
-            var package = await _fixture.PushAsync((PackageType) 999, _logger.Object);
+            var package = await _fixture.PrepareAsync((PackageType) 999, _logger.Object);
 
             // Assert
             Assert.NotNull(package);
