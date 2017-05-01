@@ -37,11 +37,21 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
+        public async Task RelistAsync(string id, string version)
+        {
+            await SendToPackageAsync(HttpMethod.Post, id, version);
+        }
+
         public async Task UnlistAsync(string id, string version)
+        {
+            await SendToPackageAsync(HttpMethod.Delete, id, version);
+        }
+
+        private async Task SendToPackageAsync(HttpMethod method, string id, string version)
         {
             var url = $"{_testSettings.GalleryBaseUrl}/api/v2/package/{id}/{version}";
             using (var httpClient = new HttpClient())
-            using (var request = new HttpRequestMessage(HttpMethod.Delete, url))
+            using (var request = new HttpRequestMessage(method, url))
             {
                 request.Headers.Add(ApiKeyHeader, _testSettings.ApiKey);
 

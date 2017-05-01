@@ -17,14 +17,14 @@ namespace NuGet.Services.EndToEnd.Support
         {
             Gallery = gallery;
             V3Index = v3Index;
-            V3Search = v3Search;
+            V2V3Search = v3Search;
             FlatContainer = flatContainer;
             Registration = registration;
         }
 
         public IGalleryClient Gallery { get; }
         public V3IndexClient V3Index { get; }
-        public V2V3SearchClient V3Search { get; }
+        public V2V3SearchClient V2V3Search { get; }
         public FlatContainerClient FlatContainer { get; }
         public RegistrationClient Registration { get; }
 

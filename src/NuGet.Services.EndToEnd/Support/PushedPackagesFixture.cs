@@ -186,10 +186,6 @@ namespace NuGet.Services.EndToEnd.Support
         {
             switch (packageType)
             {
-                case PackageType.SemVer1Unlisted:
-                    return new PackageToPrepare(
-                        Package.Create(packageType.ToString(), "1.0.0"),
-                        unlist: true);
                 case PackageType.SemVer2Unlisted:
                     return new PackageToPrepare(
                         Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
@@ -198,6 +194,14 @@ namespace NuGet.Services.EndToEnd.Support
                     return new PackageToPrepare(
                         Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
                         unlist: false);
+                case PackageType.SemVer2Relisted:
+                    return new PackageToPrepare(
+                        Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
+                        unlist: true);
+                case PackageType.SemVer1Unlisted:
+                    return new PackageToPrepare(
+                        Package.Create(packageType.ToString(), "1.0.0"),
+                        unlist: true);
                 case PackageType.SemVer1Stable:
                 default:
                     return new PackageToPrepare(
