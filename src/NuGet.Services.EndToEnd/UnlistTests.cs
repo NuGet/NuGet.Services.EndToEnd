@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Services.EndToEnd.Support;
 using Xunit;
@@ -34,7 +35,6 @@ namespace NuGet.Services.EndToEnd
             var package = await _pushedPackages.PushAsync(packageType, _logger);
 
             await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, semVer2, logger: _logger);
-
             await _clients.Gallery.UnlistAsync(package.Id, package.Version);
 
             // Act & Assert
@@ -58,7 +58,6 @@ namespace NuGet.Services.EndToEnd
             var package = await _pushedPackages.PushAsync(packageType, _logger);
             
             await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, semVer2, logger: _logger);
-
             await _clients.Gallery.UnlistAsync(package.Id, package.Version);
 
             // Act & Assert
@@ -68,6 +67,37 @@ namespace NuGet.Services.EndToEnd
                 semVer2,
                 listed: false,
                 logger: _logger);
+        }
+
+        /// <summary>
+        /// An unlisted package should not appear in search results.
+        /// </summary>
+        [Theory]
+        [InlineData(PackageType.SemVer1Unlisted, false)]
+        [SemVer2InlineData(PackageType.SemVer2Unlisted, true)]
+        public async Task UnlistedPackageIsHiddenFromSearch(PackageType packageType, bool semVer2)
+        {
+            // Arrange
+            var package = await _pushedPackages.PushAsync(packageType, _logger);
+
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, semVer2, logger: _logger);
+            await _clients.Gallery.UnlistAsync(package.Id, package.Version);
+            var searchBaseUrls = await _clients.V3Search.GetSearchBaseUrlsAsync();
+
+            foreach (var searchBaseUrl in searchBaseUrls)
+            {
+                // Act
+                var results = await _clients.V3Search.QueryAsync(
+                    searchBaseUrl,
+                    $"q=packageid:{package.Id}",
+                    _logger);
+
+                // Assert
+                var versionCount = results
+                    .Data
+                    .Sum(x => x.Versions.Count());
+                Assert.Equal(0, versionCount);
+            }
         }
     }
 }
