@@ -12,6 +12,8 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class GalleryClient : IGalleryClient
     {
+        private const string ApiKeyHeader = "X-NuGet-ApiKey";
+
         private readonly TestSettings _testSettings;
 
         public GalleryClient(TestSettings testSettings)
@@ -25,7 +27,7 @@ namespace NuGet.Services.EndToEnd.Support
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Put, url))
             {
-                request.Headers.Add("X-NuGet-ApiKey", _testSettings.ApiKey);
+                request.Headers.Add(ApiKeyHeader, _testSettings.ApiKey);
                 request.Content = new StreamContent(nupkgStream);
 
                 using (var response = await httpClient.SendAsync(request))
@@ -41,7 +43,7 @@ namespace NuGet.Services.EndToEnd.Support
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Delete, url))
             {
-                request.Headers.Add("X-NuGet-ApiKey", _testSettings.ApiKey);
+                request.Headers.Add(ApiKeyHeader, _testSettings.ApiKey);
 
                 using (var response = await httpClient.SendAsync(request))
                 {
