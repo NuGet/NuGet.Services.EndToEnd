@@ -34,9 +34,6 @@ namespace NuGet.Services.EndToEnd
             // Arrange
             var package = await _pushedPackages.PushAsync(packageType, _logger);
 
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, semVer2, logger: _logger);
-            await _clients.Gallery.UnlistAsync(package.Id, package.Version);
-
             // Act & Assert
             await _clients.Registration.WaitForListedStateAsync(
                 package.Id,
@@ -56,8 +53,6 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PushAsync(packageType, _logger);
-            
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, semVer2, logger: _logger);
             await _clients.Gallery.UnlistAsync(package.Id, package.Version);
 
             // Act & Assert
@@ -73,15 +68,16 @@ namespace NuGet.Services.EndToEnd
         /// An unlisted package should not appear in search results.
         /// </summary>
         [Theory]
-        [InlineData(PackageType.SemVer1Unlisted, false)]
-        [SemVer2InlineData(PackageType.SemVer2Unlisted, true)]
-        public async Task UnlistedPackageIsHiddenFromSearch(PackageType packageType, bool semVer2)
+        [InlineData(PackageType.SemVer1Unlisted)]
+        [SemVer2InlineData(PackageType.SemVer2Unlisted)]
+        public async Task UnlistedPackageIsHiddenFromSearch(PackageType packageType)
         {
             // Arrange
             var package = await _pushedPackages.PushAsync(packageType, _logger);
-
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, semVer2, logger: _logger);
             await _clients.Gallery.UnlistAsync(package.Id, package.Version);
+
+            await _clients.V3Search.WaitForListedStateAsync(package.Id, package.Version, listed: false, logger: _logger);
+
             var searchBaseUrls = await _clients.V3Search.GetSearchBaseUrlsAsync();
 
             foreach (var searchBaseUrl in searchBaseUrls)
@@ -89,7 +85,7 @@ namespace NuGet.Services.EndToEnd
                 // Act
                 var results = await _clients.V3Search.QueryAsync(
                     searchBaseUrl,
-                    $"q=packageid:{package.Id}",
+                    $"q=packageid:{package.Id}&prerelease=true&semVerLevel=2.0.0",
                     _logger);
 
                 // Assert

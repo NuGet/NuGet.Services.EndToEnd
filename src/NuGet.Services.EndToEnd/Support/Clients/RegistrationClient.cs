@@ -137,7 +137,7 @@ namespace NuGet.Services.EndToEnd.Support
             var url = $"{baseUrl}/{id.ToLowerInvariant()}/index.json";
 
             var duration = Stopwatch.StartNew();
-            var success = false;
+            var complete = false;
             do
             {
                 // Note that this serialization currently does not support reading indexes that are broken up into
@@ -147,17 +147,17 @@ namespace NuGet.Services.EndToEnd.Support
                 var response = await _httpClient.GetJsonAsync<RegistrationIndexResponse>(url, allowNotFound: true, logger: null);
                 if (response != null)
                 {
-                    success = isComplete(response);
+                    complete = isComplete(response);
                 }
 
-                if (!success && duration.Elapsed + TestData.V3SleepDuration < TestData.V3WaitDuration)
+                if (!complete && duration.Elapsed + TestData.V3SleepDuration < TestData.V3WaitDuration)
                 {
                     await Task.Delay(TestData.V3SleepDuration);
                 }
             }
-            while (!success && duration.Elapsed < TestData.V3WaitDuration);
+            while (!complete && duration.Elapsed < TestData.V3WaitDuration);
 
-            Assert.True(success, string.Format(failureMessageFormat, baseUrl, duration.Elapsed));
+            Assert.True(complete, string.Format(failureMessageFormat, baseUrl, duration.Elapsed));
             logger.WriteLine(string.Format(successMessageFormat, baseUrl, duration.Elapsed));
         }
 
