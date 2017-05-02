@@ -72,16 +72,17 @@ namespace NuGet.Services.EndToEnd
         public async Task UnlistedPackageIsHiddenFromSearch(PackageType packageType)
         {
             // Arrange
+            var listed = false;
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
-            await _clients.V3Search.WaitForListedStateAsync(package.Id, package.Version, listed: false, logger: _logger);
+            await _clients.V2V3Search.WaitForListedStateAsync(package.Id, package.Version, listed, _logger);
 
-            var searchBaseUrls = await _clients.V3Search.GetSearchBaseUrlsAsync();
+            var searchBaseUrls = await _clients.V2V3Search.GetSearchBaseUrlsAsync();
 
             foreach (var searchBaseUrl in searchBaseUrls)
             {
                 // Act
-                var results = await _clients.V3Search.QueryAsync(
+                var results = await _clients.V2V3Search.QueryAsync(
                     searchBaseUrl,
                     $"q=packageid:{package.Id}&prerelease=true&semVerLevel=2.0.0",
                     _logger);

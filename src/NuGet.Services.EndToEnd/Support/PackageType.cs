@@ -13,5 +13,6 @@ namespace NuGet.Services.EndToEnd.Support
         SemVer2Prerelease,
         SemVer1Unlisted,
         SemVer2Unlisted,
+        SemVer2Relisted,
     }
 }

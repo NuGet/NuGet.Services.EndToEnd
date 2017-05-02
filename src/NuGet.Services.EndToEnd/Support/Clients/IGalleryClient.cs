@@ -10,5 +10,6 @@ namespace NuGet.Services.EndToEnd.Support
     {
         Task PushAsync(Stream nupkgStream);
         Task UnlistAsync(string id, string version);
+        Task RelistAsync(string id, string version);
     }
 }
