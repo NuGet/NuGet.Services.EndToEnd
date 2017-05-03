@@ -27,29 +27,30 @@ namespace NuGet.Services.EndToEnd
         /// </summary>
         [Theory]
         [InlineData(PackageType.SemVer1Stable, false)]
-        [SemVer2InlineData(PackageType.SemVer2Prerelease, true)]
+        [SemVer2InlineData(PackageType.SemVer2Prerel, true)]
+        [SemVer2InlineData(PackageType.SemVer2StableMetadata, true)]
         public async Task NewlyPushedIsAvailableInV3(PackageType packageType, bool semVer2)
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
             // Act & Assert
-            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.Version, _logger);
-
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.Version, semVer2, logger: _logger);
-
-            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
+            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, logger: _logger);
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
         }
-        
-        [SemVer2Fact]
-        public async Task NewSemVer2PackageIsFiltered()
+
+        [Theory]
+        [SemVer2InlineData(PackageType.SemVer2Prerel)]
+        [SemVer2InlineData(PackageType.SemVer2StableMetadata)]
+        public async Task NewSemVer2PackageIsFiltered(PackageType packageType)
         {
             // Arrange
-            var package = await _pushedPackages.PrepareAsync(PackageType.SemVer2Prerelease, _logger);
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
             var searchBaseAddresses = await _clients.V2V3Search.GetSearchBaseUrlsAsync();
 
             // Wait for package to become available
-            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.Version, _logger);
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
 
             // Act
             foreach (var searchBaseAddress in searchBaseAddresses)

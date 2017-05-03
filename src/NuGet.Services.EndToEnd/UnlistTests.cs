@@ -28,54 +28,46 @@ namespace NuGet.Services.EndToEnd
         /// </summary>
         [Theory]
         [InlineData(PackageType.SemVer1Stable, false)]
-        [SemVer2InlineData(PackageType.SemVer2Prerelease, true)]
+        [SemVer2InlineData(PackageType.SemVer2Prerel, true)]
         public async Task PackageInitiallyShowsAsListedInRegistration(PackageType packageType, bool semVer2)
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
             // Act & Assert
-            await _clients.Registration.WaitForListedStateAsync(
-                package.Id,
-                package.Version,
-                semVer2,
-                listed: true,
-                logger: _logger);
+            await _clients.Registration.WaitForListedStateAsync(package.Id, package.FullVersion, semVer2, listed: true, logger: _logger);
         }
 
         /// <summary>
         /// An unlisted package should have indicate that it is unlisted in the registration blobs.
         /// </summary>
         [Theory]
-        [InlineData(PackageType.SemVer1Unlisted, false)]
-        [SemVer2InlineData(PackageType.SemVer2Unlisted, true)]
+        [InlineData(PackageType.SemVer1StableUnlisted, false)]
+        [SemVer2InlineData(PackageType.SemVer2PrerelUnlisted, true)]
+        [SemVer2InlineData(PackageType.SemVer2StableMetadataUnlisted, true)]
         public async Task UnlistedPackageShowsAsUnlistedInRegistration(PackageType packageType, bool semVer2)
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
             // Act & Assert
-            await _clients.Registration.WaitForListedStateAsync(
-                package.Id,
-                package.Version,
-                semVer2,
-                listed: false,
-                logger: _logger);
+            await _clients.Registration.WaitForListedStateAsync(package.Id, package.FullVersion, semVer2, listed: false, logger: _logger);
         }
 
         /// <summary>
         /// An unlisted package should not appear in search results.
         /// </summary>
         [Theory]
-        [InlineData(PackageType.SemVer1Unlisted)]
-        [SemVer2InlineData(PackageType.SemVer2Unlisted)]
+        [InlineData(PackageType.SemVer1StableUnlisted)]
+        [SemVer2InlineData(PackageType.SemVer2PrerelUnlisted)]
+        [SemVer2InlineData(PackageType.SemVer2StableMetadataUnlisted)]
         public async Task UnlistedPackageIsHiddenFromSearch(PackageType packageType)
         {
             // Arrange
             var listed = false;
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
-            await _clients.V2V3Search.WaitForListedStateAsync(package.Id, package.Version, listed, _logger);
+            await _clients.V2V3Search.WaitForListedStateAsync(package.Id, package.FullVersion, listed, _logger);
 
             var searchBaseUrls = await _clients.V2V3Search.GetSearchBaseUrlsAsync();
 

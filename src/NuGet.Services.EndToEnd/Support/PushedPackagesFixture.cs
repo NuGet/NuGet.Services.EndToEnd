@@ -19,7 +19,7 @@ namespace NuGet.Services.EndToEnd.Support
     {
         private static readonly HashSet<PackageType> SemVer2PackageTypes = new HashSet<PackageType>
         {
-            PackageType.SemVer2Prerelease,
+            PackageType.SemVer2Prerel,
         };
 
         private readonly SemaphoreSlim _pushLock;
@@ -130,7 +130,7 @@ namespace NuGet.Services.EndToEnd.Support
                 if (packageToPrepare.Unlist)
                 {
                     logger.WriteLine($"Package of type {packageType} need to be unlisted. Unlisting {packageToPrepare}.");
-                    await _galleryClient.UnlistAsync(packageToPrepare.Package.Id, packageToPrepare.Package.Version);
+                    await _galleryClient.UnlistAsync(packageToPrepare.Package.Id, packageToPrepare.Package.NormalizedVersion);
                     logger.WriteLine($"Package {packageToPrepare} has been unlisted.");
                 }
             }
@@ -186,19 +186,27 @@ namespace NuGet.Services.EndToEnd.Support
         {
             switch (packageType)
             {
-                case PackageType.SemVer2Unlisted:
+                case PackageType.SemVer2StableMetadataUnlisted:
+                    return new PackageToPrepare(
+                        Package.Create(packageType.ToString(), "1.0.0", "1.0.0+metadata"),
+                        unlist: true);
+                case PackageType.SemVer2StableMetadata:
+                    return new PackageToPrepare(
+                        Package.Create(packageType.ToString(), "1.0.0", "1.0.0+metadata"),
+                        unlist: false);
+                case PackageType.SemVer2PrerelUnlisted:
                     return new PackageToPrepare(
                         Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
                         unlist: true);
-                case PackageType.SemVer2Prerelease:
+                case PackageType.SemVer2Prerel:
                     return new PackageToPrepare(
                         Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
                         unlist: false);
-                case PackageType.SemVer2Relisted:
+                case PackageType.SemVer2PrerelRelisted:
                     return new PackageToPrepare(
                         Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
                         unlist: true);
-                case PackageType.SemVer1Unlisted:
+                case PackageType.SemVer1StableUnlisted:
                     return new PackageToPrepare(
                         Package.Create(packageType.ToString(), "1.0.0"),
                         unlist: true);

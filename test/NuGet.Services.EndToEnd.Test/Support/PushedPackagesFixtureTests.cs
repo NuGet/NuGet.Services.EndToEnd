@@ -35,16 +35,25 @@ namespace NuGet.Services.EndToEnd.Support
         }
 
         [Theory]
-        [InlineData(PackageType.SemVer1Stable, "E2E." + nameof(PackageType.SemVer1Stable) + ".", "1.0.0")]
-        [InlineData(PackageType.SemVer2Prerelease, "E2E." + nameof(PackageType.SemVer2Prerelease) + ".", "1.0.0-alpha.1")]
-        public async Task ProducesExpectedPackage(PackageType packageType, string idPrefix, string version)
+        [InlineData(PackageType.SemVer1Stable, "1.0.0", "1.0.0")]
+        [InlineData(PackageType.SemVer1StableUnlisted, "1.0.0", "1.0.0")]
+        [InlineData(PackageType.SemVer2Prerel, "1.0.0-alpha.1", "1.0.0-alpha.1")]
+        [InlineData(PackageType.SemVer2PrerelRelisted, "1.0.0-alpha.1", "1.0.0-alpha.1")]
+        [InlineData(PackageType.SemVer2PrerelUnlisted, "1.0.0-alpha.1", "1.0.0-alpha.1")]
+        [InlineData(PackageType.SemVer2StableMetadata, "1.0.0", "1.0.0+metadata")]
+        [InlineData(PackageType.SemVer2StableMetadataUnlisted, "1.0.0", "1.0.0+metadata")]
+        public async Task ProducesExpectedPackage(PackageType packageType, string normalizedVersion, string fullVersion)
         {
+            // Arrange
+            var idPrefix = $"E2E.{packageType}.";
+
             // Act
             var package = await _fixture.PrepareAsync(packageType, _logger.Object);
 
             // Assert
             Assert.StartsWith(idPrefix, package.Id);
-            Assert.Equal(version, package.Version);
+            Assert.Equal(normalizedVersion, package.NormalizedVersion);
+            Assert.Equal(fullVersion, package.FullVersion);
         }
 
         [Fact]
@@ -87,7 +96,8 @@ namespace NuGet.Services.EndToEnd.Support
             // Assert
             Assert.NotNull(package);
             Assert.StartsWith("E2E.999.", package.Id);
-            Assert.Equal("1.0.0", package.Version);
+            Assert.Equal("1.0.0", package.NormalizedVersion);
+            Assert.Equal("1.0.0", package.FullVersion);
             _galleryClient.Verify(
                 x => x.PushAsync(It.IsAny<Stream>()),
                 Times.Once);
