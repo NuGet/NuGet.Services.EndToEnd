@@ -1,0 +1,137 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Xunit.Abstractions;
+
+namespace NuGet.Services.EndToEnd.Support
+{
+    public class NuGetExeClient
+    {
+        private const string LatestVersion = "4.3.0-preview1-4044";
+
+        private readonly TestSettings _testSettings;
+        private readonly string _version;
+        private readonly SourceType _sourceType;
+        private readonly string _httpCachePath;
+        private readonly string _globalPackagesPath;
+
+        public NuGetExeClient(TestSettings testSettings) : this(
+            testSettings,
+            LatestVersion,
+            SourceType.V3,
+            httpCachePath: null,
+            globalPackagesPath: null)
+        {
+        }
+
+        private NuGetExeClient(
+            TestSettings testSettings,
+            string version,
+            SourceType sourceType,
+            string httpCachePath,
+            string globalPackagesPath)
+        {
+            _version = version;
+            _testSettings = testSettings;
+            _sourceType = sourceType;
+            _httpCachePath = httpCachePath;
+            _globalPackagesPath = globalPackagesPath;
+        }
+
+        public NuGetExeClient WithHttpCachePath(string httpCachePath)
+        {
+            return new NuGetExeClient(
+                _testSettings,
+                _version,
+                _sourceType,
+                httpCachePath,
+                _globalPackagesPath);
+        }
+
+        public NuGetExeClient WithGlobalPackagesPath(string globalPackagesPath)
+        {
+            return new NuGetExeClient(
+                _testSettings,
+                _version,
+                _sourceType,
+                _httpCachePath,
+                globalPackagesPath);
+        }
+
+        public NuGetExeClient WithVersion(string version)
+        {
+            return new NuGetExeClient(
+                _testSettings,
+                version,
+                _sourceType,
+                _httpCachePath,
+                _globalPackagesPath);
+        }
+
+        public NuGetExeClient WithSourceType(SourceType sourceType)
+        {
+            return new NuGetExeClient(
+                _testSettings,
+                _version,
+                _sourceType,
+                _httpCachePath,
+                _globalPackagesPath);
+        }
+
+        private string Source
+        {
+            get
+            {
+                if (_sourceType == SourceType.V2)
+                {
+                    return $"{_testSettings.GalleryBaseUrl}/api/v2";
+                }
+
+                return _testSettings.V3IndexUrl;
+            }
+        }
+        
+        public async Task<CommandRunnerResult> InstallAsync(string id, string version, string outputDirectory, ITestOutputHelper logger)
+        {
+            var filePath = GetNuGetExePath();
+            var arguments = new List<string>
+            {
+                "install",
+                id,
+                "-Version",
+                version,
+                "-Source",
+                Source,
+                "-OutputDirectory",
+                outputDirectory,
+            };
+            var joinedArguments = string.Join(" ", arguments);
+
+            return await CommandRunner.RunAsync(
+                filePath,
+                outputDirectory,
+                joinedArguments,
+                logger,
+                GetEnvironmentVariables());
+        }
+
+        private Dictionary<string, string> GetEnvironmentVariables()
+        {
+            return new Dictionary<string, string>
+            {
+                { "NUGET_PACKAGES", _globalPackagesPath },
+                { "NUGET_HTTP_CACHE_PATH", _httpCachePath },
+            };
+        }
+
+        private string GetNuGetExePath()
+        {
+            var fileName = $"nuget.{_version}.exe";
+            var filePath = Path.Combine("Support", "NuGetExe", fileName);
+            return filePath;
+        }
+    }
+}

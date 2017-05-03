@@ -41,13 +41,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectivityTests.cs" />
+    <Compile Include="NuGetExeTests.cs" />
     <Compile Include="RelistTests.cs" />
     <Compile Include="SearchResultTests.cs" />
     <Compile Include="Support\Clients\Clients.cs" />
+    <Compile Include="Support\SourceType.cs" />
+    <Compile Include="Support\CommandRunner.cs" />
+    <Compile Include="Support\CommandRunnerResult.cs" />
     <Compile Include="Support\Clients\FlatContainerClient.cs" />
     <Compile Include="Support\Clients\IGalleryClient.cs" />
+    <Compile Include="Support\Clients\NuGetExeClient.cs" />
     <Compile Include="Support\Clients\RegistrationClient.cs" />
     <Compile Include="Support\Clients\SimpleHttpClient.cs" />
+    <Compile Include="Support\PackageDirectory.cs" />
     <Compile Include="Support\PackageType.cs" />
     <Compile Include="Support\PushedPackagesCollection.cs" />
     <Compile Include="Support\PushedPackagesFixture.cs" />
@@ -60,6 +66,7 @@
     <Compile Include="Support\Clients\V2V3SearchClient.cs" />
     <Compile Include="Support\SemVer2FactAttribute.cs" />
     <Compile Include="Support\SemVer2InlineDataAttribute.cs" />
+    <Compile Include="Support\SemVer2TheoryAttribute.cs" />
     <Compile Include="Support\TestSettings.cs" />
     <Compile Include="Support\TrustedHttpsCertificatesFixture.cs" />
     <Compile Include="Support\TestData.cs" />
@@ -72,6 +79,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Support\NuGetExe\nuget.4.1.0.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Support\NuGetExe\nuget.4.3.0-preview1-4044.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

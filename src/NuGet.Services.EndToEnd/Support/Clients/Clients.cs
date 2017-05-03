@@ -11,15 +11,17 @@ namespace NuGet.Services.EndToEnd.Support
         public Clients(
             IGalleryClient gallery,
             V3IndexClient v3Index,
-            V2V3SearchClient v3Search,
+            V2V3SearchClient v2v3Search,
             FlatContainerClient flatContainer,
-            RegistrationClient registration)
+            RegistrationClient registration,
+            NuGetExeClient nuGetExe)
         {
             Gallery = gallery;
             V3Index = v3Index;
-            V2V3Search = v3Search;
+            V2V3Search = v2v3Search;
             FlatContainer = flatContainer;
             Registration = registration;
+            NuGetExe = nuGetExe;
         }
 
         public IGalleryClient Gallery { get; }
@@ -27,6 +29,7 @@ namespace NuGet.Services.EndToEnd.Support
         public V2V3SearchClient V2V3Search { get; }
         public FlatContainerClient FlatContainer { get; }
         public RegistrationClient Registration { get; }
+        public NuGetExeClient NuGetExe { get; }
 
         /// <summary>
         /// In lieu of proper dependency injection, initialize dependencies manually.
@@ -37,11 +40,18 @@ namespace NuGet.Services.EndToEnd.Support
             var httpClient = new SimpleHttpClient();
             var gallery = new GalleryClient(testSettings);
             var v3Index = new V3IndexClient(httpClient, testSettings);
-            var v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings);
+            var v2v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings);
             var flatContainer = new FlatContainerClient(httpClient, v3Index);
             var registration = new RegistrationClient(httpClient, v3Index);
+            var nuGetExe = new NuGetExeClient(testSettings);
 
-            return new Clients(gallery, v3Index, v3Search, flatContainer, registration);
+            return new Clients(
+                gallery,
+                v3Index,
+                v2v3Search,
+                flatContainer,
+                registration,
+                nuGetExe);
         }
     }
 }

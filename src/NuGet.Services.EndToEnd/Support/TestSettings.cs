@@ -22,7 +22,14 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         public static Mode CurrentMode => Mode.EnvironmentVariables;
 
+        /// <summary>
+        /// Manually override this value to easily enable aggressive pushing. This means each test will push its own
+        /// packages. This is helpful when debugging a single test.
+        /// </summary>
+        public static bool DefaultAggressivePush => true;
+
         public TestSettings(
+            bool aggressivePush,
             string galleryBaseUrl,
             string v3IndexUrl,
             IReadOnlyList<string> trustedHttpsCertificates,
@@ -36,6 +43,7 @@ namespace NuGet.Services.EndToEnd.Support
             TrustedHttpsCertificates = trustedHttpsCertificates ?? throw new ArgumentNullException(nameof(trustedHttpsCertificates));
             ApiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
 
+            AggressivePush = aggressivePush;
             SearchBaseUrl = searchBaseUrl;
             SemVer2Enabled = semVer2Enabled;
             SearchInstanceCount = searchInstanceCount;
@@ -48,6 +56,7 @@ namespace NuGet.Services.EndToEnd.Support
         public string ApiKey { get; }
         public bool SemVer2Enabled { get; }
         public int SearchInstanceCount { get; }
+        public bool AggressivePush { get; }
 
         public static TestSettings Create()
         {
@@ -60,6 +69,7 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 case Mode.Dev:
                     return new TestSettings(
+                        DefaultAggressivePush,
                         "https://dev.nugettest.org",
                         "http://api.dev.nugettest.org/v3-index/index.json",
                         new List<string>(),
@@ -69,6 +79,7 @@ namespace NuGet.Services.EndToEnd.Support
                         searchInstanceCount: 2);
                 case Mode.Int:
                     return new TestSettings(
+                        DefaultAggressivePush,
                         "https://int.nugettest.org",
                         "http://api.int.nugettest.org/v3-index/index.json",
                         new List<string>(),
@@ -78,6 +89,7 @@ namespace NuGet.Services.EndToEnd.Support
                         searchInstanceCount: 2);
                 case Mode.Prod:
                     return new TestSettings(
+                        DefaultAggressivePush,
                         "https://www.nuget.org",
                         "https://api.nuget.org/v3/index.json",
                         new List<string>(),
@@ -87,6 +99,7 @@ namespace NuGet.Services.EndToEnd.Support
                         searchInstanceCount: 5);
                 default:
                     return new TestSettings(
+                        DefaultAggressivePush,
                         EnvironmentSettings.GalleryBaseUrl,
                         EnvironmentSettings.V3IndexUrl,
                         EnvironmentSettings.TrustedHttpsCertificates,
