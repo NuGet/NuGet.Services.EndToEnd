@@ -24,6 +24,10 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 TargetPath = "tools/empty.txt"
             });
+            packageBuilder.Files.Add(new PhysicalPackageFile(new MemoryStream())
+            {
+                TargetPath = "lib/net45/_._"
+            });
 
             var memoryStream = new MemoryStream();
             packageBuilder.Save(memoryStream);

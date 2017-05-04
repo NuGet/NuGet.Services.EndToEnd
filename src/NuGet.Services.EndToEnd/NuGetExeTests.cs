@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Services.EndToEnd.Support;
 using Xunit;
 using Xunit.Abstractions;
@@ -41,15 +42,29 @@ namespace NuGet.Services.EndToEnd
 
         [SemVer2Theory]
         [MemberData(nameof(PackageTypeAndSourceTypes))]
+        public async Task LatestNuGetExeCanRestorePackage(PackageType packageType, bool semVer2, SourceType sourceType)
+        {
+            // Arrange
+            var nuGetExe = PrepareNuGetExe(sourceType);
+            var package = await PreparePackageAsync(packageType, semVer2);
+            var projectPath = WriteProjectWithDependency(package.Id, package.NormalizedVersion);
+            var projectDirectory = Path.GetDirectoryName(projectPath);
+
+            // Act
+            var result = await nuGetExe.RestoreAsync(projectPath, _logger);
+
+            // Assert
+            VerifyRestored(projectDirectory, package.Id, package.NormalizedVersion);
+            Assert.Equal(0, result.ExitCode);
+        }
+
+        [SemVer2Theory]
+        [MemberData(nameof(PackageTypeAndSourceTypes))]
         public async Task LatestNuGetExeCanInstallPackage(PackageType packageType, bool semVer2, SourceType sourceType)
         {
             // Arrange
-            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
             var nuGetExe = PrepareNuGetExe(sourceType);
-
-            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, _logger);
-            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
+            var package = await PreparePackageAsync(packageType, semVer2);
 
             // Act
             var result = await nuGetExe.InstallAsync(
@@ -59,6 +74,101 @@ namespace NuGet.Services.EndToEnd
                 _logger);
 
             // Assert
+            VerifyInstalled(package);
+            Assert.Equal(0, result.ExitCode);
+        }
+
+        [SemVer2Theory]
+        [MemberData(nameof(PackageTypeAndSourceTypes))]
+        public async Task LatestNuGetExeCanInstallLatestPackage(PackageType packageType, bool semVer2, SourceType sourceType)
+        {
+            // Arrange
+            var nuGetExe = PrepareNuGetExe(sourceType);
+            var prerelease = true;
+            var package = await PreparePackageAsync(packageType, semVer2);
+
+            // Act
+            var result = await nuGetExe.InstallLatestAsync(
+                package.Id,
+                prerelease,
+                _outputDirectory,
+                _logger);
+
+            // Assert
+            VerifyInstalled(package);
+            Assert.Equal(0, result.ExitCode);
+        }
+
+        [SemVer2Theory]
+        [MemberData(nameof(SemVer2PackageTypes))]
+        public async Task Pre430NuGetExeCannotInstallLatestSemVer2Packages(PackageType packageType, SourceType sourceType)
+        {
+            // Arrange
+            var nuGetExe = PrepareNuGetExe(sourceType, "4.1.0");
+            var prerelease = true;
+            var package = await PreparePackageAsync(packageType, semVer2: true);
+
+            // Act
+            var result = await nuGetExe.InstallLatestAsync(
+                package.Id,
+                prerelease,
+                _outputDirectory,
+                _logger);
+
+            // Assert
+            VerifyNotInstalled(package);
+            Assert.NotEqual(0, result.ExitCode);
+        }
+
+        private string WriteProjectWithDependency(string id, string version)
+        {
+            var path = Path.Combine(
+                _testDirectory,
+                "project",
+                "TestProject.csproj");
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            File.WriteAllText(
+                path,
+                $@"
+<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>net463</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include=""{id}"" Version=""{version}"" />
+  </ItemGroup>
+</Project>
+");
+
+            return path;
+        }
+
+        private async Task<Package> PreparePackageAsync(PackageType packageType, bool semVer2)
+        {
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+
+            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, _logger);
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
+
+            return package;
+        }
+
+        private void VerifyNotInstalled(Package package)
+        {
+            var expectedPath = Path.Combine(
+                _outputDirectory,
+                $"{package.Id}.{package.NormalizedVersion}",
+                $"{package.Id}.{package.NormalizedVersion}.nupkg");
+            Assert.False(
+                File.Exists(expectedPath),
+                $"The package installation should not have occurred but a package was found at path {expectedPath}.");
+        }
+
+        private void VerifyInstalled(Package package)
+        {
             var expectedPath = Path.Combine(
                 _outputDirectory,
                 $"{package.Id}.{package.NormalizedVersion}",
@@ -70,38 +180,25 @@ namespace NuGet.Services.EndToEnd
             var bytes = File.ReadAllBytes(expectedPath);
             Assert.Equal(package.NupkgBytes.Count, bytes.Length);
             Assert.Equal(package.NupkgBytes, bytes);
-            Assert.Equal(0, result.ExitCode);
         }
 
-        [SemVer2Theory]
-        [MemberData(nameof(SemVer2PackageTypes))]
-        public async Task Pre430NuGetExeCannotInstallSemVer2Packages(PackageType packageType, SourceType sourceType)
+        private void VerifyRestored(string projectDirectory, string id, string version)
         {
-            // Arrange
-            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
-            var nuGetExe = PrepareNuGetExe(sourceType, "4.1.0");
+            var assetsFilePath = Path.Combine(
+                projectDirectory,
+                "obj",
+                "project.assets.json");
+            Assert.True(
+                File.Exists(assetsFilePath),
+                $"There should be an assets file (restore output) at path {assetsFilePath}.");
 
-            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: true, logger: _logger);
-            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
-
-            // Act
-            var result = await nuGetExe.InstallAsync(
-                package.Id,
-                package.NormalizedVersion,
-                _outputDirectory,
-                _logger);
-
-            // Assert
-            var expectedPath = Path.Combine(
-                _outputDirectory,
-                $"{package.Id}.{package.NormalizedVersion}",
-                $"{package.Id}.{package.NormalizedVersion}.nupkg");
-            Assert.False(
-                File.Exists(expectedPath),
-                $"The package installation should not have occurred but a package was found at path {expectedPath}.");
-
-            Assert.NotEqual(0, result.ExitCode);
+            var assetsJson = JObject.Parse(File.ReadAllText(assetsFilePath));
+            var libraries = assetsJson["libraries"].Value<JObject>();
+            var libraryIdentities = libraries
+                .Properties()
+                .Select(p => p.Name)
+                .ToList();
+            Assert.Contains($"{id}/{version}", libraryIdentities, StringComparer.OrdinalIgnoreCase);
         }
 
         private NuGetExeClient PrepareNuGetExe(SourceType sourceType)

@@ -99,10 +99,44 @@ namespace NuGet.Services.EndToEnd.Support
                 return _testSettings.V3IndexUrl;
             }
         }
-        
+
+        public async Task<CommandRunnerResult> RestoreAsync(string projectPath, ITestOutputHelper logger)
+        {
+            var arguments = new List<string>
+            {
+                "restore",
+                projectPath,
+                "-Source",
+                Source,
+            };
+
+            var projectDirectory = Path.GetDirectoryName(projectPath);
+
+            return await RunAsync(projectDirectory, arguments, logger);
+        }
+
+        public async Task<CommandRunnerResult> InstallLatestAsync(string id, bool prerelease, string outputDirectory, ITestOutputHelper logger)
+        {
+            var arguments = new List<string>
+            {
+                "install",
+                id,
+                "-Source",
+                Source,
+                "-OutputDirectory",
+                outputDirectory,
+            };
+
+            if (prerelease)
+            {
+                arguments.Add("-Prerelease");
+            }
+
+            return await RunAsync(outputDirectory, arguments, logger);
+        }
+
         public async Task<CommandRunnerResult> InstallAsync(string id, string version, string outputDirectory, ITestOutputHelper logger)
         {
-            var filePath = GetNuGetExePath();
             var arguments = new List<string>
             {
                 "install",
@@ -114,30 +148,29 @@ namespace NuGet.Services.EndToEnd.Support
                 "-OutputDirectory",
                 outputDirectory,
             };
-            var joinedArguments = string.Join(" ", arguments);
 
-            return await CommandRunner.RunAsync(
-                filePath,
-                outputDirectory,
-                joinedArguments,
-                logger,
-                GetEnvironmentVariables());
+            return await RunAsync(outputDirectory, arguments, logger);
         }
 
-        private Dictionary<string, string> GetEnvironmentVariables()
+        private async Task<CommandRunnerResult> RunAsync(string workingDirectory, List<string> arguments, ITestOutputHelper logger)
         {
-            return new Dictionary<string, string>
+            var fileName = $"nuget.{_version}.exe";
+            var filePath = Path.Combine("Support", "NuGetExe", fileName);
+
+            var joinedArguments = string.Join(" ", arguments);
+
+            var environmentVariables = new Dictionary<string, string>
             {
                 { "NUGET_PACKAGES", _globalPackagesPath },
                 { "NUGET_HTTP_CACHE_PATH", _httpCachePath },
             };
-        }
 
-        private string GetNuGetExePath()
-        {
-            var fileName = $"nuget.{_version}.exe";
-            var filePath = Path.Combine("Support", "NuGetExe", fileName);
-            return filePath;
+            return await CommandRunner.RunAsync(
+                filePath,
+                workingDirectory,
+                joinedArguments,
+                logger,
+                environmentVariables);
         }
     }
 }
