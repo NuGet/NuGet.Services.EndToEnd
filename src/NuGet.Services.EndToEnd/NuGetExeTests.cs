@@ -16,17 +16,27 @@ namespace NuGet.Services.EndToEnd
     /// Tests that integrate with nuget.exe, since this exercises our primary client code.
     /// </summary>
     [Collection(nameof(PushedPackagesCollection))]
-    public class NuGetExeTests : IClassFixture<TrustedHttpsCertificatesFixture>
+    public class NuGetExeTests : IClassFixture<TrustedHttpsCertificatesFixture>, IDisposable
     {
         private readonly PushedPackagesFixture _pushedPackages;
         private readonly Clients _clients;
         private readonly ITestOutputHelper _logger;
+        private readonly TestDirectory _testDirectory;
+        private readonly string _outputDirectory;
 
         public NuGetExeTests(PushedPackagesFixture pushedPackages, ITestOutputHelper logger)
         {
             _pushedPackages = pushedPackages;
             _clients = Clients.Initialize();
             _logger = logger;
+            _testDirectory = TestDirectory.Create();
+            _outputDirectory = Path.Combine(_testDirectory, "output");
+            Directory.CreateDirectory(_outputDirectory);
+        }
+
+        public void Dispose()
+        {
+            _testDirectory.Dispose();
         }
 
         [SemVer2Theory]
@@ -34,39 +44,33 @@ namespace NuGet.Services.EndToEnd
         public async Task LatestNuGetExeCanInstallPackage(PackageType packageType, bool semVer2, SourceType sourceType)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var outputDirectory = Path.Combine(testDirectory, "output");
-                Directory.CreateDirectory(outputDirectory);
-                var package = await _pushedPackages.PrepareAsync(packageType, _logger);
-                var nuGetExe = PrepareNuGetExe(testDirectory)
-                    .WithSourceType(sourceType);
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+            var nuGetExe = PrepareNuGetExe(sourceType);
 
-                await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
-                await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, _logger);
-                await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
+            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, _logger);
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
 
-                // Act
-                var result = await nuGetExe.InstallAsync(
-                    package.Id,
-                    package.NormalizedVersion,
-                    outputDirectory,
-                    _logger);
+            // Act
+            var result = await nuGetExe.InstallAsync(
+                package.Id,
+                package.NormalizedVersion,
+                _outputDirectory,
+                _logger);
 
-                // Assert
-                var expectedPath = Path.Combine(
-                    outputDirectory,
-                    $"{package.Id}.{package.NormalizedVersion}",
-                    $"{package.Id}.{package.NormalizedVersion}.nupkg");
-                Assert.True(
-                    File.Exists(expectedPath),
-                    $"The installed package was expected to be at path {expectedPath} but was not.");
+            // Assert
+            var expectedPath = Path.Combine(
+                _outputDirectory,
+                $"{package.Id}.{package.NormalizedVersion}",
+                $"{package.Id}.{package.NormalizedVersion}.nupkg");
+            Assert.True(
+                File.Exists(expectedPath),
+                $"The installed package was expected to be at path {expectedPath} but was not.");
 
-                var bytes = File.ReadAllBytes(expectedPath);
-                Assert.Equal(package.NupkgBytes.Count, bytes.Length);
-                Assert.Equal(package.NupkgBytes, bytes);
-                Assert.Equal(0, result.ExitCode);
-            }
+            var bytes = File.ReadAllBytes(expectedPath);
+            Assert.Equal(package.NupkgBytes.Count, bytes.Length);
+            Assert.Equal(package.NupkgBytes, bytes);
+            Assert.Equal(0, result.ExitCode);
         }
 
         [SemVer2Theory]
@@ -74,45 +78,45 @@ namespace NuGet.Services.EndToEnd
         public async Task Pre430NuGetExeCannotInstallSemVer2Packages(PackageType packageType, SourceType sourceType)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var outputDirectory = Path.Combine(testDirectory, "output");
-                Directory.CreateDirectory(outputDirectory);
-                var package = await _pushedPackages.PrepareAsync(packageType, _logger);
-                var nuGetExe = PrepareNuGetExe(testDirectory)
-                    .WithVersion("4.1.0")
-                    .WithSourceType(sourceType);
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+            var nuGetExe = PrepareNuGetExe(sourceType, "4.1.0");
 
-                await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
-                await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: true, logger: _logger);
-                await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
+            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: true, logger: _logger);
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
 
-                // Act
-                var result = await nuGetExe.InstallAsync(
-                    package.Id,
-                    package.NormalizedVersion,
-                    outputDirectory,
-                    _logger);
+            // Act
+            var result = await nuGetExe.InstallAsync(
+                package.Id,
+                package.NormalizedVersion,
+                _outputDirectory,
+                _logger);
 
-                // Assert
-                var expectedPath = Path.Combine(
-                    outputDirectory,
-                    $"{package.Id}.{package.NormalizedVersion}",
-                    $"{package.Id}.{package.NormalizedVersion}.nupkg");
-                Assert.False(
-                    File.Exists(expectedPath),
-                    $"The package installation should not have occurred but a package was found at path {expectedPath}.");
-                
-                Assert.NotEqual(0, result.ExitCode);
-            }
+            // Assert
+            var expectedPath = Path.Combine(
+                _outputDirectory,
+                $"{package.Id}.{package.NormalizedVersion}",
+                $"{package.Id}.{package.NormalizedVersion}.nupkg");
+            Assert.False(
+                File.Exists(expectedPath),
+                $"The package installation should not have occurred but a package was found at path {expectedPath}.");
+
+            Assert.NotEqual(0, result.ExitCode);
         }
 
-        private NuGetExeClient PrepareNuGetExe(TestDirectory testDirectory)
+        private NuGetExeClient PrepareNuGetExe(SourceType sourceType)
+        {
+            return PrepareNuGetExe(sourceType, version: null);
+        }
+
+        private NuGetExeClient PrepareNuGetExe(SourceType sourceType, string version)
         {
             return _clients
                 .NuGetExe
-                .WithGlobalPackagesPath(Path.Combine(testDirectory, "global-packages"))
-                .WithHttpCachePath(Path.Combine(testDirectory, "http-cache"));
+                .WithVersion(version)
+                .WithSourceType(sourceType)
+                .WithGlobalPackagesPath(Path.Combine(_testDirectory, "global-packages"))
+                .WithHttpCachePath(Path.Combine(_testDirectory, "http-cache"));
         }
 
         public static IEnumerable<object[]> SemVer2PackageTypes

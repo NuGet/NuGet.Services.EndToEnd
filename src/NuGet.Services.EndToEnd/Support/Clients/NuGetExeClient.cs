@@ -61,11 +61,17 @@ namespace NuGet.Services.EndToEnd.Support
                 globalPackagesPath);
         }
 
+        /// <summary>
+        /// Return a <see cref="NuGetExeClient"/> that uses the provided client version. If <c>null</c> is provided,
+        /// use the latest version.
+        /// </summary>
+        /// <param name="version">The version of nuget.exe to use.</param>
+        /// <returns>The <see cref="NuGetExeClient"/> with the provided version selected.</returns>
         public NuGetExeClient WithVersion(string version)
         {
             return new NuGetExeClient(
                 _testSettings,
-                version,
+                version ?? LatestVersion,
                 _sourceType,
                 _httpCachePath,
                 _globalPackagesPath);
