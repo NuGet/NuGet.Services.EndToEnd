@@ -32,7 +32,6 @@ namespace NuGet.Services.EndToEnd
             _logger = logger;
             _testDirectory = TestDirectory.Create();
             _outputDirectory = Path.Combine(_testDirectory, "output");
-            Directory.CreateDirectory(_outputDirectory);
         }
 
         public void Dispose()
@@ -41,7 +40,7 @@ namespace NuGet.Services.EndToEnd
         }
 
         [SemVer2Theory]
-        [MemberData(nameof(PackageTypeAndSourceTypes))]
+        [MemberData(nameof(PackageAndSourceTypes))]
         public async Task LatestNuGetExeCanRestorePackage(PackageType packageType, bool semVer2, SourceType sourceType)
         {
             // Arrange
@@ -59,7 +58,7 @@ namespace NuGet.Services.EndToEnd
         }
 
         [SemVer2Theory]
-        [MemberData(nameof(PackageTypeAndSourceTypes))]
+        [MemberData(nameof(PackageAndSourceTypes))]
         public async Task LatestNuGetExeCanInstallPackage(PackageType packageType, bool semVer2, SourceType sourceType)
         {
             // Arrange
@@ -79,7 +78,7 @@ namespace NuGet.Services.EndToEnd
         }
 
         [SemVer2Theory]
-        [MemberData(nameof(PackageTypeAndSourceTypes))]
+        [MemberData(nameof(PackageAndSourceTypes))]
         public async Task LatestNuGetExeCanInstallLatestPackage(PackageType packageType, bool semVer2, SourceType sourceType)
         {
             // Arrange
@@ -134,7 +133,7 @@ namespace NuGet.Services.EndToEnd
                 $@"
 <Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>net463</TargetFramework>
+    <TargetFramework>{TestData.PackageFramework.GetShortFolderName()}</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include=""{id}"" Version=""{version}"" />
@@ -226,7 +225,7 @@ namespace NuGet.Services.EndToEnd
             }
         }
 
-        public static IEnumerable<object[]> PackageTypeAndSourceTypes
+        public static IEnumerable<object[]> PackageAndSourceTypes
         {
             get
             {
@@ -239,16 +238,17 @@ namespace NuGet.Services.EndToEnd
         {
             var packageTypes = new PackageTypeAndSourceType[]
             {
-                    new PackageTypeAndSourceType { PackageType = PackageType.SemVer1Stable, SemVer2 = false },
-                    new PackageTypeAndSourceType { PackageType = PackageType.SemVer2Prerel, SemVer2 = true },
-                    new PackageTypeAndSourceType { PackageType = PackageType.SemVer2StableMetadata, SemVer2 = true },
+                new PackageTypeAndSourceType { PackageType = PackageType.SemVer1Stable, SemVer2 = false },
+                new PackageTypeAndSourceType { PackageType = PackageType.SemVer2Prerel, SemVer2 = true },
+                new PackageTypeAndSourceType { PackageType = PackageType.SemVer2StableMetadata, SemVer2 = true },
+                new PackageTypeAndSourceType { PackageType = PackageType.SemVer2DueToSemVer2Dep, SemVer2 = true },
             };
 
             var sourceTypes = new[]
             {
-                    SourceType.V2,
-                    SourceType.V3,
-                };
+                SourceType.V2,
+                SourceType.V3,
+            };
 
             var rows =
                 from pt in packageTypes

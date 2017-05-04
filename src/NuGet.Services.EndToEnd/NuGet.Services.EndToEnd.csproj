@@ -45,6 +45,7 @@
     <Compile Include="RelistTests.cs" />
     <Compile Include="SearchResultTests.cs" />
     <Compile Include="Support\Clients\Clients.cs" />
+    <Compile Include="Support\PackageCreationContext.cs" />
     <Compile Include="Support\SourceType.cs" />
     <Compile Include="Support\CommandRunner.cs" />
     <Compile Include="Support\CommandRunnerResult.cs" />

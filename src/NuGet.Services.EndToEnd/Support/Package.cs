@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 
@@ -31,25 +32,32 @@ namespace NuGet.Services.EndToEnd.Support
             return $"{Id} {FullVersion}";
         }
 
-        public static Package Create(string label, string normalizedVersion)
+        public static Package Create(string id, string normalizedVersion)
         {
-            return Create(label, normalizedVersion, normalizedVersion);
+            return Create(id, normalizedVersion, normalizedVersion);
         }
 
-        public static Package Create(string label, string normalizedVersion, string fullVersion)
+        public static Package Create(string id, string normalizedVersion, string fullVersion)
         {
-            var timestamp = DateTimeOffset.UtcNow.ToString("yyMMdd.HHmmss.fffffff");
-            var id = $"E2E.{label}.{timestamp}";
+            return Create(new PackageCreationContext
+            {
+                Id = id,
+                NormalizedVersion = normalizedVersion,
+                FullVersion = fullVersion,
+            });
+        }
 
+        public static Package Create(PackageCreationContext context)
+        {
             ReadOnlyCollection<byte> nupkgBytes;
-            using (var nupkgStream = TestData.BuildPackageStream(id, fullVersion))
+            using (var nupkgStream = TestData.BuildPackageStream(context))
             {
                 var bufferStream = new MemoryStream();
                 nupkgStream.CopyTo(bufferStream);
                 nupkgBytes = Array.AsReadOnly(bufferStream.ToArray());
             }
 
-            return new Package(id, normalizedVersion, fullVersion, nupkgBytes);
+            return new Package(context.Id, context.NormalizedVersion, context.FullVersion, nupkgBytes);
         }
     }
 }
