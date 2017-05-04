@@ -11,37 +11,45 @@ namespace NuGet.Services.EndToEnd.Support
     {
         private Package(
             string id,
-            string version,
+            string normalizedVersion,
+            string fullVersion,
             ReadOnlyCollection<byte> nupkgBytes)
         {
             Id = id;
-            Version = version;
+            NormalizedVersion = normalizedVersion;
+            FullVersion = fullVersion;
             NupkgBytes = nupkgBytes;
         }
 
         public string Id { get; }
-        public string Version { get; }
+        public string NormalizedVersion { get; }
+        public string FullVersion { get; }
         public ReadOnlyCollection<byte> NupkgBytes { get; }
 
         public override string ToString()
         {
-            return $"{Id} {Version}";
+            return $"{Id} {FullVersion}";
         }
 
-        public static Package Create(string label, string version)
+        public static Package Create(string label, string normalizedVersion)
+        {
+            return Create(label, normalizedVersion, normalizedVersion);
+        }
+
+        public static Package Create(string label, string normalizedVersion, string fullVersion)
         {
             var timestamp = DateTimeOffset.UtcNow.ToString("yyMMdd.HHmmss.fffffff");
             var id = $"E2E.{label}.{timestamp}";
 
             ReadOnlyCollection<byte> nupkgBytes;
-            using (var nupkgStream = TestData.BuildPackageStream(id, version))
+            using (var nupkgStream = TestData.BuildPackageStream(id, fullVersion))
             {
                 var bufferStream = new MemoryStream();
                 nupkgStream.CopyTo(bufferStream);
                 nupkgBytes = Array.AsReadOnly(bufferStream.ToArray());
             }
 
-            return new Package(id, version, nupkgBytes);
+            return new Package(id, normalizedVersion, fullVersion, nupkgBytes);
         }
     }
 }

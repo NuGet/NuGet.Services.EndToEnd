@@ -23,23 +23,23 @@ namespace NuGet.Services.EndToEnd
         }
 
         [Theory]
-        [SemVer2InlineData(PackageType.SemVer2Relisted, true)]
+        [SemVer2InlineData(PackageType.SemVer2PrerelRelisted, true)]
         public async Task RelistedPackageReappearsInRegistrationAndSearch(PackageType packageType, bool semVer2)
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
             var listed = false;
-            await _clients.Registration.WaitForListedStateAsync(package.Id, package.Version, semVer2, listed, _logger);
-            await _clients.V2V3Search.WaitForListedStateAsync(package.Id, package.Version, listed, _logger);
+            await _clients.Registration.WaitForListedStateAsync(package.Id, package.FullVersion, semVer2, listed, _logger);
+            await _clients.V2V3Search.WaitForListedStateAsync(package.Id, package.FullVersion, listed, _logger);
 
             // Act
-            await _clients.Gallery.RelistAsync(package.Id, package.Version);
+            await _clients.Gallery.RelistAsync(package.Id, package.NormalizedVersion);
 
             // Assert
             listed = true;
-            await _clients.Registration.WaitForListedStateAsync(package.Id, package.Version, semVer2, listed, _logger);
-            await _clients.V2V3Search.WaitForListedStateAsync(package.Id, package.Version, listed, _logger);
+            await _clients.Registration.WaitForListedStateAsync(package.Id, package.FullVersion, semVer2, listed, _logger);
+            await _clients.V2V3Search.WaitForListedStateAsync(package.Id, package.FullVersion, listed, _logger);
         }
     }
 }
