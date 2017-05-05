@@ -213,6 +213,7 @@ namespace NuGet.Services.EndToEnd.Support
                     {
                         Id = id,
                         NormalizedVersion = "1.0.0-beta",
+                        FullVersion = "1.0.0-beta",
                         DependencyGroups = new[]
                         {
                             new PackageDependencyGroup(
