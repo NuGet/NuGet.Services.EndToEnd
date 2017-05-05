@@ -16,10 +16,10 @@ namespace NuGet.Services.EndToEnd.Support
             string fullVersion,
             ReadOnlyCollection<byte> nupkgBytes)
         {
-            Id = id;
-            NormalizedVersion = normalizedVersion;
-            FullVersion = fullVersion;
-            NupkgBytes = nupkgBytes;
+            Id = id ?? throw new ArgumentNullException(nameof(id));
+            NormalizedVersion = normalizedVersion ?? throw new ArgumentNullException(nameof(normalizedVersion));
+            FullVersion = fullVersion ?? throw new ArgumentNullException(nameof(fullVersion));
+            NupkgBytes = nupkgBytes ?? throw new ArgumentNullException(nameof(nupkgBytes));
         }
 
         public string Id { get; }
