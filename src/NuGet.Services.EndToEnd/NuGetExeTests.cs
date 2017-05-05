@@ -42,11 +42,11 @@ namespace NuGet.Services.EndToEnd
 
         [SemVer2Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
-        public async Task LatestNuGetExeCanRestorePackage(PackageType packageType, bool semVer2, SourceType sourceType)
+        public async Task LatestNuGetExeCanRestorePackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
         {
             // Arrange
             var nuGetExe = PrepareNuGetExe(sourceType);
-            var package = await PreparePackageAsync(packageType, semVer2);
+            var package = await PreparePackageAsync(packageType, dependencies, semVer2);
             var projectPath = WriteProjectWithDependency(package.Id, package.NormalizedVersion);
             var projectDirectory = Path.GetDirectoryName(projectPath);
 
@@ -60,11 +60,11 @@ namespace NuGet.Services.EndToEnd
 
         [SemVer2Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
-        public async Task LatestNuGetExeCanInstallPackage(PackageType packageType, bool semVer2, SourceType sourceType)
+        public async Task LatestNuGetExeCanInstallPackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
         {
             // Arrange
             var nuGetExe = PrepareNuGetExe(sourceType);
-            var package = await PreparePackageAsync(packageType, semVer2);
+            var package = await PreparePackageAsync(packageType, dependencies, semVer2);
 
             // Act
             var result = await nuGetExe.InstallAsync(
@@ -80,12 +80,12 @@ namespace NuGet.Services.EndToEnd
 
         [SemVer2Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
-        public async Task LatestNuGetExeCanInstallLatestPackage(PackageType packageType, bool semVer2, SourceType sourceType)
+        public async Task LatestNuGetExeCanInstallLatestPackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
         {
             // Arrange
             var nuGetExe = PrepareNuGetExe(sourceType);
             var prerelease = true;
-            var package = await PreparePackageAsync(packageType, semVer2);
+            var package = await PreparePackageAsync(packageType, dependencies, semVer2);
 
             // Act
             var result = await nuGetExe.InstallLatestAsync(
@@ -101,12 +101,12 @@ namespace NuGet.Services.EndToEnd
 
         [SemVer2Theory]
         [MemberData(nameof(SemVer2PackageTypes))]
-        public async Task Pre430NuGetExeCannotInstallLatestSemVer2Packages(PackageType packageType, SourceType sourceType)
+        public async Task Pre430NuGetExeCannotInstallLatestSemVer2Packages(PackageType packageType, PackageType[] dependencies, SourceType sourceType)
         {
             // Arrange
             var nuGetExe = PrepareNuGetExe(sourceType, "4.1.0");
             var prerelease = true;
-            var package = await PreparePackageAsync(packageType, semVer2: true);
+            var package = await PreparePackageAsync(packageType, dependencies, semVer2: true);
 
             // Act
             var result = await nuGetExe.InstallLatestAsync(
@@ -145,15 +145,17 @@ namespace NuGet.Services.EndToEnd
             return path;
         }
 
-        private async Task<Package> PreparePackageAsync(PackageType packageType, bool semVer2)
+        private async Task<Package> PreparePackageAsync(PackageType packageType, PackageType[] dependencies, bool semVer2)
         {
-            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+            foreach (var pt in new[] { packageType }.Concat(dependencies))
+            {
+                var package = await _pushedPackages.PrepareAsync(pt, _logger);
+                await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
+                await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, _logger);
+                await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
+            }
 
-            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, _logger);
-            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
-
-            return package;
+            return await _pushedPackages.PrepareAsync(packageType, _logger);
         }
 
         private void VerifyNotInstalled(Package package)
@@ -222,7 +224,7 @@ namespace NuGet.Services.EndToEnd
             {
                 return GetTestDataRows()
                     .Where(x => x.SemVer2)
-                    .Select(x => new object[] { x.PackageType, x.SourceType });
+                    .Select(x => new object[] { x.PackageType, x.Dependencies, x.SourceType });
             }
         }
 
@@ -231,7 +233,7 @@ namespace NuGet.Services.EndToEnd
             get
             {
                 return GetTestDataRows()
-                    .Select(x => new object[] { x.PackageType, x.SemVer2, x.SourceType });
+                    .Select(x => new object[] { x.PackageType, x.Dependencies, x.SemVer2, x.SourceType });
             }
         }
 
@@ -239,10 +241,27 @@ namespace NuGet.Services.EndToEnd
         {
             var packageTypes = new PackageTypeAndSourceType[]
             {
-                new PackageTypeAndSourceType { PackageType = PackageType.SemVer1Stable, SemVer2 = false },
-                new PackageTypeAndSourceType { PackageType = PackageType.SemVer2Prerel, SemVer2 = true },
-                new PackageTypeAndSourceType { PackageType = PackageType.SemVer2StableMetadata, SemVer2 = true },
-                new PackageTypeAndSourceType { PackageType = PackageType.SemVer2DueToSemVer2Dep, SemVer2 = true },
+                new PackageTypeAndSourceType
+                {
+                    PackageType = PackageType.SemVer1Stable,
+                    SemVer2 = false,
+                },
+                new PackageTypeAndSourceType
+                {
+                    PackageType = PackageType.SemVer2Prerel,
+                    SemVer2 = true,
+                },
+                new PackageTypeAndSourceType
+                {
+                    PackageType = PackageType.SemVer2StableMetadata,
+                    SemVer2 = true,
+                },
+                new PackageTypeAndSourceType
+                {
+                    PackageType = PackageType.SemVer2DueToSemVer2Dep,
+                    Dependencies = new[] { PackageType.SemVer2Prerel },
+                    SemVer2 = true,
+                },
             };
 
             var sourceTypes = new[]
@@ -257,6 +276,7 @@ namespace NuGet.Services.EndToEnd
                 select new PackageTypeAndSourceType
                 {
                     PackageType = pt.PackageType,
+                    Dependencies = pt.Dependencies,
                     SemVer2 = pt.SemVer2,
                     SourceType = st,
                 };
@@ -266,6 +286,7 @@ namespace NuGet.Services.EndToEnd
         public class PackageTypeAndSourceType
         {
             public PackageType PackageType { get; set; }
+            public PackageType[] Dependencies { get; set; } = new PackageType[0];
             public bool SemVer2 { get; set; }
             public SourceType SourceType { get; set; }
         }
