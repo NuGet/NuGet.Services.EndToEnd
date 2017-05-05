@@ -84,17 +84,7 @@ namespace NuGet.Services.EndToEnd.Support
                 }
 
                 var packageTypes = GetPackageTypes(requestedPackageType);
-
-                // Generate the IDs for the requested package types. We generate these ahead of time so that the packag
-                lock (_packageIdsLock)
-                {
-                    var timestamp = DateTimeOffset.UtcNow.ToString("yyMMdd.HHmmss.fffffff");
-                    foreach (var packageType in packageTypes)
-                    {
-                        _packageIds[packageType] = $"E2E.{packageType.ToString()}.{timestamp}";
-                    }
-                }
-
+                
                 // Push all of the package types that have not been pushed yet.
                 var pushTasks = new Dictionary<PackageType, Task<Package>>();
                 lock (_packagesLock)
@@ -186,11 +176,12 @@ namespace NuGet.Services.EndToEnd.Support
 
         private IEnumerable<PackageType> GetPackageTypes(PackageType requestedPackageType)
         {
-            var selectedPackageTypes = Enumerable.Empty<PackageType>();
+            var selectedPackageTypes = new List<PackageType>();
 
+            // Add all package types, supporting aggressive push.
             if (_testSettings.AggressivePush)
             {
-                selectedPackageTypes = selectedPackageTypes.Concat(Enum
+                selectedPackageTypes.AddRange(Enum
                     .GetValues(typeof(PackageType))
                     .Cast<PackageType>());
 
@@ -198,16 +189,17 @@ namespace NuGet.Services.EndToEnd.Support
                 if (!_testSettings.SemVer2Enabled)
                 {
                     selectedPackageTypes = selectedPackageTypes
-                        .Except(SemVer2PackageTypes);
+                        .Except(SemVer2PackageTypes)
+                        .ToList();
                 }
             }
 
-            selectedPackageTypes = selectedPackageTypes
-                .Concat(new[] { requestedPackageType })
+            // Add the requested package type.
+            selectedPackageTypes.Add(requestedPackageType);
+
+            return selectedPackageTypes
                 .Distinct()
                 .OrderBy(x => x);
-
-            return selectedPackageTypes;
         }
 
         private PackageToPrepare InitializePackage(PackageType packageType)
@@ -224,7 +216,7 @@ namespace NuGet.Services.EndToEnd.Support
                         DependencyGroups = new[]
                         {
                             new PackageDependencyGroup(
-                                TestData.PackageFramework,
+                                TestData.TargetFramework,
                                 new[]
                                 {
                                     new PackageDependency(
@@ -269,7 +261,15 @@ namespace NuGet.Services.EndToEnd.Support
         {
             lock (_packageIdsLock)
             {
-                return _packageIds[packageType];
+                string id;
+                if (!_packageIds.TryGetValue(packageType, out id))
+                {
+                    var timestamp = DateTimeOffset.UtcNow.ToString("yyMMdd.HHmmss.fffffff");
+                    id = $"E2E.{packageType.ToString()}.{timestamp}";
+                    _packageIds[packageType] = id;
+                }
+
+                return id;
             }
         }
 

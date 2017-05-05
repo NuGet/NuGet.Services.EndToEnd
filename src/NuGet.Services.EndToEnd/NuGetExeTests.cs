@@ -133,7 +133,7 @@ namespace NuGet.Services.EndToEnd
                 $@"
 <Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>{TestData.PackageFramework.GetShortFolderName()}</TargetFramework>
+    <TargetFramework>{TestData.TargetFramework.GetShortFolderName()}</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include=""{id}"" Version=""{version}"" />

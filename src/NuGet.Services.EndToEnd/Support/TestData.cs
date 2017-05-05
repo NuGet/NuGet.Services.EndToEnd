@@ -11,7 +11,7 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public static class TestData
     {
-        public static readonly NuGetFramework PackageFramework = NuGetFramework.Parse("net40");
+        public static readonly NuGetFramework TargetFramework = NuGetFramework.Parse("net40");
         public static readonly TimeSpan V3WaitDuration = TimeSpan.FromMinutes(20);
         public static readonly TimeSpan V3SleepDuration = TimeSpan.FromSeconds(5);
 
@@ -28,7 +28,7 @@ namespace NuGet.Services.EndToEnd.Support
             });
             packageBuilder.Files.Add(new PhysicalPackageFile(new MemoryStream())
             {
-                TargetPath = $"lib/{PackageFramework.GetShortFolderName()}/_._"
+                TargetPath = $"lib/{TargetFramework.GetShortFolderName()}/_._"
             });
 
             if (context.DependencyGroups != null)
