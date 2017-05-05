@@ -32,6 +32,7 @@ namespace NuGet.Services.EndToEnd
             _logger = logger;
             _testDirectory = TestDirectory.Create();
             _outputDirectory = Path.Combine(_testDirectory, "output");
+            Directory.CreateDirectory(_outputDirectory);
         }
 
         public void Dispose()
