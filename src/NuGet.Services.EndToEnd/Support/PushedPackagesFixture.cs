@@ -7,6 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd.Support
@@ -17,14 +20,23 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class PushedPackagesFixture : IDisposable
     {
+        private const string SemVer2PrerelVersion = "1.0.0-alpha.1";
+
         private static readonly HashSet<PackageType> SemVer2PackageTypes = new HashSet<PackageType>
         {
             PackageType.SemVer2Prerel,
+            PackageType.SemVer2PrerelRelisted,
+            PackageType.SemVer2PrerelUnlisted,
+            PackageType.SemVer2StableMetadata,
+            PackageType.SemVer2StableMetadataUnlisted,
+            PackageType.SemVer2DueToSemVer2Dep,
         };
 
         private readonly SemaphoreSlim _pushLock;
         private readonly object _packagesLock = new object();
         private readonly IDictionary<PackageType, Package> _packages;
+        private readonly object _packageIdsLock = new object();
+        private readonly IDictionary<PackageType, string> _packageIds;
         private readonly IGalleryClient _galleryClient;
         private readonly TestSettings _testSettings;
 
@@ -37,6 +49,7 @@ namespace NuGet.Services.EndToEnd.Support
             _galleryClient = galleryClient;
             _testSettings = testSettings;
             _pushLock = new SemaphoreSlim(initialCount: 1);
+            _packageIds = new Dictionary<PackageType, string>();
             _packages = new Dictionary<PackageType, Package>();
         }
 
@@ -163,63 +176,117 @@ namespace NuGet.Services.EndToEnd.Support
 
         private IEnumerable<PackageType> GetPackageTypes(PackageType requestedPackageType)
         {
-            var selectedPackageTypes = Enum
-                .GetValues(typeof(PackageType))
-                .Cast<PackageType>();
+            var selectedPackageTypes = new List<PackageType>();
 
-            // If SemVer 2.0.0 is not enabled, don't automatically push SemVer 2.0.0 packages.
-            if (!_testSettings.SemVer2Enabled)
+            // Add all package types, supporting aggressive push.
+            if (_testSettings.AggressivePush)
             {
-                selectedPackageTypes = selectedPackageTypes
-                    .Except(SemVer2PackageTypes);
+                selectedPackageTypes.AddRange(Enum
+                    .GetValues(typeof(PackageType))
+                    .Cast<PackageType>());
+
+                // If SemVer 2.0.0 is not enabled, don't automatically push SemVer 2.0.0 packages.
+                if (!_testSettings.SemVer2Enabled)
+                {
+                    selectedPackageTypes = selectedPackageTypes
+                        .Except(SemVer2PackageTypes)
+                        .ToList();
+                }
             }
 
-            selectedPackageTypes = selectedPackageTypes
-                .Concat(new[] { requestedPackageType })
+            // Add the requested package type.
+            selectedPackageTypes.Add(requestedPackageType);
+
+            return selectedPackageTypes
                 .Distinct()
                 .OrderBy(x => x);
-
-            return selectedPackageTypes;
         }
 
         private PackageToPrepare InitializePackage(PackageType packageType)
         {
+            var id = GetPackageId(packageType);
+
             switch (packageType)
             {
+                case PackageType.SemVer2DueToSemVer2Dep:
+                    return new PackageToPrepare(Package.Create(new PackageCreationContext
+                    {
+                        Id = id,
+                        NormalizedVersion = "1.0.0-beta",
+                        FullVersion = "1.0.0-beta",
+                        DependencyGroups = new[]
+                        {
+                            new PackageDependencyGroup(
+                                TestData.TargetFramework,
+                                new[]
+                                {
+                                    new PackageDependency(
+                                        GetPackageId(PackageType.SemVer2Prerel),
+                                        VersionRange.Parse(SemVer2PrerelVersion))
+                                })
+                        }
+                    }));
+
                 case PackageType.SemVer2StableMetadataUnlisted:
                     return new PackageToPrepare(
-                        Package.Create(packageType.ToString(), "1.0.0", "1.0.0+metadata"),
+                        Package.Create(id, "1.0.0", "1.0.0+metadata"),
                         unlist: true);
+
                 case PackageType.SemVer2StableMetadata:
-                    return new PackageToPrepare(
-                        Package.Create(packageType.ToString(), "1.0.0", "1.0.0+metadata"),
-                        unlist: false);
+                    return new PackageToPrepare(Package.Create(id, "1.0.0", "1.0.0+metadata"));
+
                 case PackageType.SemVer2PrerelUnlisted:
                     return new PackageToPrepare(
-                        Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
+                        Package.Create(id, "1.0.0-alpha.1"),
                         unlist: true);
+
                 case PackageType.SemVer2Prerel:
-                    return new PackageToPrepare(
-                        Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
-                        unlist: false);
+                    return new PackageToPrepare(Package.Create(id, SemVer2PrerelVersion));
+
                 case PackageType.SemVer2PrerelRelisted:
-                    return new PackageToPrepare(
-                        Package.Create(packageType.ToString(), "1.0.0-alpha.1"),
+                    return new PackageToPrepare(Package.Create(id, "1.0.0-alpha.1"),
                         unlist: true);
+
                 case PackageType.SemVer1StableUnlisted:
                     return new PackageToPrepare(
-                        Package.Create(packageType.ToString(), "1.0.0"),
+                        Package.Create(id, "1.0.0"),
                         unlist: true);
+
                 case PackageType.SemVer1Stable:
                 default:
-                    return new PackageToPrepare(
-                        Package.Create(packageType.ToString(), "1.0.0"),
-                        unlist: false);
+                    return new PackageToPrepare(Package.Create(id, "1.0.0"));
             }
+        }
+
+        private string GetPackageId(PackageType packageType)
+        {
+            lock (_packageIdsLock)
+            {
+                string id;
+                if (!_packageIds.TryGetValue(packageType, out id))
+                {
+                    var timestamp = DateTimeOffset.UtcNow.ToString("yyMMdd.HHmmss.fffffff");
+                    id = $"E2E.{packageType.ToString()}.{timestamp}";
+                    _packageIds[packageType] = id;
+                }
+
+                return id;
+            }
+        }
+
+        private static string GenerateUniqueId(PackageType packageType)
+        {
+            var timestamp = DateTimeOffset.UtcNow.ToString("yyMMdd.HHmmss.fffffff");
+            var id = $"E2E.{packageType.ToString()}.{timestamp}";
+            return id;
         }
 
         private class PackageToPrepare
         {
+            public PackageToPrepare(Package package) : this(package, unlist: false)
+            {
+            }
+
             public PackageToPrepare(Package package, bool unlist)
             {
                 Package = package;

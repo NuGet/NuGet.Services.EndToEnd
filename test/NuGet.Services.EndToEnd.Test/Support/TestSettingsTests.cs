@@ -11,8 +11,16 @@ namespace NuGet.Services.EndToEnd.Support
         public void TestSettingsModeShouldAlwaysBeEnvironmentVariables()
         {
             /// This test is expected to fail when there is a local change to <see cref="TestSettings.CurrentMode"/>.
-            /// This is okay. We just want to be sure not to check this change it.
+            /// This is okay. We just want to be sure not to check this change in.
             Assert.Equal(TestSettings.Mode.EnvironmentVariables, TestSettings.CurrentMode);
+        }
+
+        [Fact]
+        public void TestSettingsAggressivePushShouldAlwaysBeTrue()
+        {
+            /// This test is expected to fail when there is a local change to <see cref="TestSettings.DefaultAggressivePush"/>.
+            /// This is okay. We just want to be sure not to check this change in.
+            Assert.True(TestSettings.DefaultAggressivePush);
         }
 
         [Theory]

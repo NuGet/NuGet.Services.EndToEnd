@@ -23,6 +23,7 @@ namespace NuGet.Services.EndToEnd.Support
         {
             _galleryClient = new Mock<IGalleryClient>();
             _testSettings = new TestSettings(
+                aggressivePush: true,
                 galleryBaseUrl: "https://example-gallery",
                 v3IndexUrl: "https://example-v3/index.json",
                 trustedHttpsCertificates: new List<string>(),
