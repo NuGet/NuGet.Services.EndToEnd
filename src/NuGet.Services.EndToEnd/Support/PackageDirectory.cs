@@ -8,17 +8,17 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class PackageDirectory
     {
-        private readonly string _directory;
+        private readonly string _path;
 
-        public PackageDirectory(string directory)
+        public PackageDirectory(string path)
         {
-            _directory = directory;
+            _path = path;
         }
 
         public string AddPackage(Package package)
         {
             var path = Path.Combine(
-                _directory,
+                _path,
                 $"{package.Id}.{package.NormalizedVersion}.nupkg");
 
             File.WriteAllBytes(path, package.NupkgBytes.ToArray());
@@ -28,12 +28,12 @@ namespace NuGet.Services.EndToEnd.Support
 
         public static implicit operator string(PackageDirectory directory)
         {
-            return directory._directory;
+            return directory._path;
         }
 
         public override string ToString()
         {
-            return _directory;
+            return _path;
         }
     }
 }

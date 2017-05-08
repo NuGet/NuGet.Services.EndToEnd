@@ -84,7 +84,7 @@ namespace NuGet.Services.EndToEnd.Support
                 }
 
                 var packageTypes = GetPackageTypes(requestedPackageType);
-                
+
                 // Push all of the package types that have not been pushed yet.
                 var pushTasks = new Dictionary<PackageType, Task<Package>>();
                 lock (_packagesLock)

@@ -60,7 +60,7 @@ namespace NuGet.Services.EndToEnd.Support
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException($"Could not start process at with file name: {fileName}", ex);
+                    throw new InvalidOperationException($"Could not start process with file name: {fileName}", ex);
                 }
 
                 var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output);
