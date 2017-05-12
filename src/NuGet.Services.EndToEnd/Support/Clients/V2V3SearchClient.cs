@@ -25,6 +25,7 @@ namespace NuGet.Services.EndToEnd.Support
             _testSettings = testSettings;
         }
 
+        [Obsolete]
         public async Task<V2SearchResponse> SearchQueryAsync(string searchBaseUrl, string queryString, ITestOutputHelper logger)
         {
             var baseUri = new Uri(searchBaseUrl);
