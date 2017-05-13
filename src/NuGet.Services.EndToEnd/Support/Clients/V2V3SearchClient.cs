@@ -25,6 +25,14 @@ namespace NuGet.Services.EndToEnd.Support
             _testSettings = testSettings;
         }
 
+        [Obsolete]
+        public async Task<V2SearchResponse> SearchQueryAsync(string searchBaseUrl, string queryString, ITestOutputHelper logger)
+        {
+            var baseUri = new Uri(searchBaseUrl);
+            var queryUrl = new Uri(baseUri, $"search/query?{queryString}");
+            return await _httpClient.GetJsonAsync<V2SearchResponse>(queryUrl.AbsoluteUri, logger);
+        }
+
         public async Task<V3SearchResponse> QueryAsync(string searchBaseUrl, string queryString, ITestOutputHelper logger)
         {
             var baseUri = new Uri(searchBaseUrl);
@@ -169,6 +177,7 @@ namespace NuGet.Services.EndToEnd.Support
 
             var url = QueryHelpers.AddQueryString(v2SearchUrl, "q", $"packageid:{id} and version:{version}");
             url = QueryHelpers.AddQueryString(url, "ignoreFilter", "true");
+            url = QueryHelpers.AddQueryString(url, "semVerLevel", "2.0.0");
 
             var duration = Stopwatch.StartNew();
             var complete = false;
