@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -27,6 +28,9 @@ namespace NuGet.Services.EndToEnd.Support
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Put, url))
             {
+                // Use the default push timeout that the client uses.
+                httpClient.Timeout = TimeSpan.FromMinutes(5);
+
                 request.Headers.Add(ApiKeyHeader, _testSettings.ApiKey);
                 request.Content = new StreamContent(nupkgStream);
 

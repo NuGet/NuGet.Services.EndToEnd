@@ -149,7 +149,7 @@ namespace NuGet.Services.EndToEnd.Support
             }
             catch (Exception ex)
             {
-                if (packageType == requestedPackageType)
+                if (packageType == requestedPackageType || ex is TaskCanceledException)
                 {
                     throw;
                 }
