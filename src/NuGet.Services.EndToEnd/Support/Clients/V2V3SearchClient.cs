@@ -127,7 +127,21 @@ namespace NuGet.Services.EndToEnd.Support
 
             return searchBaseUrls;
         }
-        
+        public async Task<IReadOnlyList<string>> GetAutoCompleteUrlsAsync()
+        {
+            var results = new List<string>();
+            if (_testSettings.AutoCompleteUrl != null)
+            {
+                results.Add(_testSettings.AutoCompleteUrl);
+            }
+            else
+            {
+                results.AddRange(await _v3IndexClient.GetAutoCompleteServiceUrlsAsync());
+            }
+
+            return results;
+        }
+
         private async Task PollAsync(
             string id,
             string version,

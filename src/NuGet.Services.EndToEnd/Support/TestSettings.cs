@@ -35,6 +35,7 @@ namespace NuGet.Services.EndToEnd.Support
             IReadOnlyList<string> trustedHttpsCertificates,
             string apiKey,
             string searchBaseUrl,
+            string autoCompleteUrl,
             bool semVer2Enabled,
             int searchInstanceCount)
         {
@@ -45,6 +46,7 @@ namespace NuGet.Services.EndToEnd.Support
 
             AggressivePush = aggressivePush;
             SearchBaseUrl = searchBaseUrl;
+            AutoCompleteUrl = autoCompleteUrl;
             SemVer2Enabled = semVer2Enabled;
             SearchInstanceCount = searchInstanceCount;
         }
@@ -52,6 +54,7 @@ namespace NuGet.Services.EndToEnd.Support
         public string GalleryBaseUrl { get; }
         public string V3IndexUrl { get; }
         public string SearchBaseUrl { get; }
+        public string AutoCompleteUrl { get; }
         public IReadOnlyList<string> TrustedHttpsCertificates { get; }
         public string ApiKey { get; }
         public bool SemVer2Enabled { get; }
@@ -75,6 +78,7 @@ namespace NuGet.Services.EndToEnd.Support
                         new List<string>(),
                         "API_KEY",
                         searchBaseUrl: null,
+                        autoCompleteUrl: null,
                         semVer2Enabled: true,
                         searchInstanceCount: 2);
                 case Mode.Int:
@@ -85,6 +89,7 @@ namespace NuGet.Services.EndToEnd.Support
                         new List<string>(),
                         "API_KEY",
                         searchBaseUrl: null,
+                        autoCompleteUrl: null,
                         semVer2Enabled: false,
                         searchInstanceCount: 2);
                 case Mode.Prod:
@@ -95,6 +100,7 @@ namespace NuGet.Services.EndToEnd.Support
                         new List<string>(),
                         "API_KEY",
                         searchBaseUrl: null,
+                        autoCompleteUrl: null,
                         semVer2Enabled: false,
                         searchInstanceCount: 5);
                 default:
@@ -105,6 +111,7 @@ namespace NuGet.Services.EndToEnd.Support
                         EnvironmentSettings.TrustedHttpsCertificates,
                         EnvironmentSettings.ApiKey,
                         EnvironmentSettings.SearchBaseUrl,
+                        EnvironmentSettings.AutoCompleteUrl,
                         EnvironmentSettings.SemVer2Enabled,
                         EnvironmentSettings.SearchInstanceCount);
             }

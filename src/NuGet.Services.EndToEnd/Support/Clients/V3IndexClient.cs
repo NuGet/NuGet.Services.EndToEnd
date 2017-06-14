@@ -29,6 +29,12 @@ namespace NuGet.Services.EndToEnd.Support
             return GetResourceUrls(v3Index, t => t.Type.StartsWith("SearchGalleryQueryService/"));
         }
 
+        public async Task<IReadOnlyList<string>> GetAutoCompleteServiceUrlsAsync()
+        {
+            var v3Index = await GetV3IndexAsync();
+            return GetResourceUrls(v3Index, t => t.Type.StartsWith("SearchAutocompleteService"));
+        }
+
         public async Task<IReadOnlyList<string>> GetFlatContainerBaseUrlsAsync()
         {
             var v3Index = await GetV3IndexAsync();
