@@ -29,7 +29,6 @@ namespace NuGet.Services.EndToEnd.Support
                 trustedHttpsCertificates: new List<string>(),
                 apiKey: "API_KEY",
                 searchBaseUrl: null,
-                autoCompleteUrl: null,
                 semVer2Enabled: true,
                 searchInstanceCount: 2);
             _fixture = new PushedPackagesFixture(_galleryClient.Object, _testSettings);
