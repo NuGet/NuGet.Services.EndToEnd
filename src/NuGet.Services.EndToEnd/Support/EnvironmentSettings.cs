@@ -45,7 +45,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// http://nuget-int-0-v2v3search.cloudapp.net
         /// </example>
         public static string SearchBaseUrl => GetEnvironmentVariable("SearchBaseUrl", required: false)?.TrimEnd('/');
-        
+
         /// <summary>
         /// The number of search service instances. This value is required and is used when polling the search service
         /// for package ability to make sure all instances have the requested package.
@@ -82,7 +82,7 @@ namespace NuGet.Services.EndToEnd.Support
                 {
                     return new string[0];
                 }
-                
+
                 return fingerprints
                     .Split(',')
                     .Select(p => p.Trim())
@@ -91,7 +91,7 @@ namespace NuGet.Services.EndToEnd.Support
                     .AsReadOnly();
             }
         }
-        
+
         /// <summary>
         /// The API key to use when pushing packages. This package should have the scopes necessary to upload
         /// new package IDs, since the end-to-end tests create new packages.
