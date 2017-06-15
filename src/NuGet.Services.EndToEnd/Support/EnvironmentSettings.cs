@@ -45,13 +45,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// http://nuget-int-0-v2v3search.cloudapp.net
         /// </example>
         public static string SearchBaseUrl => GetEnvironmentVariable("SearchBaseUrl", required: false)?.TrimEnd('/');
-
-        /// <summary>
-        /// The URL to the auto-complete service. This value is optional. If not provided, the auto-complete services that will
-        /// be tested will be found in the V3 index.json (via <see cref="V3IndexUrl"/>).
-        /// </summary>
-        public static string AutoCompleteUrl => GetEnvironmentVariable("AutoCompleteUrl", required: false)?.TrimEnd('/');
-
+        
         /// <summary>
         /// The number of search service instances. This value is required and is used when polling the search service
         /// for package ability to make sure all instances have the requested package.
