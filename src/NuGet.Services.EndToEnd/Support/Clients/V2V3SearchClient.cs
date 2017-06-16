@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
+using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -40,10 +41,29 @@ namespace NuGet.Services.EndToEnd.Support
             return await _httpClient.GetJsonAsync<V3SearchResponse>(queryUrl.AbsoluteUri, logger);
         }
 
-        public async Task<AutocompleteResponse> AutocompleteAsync(string searchBaseUrl, string queryString, ITestOutputHelper logger)
+        public async Task<AutocompleteResponse> AutocompletePackageIdsAsync(
+            string searchBaseUrl,
+            string packageId,
+            bool includePrerelease,
+            string semVerLevel,
+            ITestOutputHelper logger)
         {
             var baseUri = new Uri(searchBaseUrl);
-            var queryUrl = new Uri(baseUri, $"autocomplete?{queryString}");
+            var queryString = BuildAutocompleteQueryString($"take=30&q={packageId}", includePrerelease, semVerLevel);
+            var queryUrl = new Uri(baseUri, queryString);
+            return await _httpClient.GetJsonAsync<AutocompleteResponse>(queryUrl.AbsoluteUri, logger);
+        }
+
+        public async Task<AutocompleteResponse> AutocompletePackageVersionsAsync(
+            string searchBaseUrl,
+            string packageId,
+            bool includePrerelease,
+            string semVerLevel,
+            ITestOutputHelper logger)
+        {
+            var baseUri = new Uri(searchBaseUrl);
+            var queryString = BuildAutocompleteQueryString($"id={packageId}", includePrerelease, semVerLevel);
+            var queryUrl = new Uri(baseUri, queryString);
             return await _httpClient.GetJsonAsync<AutocompleteResponse>(queryUrl.AbsoluteUri, logger);
         }
 
@@ -127,7 +147,28 @@ namespace NuGet.Services.EndToEnd.Support
 
             return searchBaseUrls;
         }
-        
+
+        private static string BuildAutocompleteQueryString(
+            string query,
+            bool? includePrerelease,
+            string semVerLevel = null)
+        {
+            query += $"&prerelease={includePrerelease ?? false}";
+
+            NuGetVersion semVerLevelVersion;
+            if (!string.IsNullOrEmpty(semVerLevel) && NuGetVersion.TryParse(semVerLevel, out semVerLevelVersion))
+            {
+                query += $"&semVerLevel={semVerLevel}";
+            }
+
+            if (string.IsNullOrEmpty(query))
+            {
+                return string.Empty;
+            }
+
+            return "autocomplete?" + query.TrimStart('&');
+        }
+
         private async Task PollAsync(
             string id,
             string version,
@@ -246,7 +287,7 @@ namespace NuGet.Services.EndToEnd.Support
             public long DownloadCount { get; set; }
             public string[] Owners { get; set; }
         }
-        
+
         public class V3SearchResponse
         {
             public List<V3SearchPackage> Data { get; set; }

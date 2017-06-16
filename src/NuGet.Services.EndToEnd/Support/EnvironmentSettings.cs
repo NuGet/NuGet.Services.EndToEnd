@@ -82,7 +82,7 @@ namespace NuGet.Services.EndToEnd.Support
                 {
                     return new string[0];
                 }
-                
+
                 return fingerprints
                     .Split(',')
                     .Select(p => p.Trim())
@@ -91,7 +91,7 @@ namespace NuGet.Services.EndToEnd.Support
                     .AsReadOnly();
             }
         }
-        
+
         /// <summary>
         /// The API key to use when pushing packages. This package should have the scopes necessary to upload
         /// new package IDs, since the end-to-end tests create new packages.
