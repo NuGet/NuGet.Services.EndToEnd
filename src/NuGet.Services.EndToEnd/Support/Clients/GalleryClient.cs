@@ -19,10 +19,12 @@ namespace NuGet.Services.EndToEnd.Support
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
 
+        private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
 
-        public GalleryClient(TestSettings testSettings)
+        public GalleryClient(SimpleHttpClient httpClient, TestSettings testSettings)
         {
+            _httpClient = httpClient;
             _testSettings = testSettings;
         }
 
@@ -30,18 +32,16 @@ namespace NuGet.Services.EndToEnd.Support
         {
             var serviceEndpoint = $"{_testSettings.GalleryBaseUrl}/api/v2/package-ids";
             var uri = AppendAutocompletePackageIdsQueryString(serviceEndpoint, id, includePrerelease, semVerLevel);
-            var httpClient = new SimpleHttpClient();
 
-            return await httpClient.GetJsonAsync<List<string>>(uri, logger);
+            return await _httpClient.GetJsonAsync<List<string>>(uri, logger);
         }
 
         public async Task<IList<string>> AutocompletePackageVersionsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger)
         {
             var serviceEndpoint = $"{_testSettings.GalleryBaseUrl}/api/v2/package-versions";
             var uri = AppendAutocompletePackageVersionsQueryString($"{serviceEndpoint}/{id}", includePrerelease, semVerLevel);
-            var httpClient = new SimpleHttpClient();
 
-            return await httpClient.GetJsonAsync<List<string>>(uri, logger);
+            return await _httpClient.GetJsonAsync<List<string>>(uri, logger);
         }
 
         public async Task PushAsync(Stream nupkgStream)
