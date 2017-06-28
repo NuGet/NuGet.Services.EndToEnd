@@ -17,38 +17,57 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class SimpleHttpClient
     {
-        public async Task<T> GetJsonAsync<T>(string url, ITestOutputHelper logger)
+        private const int MaxRetries = 3;
+
+        public Task<T> GetJsonAsync<T>(string url, ITestOutputHelper logger)
         {
-            return await GetJsonAsync<T>(url, allowNotFound: false, logger: logger);
+            return GetJsonAsync<T>(url, allowNotFound: false, logger: logger);
         }
 
         public async Task<T> GetJsonAsync<T>(string url, bool allowNotFound, ITestOutputHelper logger)
         {
-            using (var httpClientHander = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip })
-            using (var httpClient = new HttpClient(httpClientHander))
-            using (var response = await httpClient.GetAsync(url))
+            int retryCount = 0;
+            do
             {
-                if (allowNotFound && response.StatusCode == HttpStatusCode.NotFound)
+                try
                 {
-                    return default(T);
-                }
-
-                response.EnsureSuccessStatusCode();
-
-                using (var stream = await response.Content.ReadAsStreamAsync())
-                using (var streamReader = new StreamReader(stream))
-                {
-                    var json = await streamReader.ReadToEndAsync();
-                    if (logger != null)
+                    using (var httpClientHander = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip })
+                    using (var httpClient = new HttpClient(httpClientHander))
+                    using (var response = await httpClient.GetAsync(url))
                     {
-                        // Make sure the JSON is a single line.
-                        var parsedJson = JToken.Parse(json);
-                        logger.WriteLine($" - URL: {url}{Environment.NewLine} - Response: {parsedJson.ToString(Formatting.None)}");
-                    }
+                        if (allowNotFound && response.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            return default(T);
+                        }
 
-                    return JsonConvert.DeserializeObject<T>(json);
+                        response.EnsureSuccessStatusCode();
+
+                        using (var stream = await response.Content.ReadAsStreamAsync())
+                        using (var streamReader = new StreamReader(stream))
+                        {
+                            var json = await streamReader.ReadToEndAsync();
+                            if (logger != null)
+                            {
+                                // Make sure the JSON is a single line.
+                                var parsedJson = JToken.Parse(json);
+                                logger.WriteLine($" - URL: {url}{Environment.NewLine} - Response: {parsedJson.ToString(Formatting.None)}");
+                            }
+
+                            return JsonConvert.DeserializeObject<T>(json);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.WriteLine($"Request for {url} failed with exception: {e}");
+                    retryCount++;
+                    if (retryCount == MaxRetries)
+                    {
+                        throw;
+                    }
                 }
             }
+            while (true);
         }
     }
 }
