@@ -18,6 +18,7 @@ namespace NuGet.Services.EndToEnd.Support
     public class SimpleHttpClient
     {
         private const int MaxRetries = 3;
+        private const int RetryDelayInMilliseconds = 500;
 
         public Task<T> GetJsonAsync<T>(string url, ITestOutputHelper logger)
         {
@@ -65,6 +66,7 @@ namespace NuGet.Services.EndToEnd.Support
                     {
                         throw;
                     }
+                    await Task.Delay(RetryDelayInMilliseconds);
                 }
             }
             while (true);
