@@ -65,14 +65,14 @@ namespace NuGet.Services.EndToEnd.Support
                     found = response.Versions.Contains(version.ToLowerInvariant());
                 }
 
-                if (!found && duration.Elapsed + TestData.V3SleepDuration < TestData.V3WaitDuration)
+                if (!found && duration.Elapsed + TestData.V3SleepDuration < TestData.FlatContainerWaitDuration)
                 {
                     await Task.Delay(TestData.V3SleepDuration);
                 }
             }
-            while (!found && duration.Elapsed < TestData.V3WaitDuration);
+            while (!found && duration.Elapsed < TestData.FlatContainerWaitDuration);
 
-            Assert.True(found, $"Package {id} {version} was not found on {baseUrl} after waiting {TestData.V3WaitDuration}.");
+            Assert.True(found, $"Package {id} {version} was not found on {baseUrl} after waiting {TestData.FlatContainerWaitDuration}.");
             logger.WriteLine($"Package {id} {version} was found on {baseUrl} after waiting {duration.Elapsed}.");
         }
 
