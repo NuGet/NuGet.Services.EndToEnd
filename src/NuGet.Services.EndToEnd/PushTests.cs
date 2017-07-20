@@ -47,25 +47,25 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
-            var searchBaseAddresses = await _clients.V2V3Search.GetSearchBaseUrlsAsync();
+            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync();
 
             // Wait for package to become available
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
 
             // Act
-            foreach (var searchBaseAddress in searchBaseAddresses)
+            foreach (var searchService in searchServices)
             {
-                var shouldBeEmptyV3 = await _clients.V2V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&prerelease=true", _logger);
+                var shouldBeEmptyV3 = await _clients.V2V3Search.QueryAsync(searchService, $"q=packageid:{package.Id}&prerelease=true", _logger);
                 var shouldBeEmptyAutocomplete = await _clients.V2V3Search.AutocompletePackageIdsAsync(
-                    searchBaseAddress,
+                    searchService,
                     package.Id,
                     includePrerelease: true,
                     semVerLevel: null,
                     logger: _logger);
 
-                var shouldNotBeEmptyV3 = await _clients.V2V3Search.QueryAsync(searchBaseAddress, $"q=packageid:{package.Id}&semVerLevel=2.0.0&prerelease=true", _logger);
+                var shouldNotBeEmptyV3 = await _clients.V2V3Search.QueryAsync(searchService, $"q=packageid:{package.Id}&semVerLevel=2.0.0&prerelease=true", _logger);
                 var shouldNotBeEmptyAutocomplete = await _clients.V2V3Search.AutocompletePackageIdsAsync(
-                    searchBaseAddress,
+                    searchService,
                     package.Id,
                     includePrerelease: true,
                     semVerLevel: "2.0.0",

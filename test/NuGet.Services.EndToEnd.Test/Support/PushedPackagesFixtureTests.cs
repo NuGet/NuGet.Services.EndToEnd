@@ -28,9 +28,7 @@ namespace NuGet.Services.EndToEnd.Support
                 v3IndexUrl: "https://example-v3/index.json",
                 trustedHttpsCertificates: new List<string>(),
                 apiKey: "API_KEY",
-                searchBaseUrl: null,
-                semVer2Enabled: true,
-                searchInstanceCount: 2);
+                semVer2Enabled: true);
             _fixture = new PushedPackagesFixture(_galleryClient.Object, _testSettings);
             _logger = new Mock<ITestOutputHelper>();
         }

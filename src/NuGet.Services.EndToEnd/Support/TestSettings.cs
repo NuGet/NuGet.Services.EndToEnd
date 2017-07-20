@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+using NuGet.Services.AzureManagement;
+using NuGet.Services.KeyVault;
 
 namespace NuGet.Services.EndToEnd.Support
 {
@@ -17,7 +20,7 @@ namespace NuGet.Services.EndToEnd.Support
         };
 
         /// <summary>
-        /// Manually override this value to easily test end-to-end tests against on of the deployed environments. The
+        /// Manually override this value to easily test end-to-end tests against one of the deployed environments. The
         /// checked in value should always be <see cref="Mode.EnvironmentVariables"/>.
         /// </summary>
         public static Mode CurrentMode => Mode.EnvironmentVariables;
@@ -28,15 +31,55 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         public static bool DefaultAggressivePush => true;
 
+        /// <summary>
+        /// A list of default test settings per environment.
+        /// </summary>
+        public static readonly Dictionary<Mode, TestSettings> DefaultTestSettings = new Dictionary<Mode, TestSettings>
+        {
+            {   Mode.Dev,
+                new TestSettings(
+                             DefaultAggressivePush,
+                             "https://dev.nugettest.org",
+                             "http://api.dev.nugettest.org/v3-index/index.json",
+                             new List<string>(),
+                             "fa133685-cfc3-43f3-81c7-0a36d0969987",
+                             semVer2Enabled: true)
+            },
+            {
+                Mode.Int,
+                new TestSettings(
+                            DefaultAggressivePush,
+                            "https://int.nugettest.org",
+                            "http://api.int.nugettest.org/v3-index/index.json",
+                            new List<string>(),
+                            "API_KEY",
+                            semVer2Enabled: false)
+            },
+            {
+                Mode.Prod,
+                new TestSettings(
+                            DefaultAggressivePush,
+                            "https://www.nuget.org",
+                            "https://api.nuget.org/v3/index.json",
+                            new List<string>(),
+                            "API_KEY",
+                            semVer2Enabled: false)
+            }
+        };
+
+        private static readonly Lazy<TestSettings> _testSettings = new Lazy<TestSettings>(() => CreateInternal(CurrentMode));
+
         public TestSettings(
             bool aggressivePush,
             string galleryBaseUrl,
             string v3IndexUrl,
             IReadOnlyList<string> trustedHttpsCertificates,
             string apiKey,
-            string searchBaseUrl,
             bool semVer2Enabled,
-            int searchInstanceCount)
+            IAzureManagementAPIWrapperConfiguration azureManagementAPIWrapperConfiguration = null,
+            string subscription = "",
+            string searchServiceResourceGroup = "",
+            string searchServiceName = "")
         {
             GalleryBaseUrl = galleryBaseUrl ?? throw new ArgumentNullException(nameof(galleryBaseUrl));
             V3IndexUrl = v3IndexUrl ?? throw new ArgumentNullException(nameof(v3IndexUrl));
@@ -44,70 +87,89 @@ namespace NuGet.Services.EndToEnd.Support
             ApiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
 
             AggressivePush = aggressivePush;
-            SearchBaseUrl = searchBaseUrl;
             SemVer2Enabled = semVer2Enabled;
-            SearchInstanceCount = searchInstanceCount;
+            AzureManagementAPIWrapperConfiguration = azureManagementAPIWrapperConfiguration;
+            Subscription = subscription;
+            SearchServiceResourceGroup = searchServiceResourceGroup;
+            SearchServiceName = searchServiceName;
         }
 
         public string GalleryBaseUrl { get; }
         public string V3IndexUrl { get; }
-        public string SearchBaseUrl { get; }
         public IReadOnlyList<string> TrustedHttpsCertificates { get; }
         public string ApiKey { get; }
         public bool SemVer2Enabled { get; }
-        public int SearchInstanceCount { get; }
         public bool AggressivePush { get; }
+        public IAzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; }
+        public string Subscription { get; }
+        public string SearchServiceResourceGroup { get; }
+        public string SearchServiceName { get; }
 
         public static TestSettings Create()
         {
-            return Create(CurrentMode);
+            return _testSettings.Value;
         }
 
-        public static TestSettings Create(Mode mode)
+        private static TestSettings CreateInternal(Mode mode)
         {
+            var secretReader = GetSecretReader();
+
             switch (mode)
             {
                 case Mode.Dev:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        "https://dev.nugettest.org",
-                        "http://api.dev.nugettest.org/v3-index/index.json",
-                        new List<string>(),
-                        "API_KEY",
-                        searchBaseUrl: null,
-                        semVer2Enabled: true,
-                        searchInstanceCount: 2);
                 case Mode.Int:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        "https://int.nugettest.org",
-                        "http://api.int.nugettest.org/v3-index/index.json",
-                        new List<string>(),
-                        "API_KEY",
-                        searchBaseUrl: null,
-                        semVer2Enabled: false,
-                        searchInstanceCount: 2);
                 case Mode.Prod:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        "https://www.nuget.org",
-                        "https://api.nuget.org/v3/index.json",
-                        new List<string>(),
-                        "API_KEY",
-                        searchBaseUrl: null,
-                        semVer2Enabled: false,
-                        searchInstanceCount: 5);
+                    {
+                        return DefaultTestSettings[mode];
+                    }
                 default:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        EnvironmentSettings.GalleryBaseUrl,
-                        EnvironmentSettings.V3IndexUrl,
-                        EnvironmentSettings.TrustedHttpsCertificates,
-                        EnvironmentSettings.ApiKey,
-                        EnvironmentSettings.SearchBaseUrl,
-                        EnvironmentSettings.SemVer2Enabled,
-                        EnvironmentSettings.SearchInstanceCount);
+                    {
+                        return new TestSettings(
+                            DefaultAggressivePush,
+                            EnvironmentSettings.GalleryBaseUrl,
+                            EnvironmentSettings.V3IndexUrl,
+                            EnvironmentSettings.TrustedHttpsCertificates,
+                            EnvironmentSettings.ApiKey,
+                            EnvironmentSettings.SemVer2Enabled,
+                            GetAzureManagementConfiguration(secretReader),
+                            EnvironmentSettings.Subscription,
+                            EnvironmentSettings.SearchServiceResourceGroup,
+                            EnvironmentSettings.SearchServiceName);
+                    }
             }
+        }
+
+        private static ISecretReader GetSecretReader()
+        {
+            string vaultName = EnvironmentSettings.KeyVaultName;
+
+            if (!string.IsNullOrEmpty(vaultName))
+            {
+                string clientId = EnvironmentSettings.KeyVaultClientId;
+                string certificateThumbprint = EnvironmentSettings.KeyVaultCertificateThumbprint;
+
+                var certificate = CertificateUtility.FindCertificateByThumbprint(StoreName.My, StoreLocation.LocalMachine, certificateThumbprint, validationRequired: false);
+
+                var keyVaultConfiguration = new KeyVaultConfiguration(vaultName, clientId, certificate);
+
+                return new CachingSecretReader(new KeyVaultReader(keyVaultConfiguration));
+            }
+
+            return new EmptySecretReader();
+        }
+
+        private static IAzureManagementAPIWrapperConfiguration GetAzureManagementConfiguration(ISecretReader secretReader)
+        {
+            AzureManagementAPIWrapperConfiguration azureConfig = null;
+            var clientId = secretReader.GetSecretAsync(EnvironmentSettings.AzureManagementAPIClientId).Result;
+
+            if (!string.IsNullOrEmpty(clientId))
+            {
+                var clientSecret = secretReader.GetSecretAsync(EnvironmentSettings.AzureManagementAPIClientSecret).Result;
+                azureConfig = new AzureManagementAPIWrapperConfiguration(clientId, clientSecret);
+            }
+
+            return azureConfig;
         }
     }
 }

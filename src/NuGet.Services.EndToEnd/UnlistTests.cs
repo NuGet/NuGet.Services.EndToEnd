@@ -69,13 +69,13 @@ namespace NuGet.Services.EndToEnd
 
             await _clients.V2V3Search.WaitForListedStateAsync(package.Id, package.FullVersion, listed, _logger);
 
-            var searchBaseUrls = await _clients.V2V3Search.GetSearchBaseUrlsAsync();
+            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync();
 
-            foreach (var searchBaseUrl in searchBaseUrls)
+            foreach (var searchService in searchServices)
             {
                 // Act
                 var results = await _clients.V2V3Search.QueryAsync(
-                    searchBaseUrl,
+                    searchService,
                     $"q=packageid:{package.Id}&prerelease=true&semVerLevel=2.0.0",
                     _logger);
 

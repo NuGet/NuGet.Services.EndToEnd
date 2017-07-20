@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
+using NuGet.Services.AzureManagement;
 using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
@@ -15,15 +17,31 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class V2V3SearchClient
     {
+        /// <summary>
+        /// To be used for <see cref="IAzureManagementAPIWrapper"/> request
+        /// </summary>
+        private const string ProductionSlot = "production";
+
+        /// <summary>
+        /// In case cloud service information is not provided, this will be the fallback instance count.
+        /// </summary>
+        private const int DefaultServiceInstanceCount = 2;
+
         private readonly V3IndexClient _v3IndexClient;
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
+        private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper; 
 
         public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings)
         {
             _httpClient = httpClient;
             _v3IndexClient = v3IndexClient;
             _testSettings = testSettings;
+
+            if (testSettings.AzureManagementAPIWrapperConfiguration != null)
+            {
+                _azureManagementAPIWrapper = new AzureManagementAPIWrapper(testSettings.AzureManagementAPIWrapperConfiguration);
+            }
         }
 
         [Obsolete]
@@ -34,36 +52,33 @@ namespace NuGet.Services.EndToEnd.Support
             return await _httpClient.GetJsonAsync<V2SearchResponse>(queryUrl.AbsoluteUri, logger);
         }
 
-        public async Task<V3SearchResponse> QueryAsync(string searchBaseUrl, string queryString, ITestOutputHelper logger)
+        public async Task<V3SearchResponse> QueryAsync(SearchService searchService, string queryString, ITestOutputHelper logger)
         {
-            var baseUri = new Uri(searchBaseUrl);
-            var queryUrl = new Uri(baseUri, $"query?{queryString}");
+            var queryUrl = new Uri(searchService.Uri, $"query?{queryString}");
             return await _httpClient.GetJsonAsync<V3SearchResponse>(queryUrl.AbsoluteUri, logger);
         }
 
         public async Task<AutocompleteResponse> AutocompletePackageIdsAsync(
-            string searchBaseUrl,
+            SearchService searchService,
             string packageId,
             bool includePrerelease,
             string semVerLevel,
             ITestOutputHelper logger)
         {
-            var baseUri = new Uri(searchBaseUrl);
             var queryString = BuildAutocompleteQueryString($"take=30&q={packageId}", includePrerelease, semVerLevel);
-            var queryUrl = new Uri(baseUri, queryString);
+            var queryUrl = new Uri(searchService.Uri, queryString);
             return await _httpClient.GetJsonAsync<AutocompleteResponse>(queryUrl.AbsoluteUri, logger);
         }
 
         public async Task<AutocompleteResponse> AutocompletePackageVersionsAsync(
-            string searchBaseUrl,
+            SearchService searchService,
             string packageId,
             bool includePrerelease,
             string semVerLevel,
             ITestOutputHelper logger)
         {
-            var baseUri = new Uri(searchBaseUrl);
             var queryString = BuildAutocompleteQueryString($"id={packageId}", includePrerelease, semVerLevel);
-            var queryUrl = new Uri(baseUri, queryString);
+            var queryUrl = new Uri(searchService.Uri, queryString);
             return await _httpClient.GetJsonAsync<AutocompleteResponse>(queryUrl.AbsoluteUri, logger);
         }
 
@@ -117,12 +132,12 @@ namespace NuGet.Services.EndToEnd.Support
                 logger);
         }
 
-        private IEnumerable<string> GetSearchUrlsForPolling(string originalBaseUrl)
+        private IEnumerable<string> GetSearchUrlsForPolling(SearchService searchServices)
         {
-            for (var instanceIndex = 0; instanceIndex < _testSettings.SearchInstanceCount; instanceIndex++)
+            for (var instanceIndex = 0; instanceIndex < searchServices.InstanceCount; instanceIndex++)
             {
                 var port = 8080 + instanceIndex;
-                var uriBuilder = new UriBuilder(originalBaseUrl)
+                var uriBuilder = new UriBuilder(searchServices.Uri)
                 {
                     Scheme = "http",
                     Port = port,
@@ -133,19 +148,26 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        public async Task<IReadOnlyList<string>> GetSearchBaseUrlsAsync()
+        public async Task<IReadOnlyList<SearchService>> GetSearchServicesAsync()
         {
-            var searchBaseUrls = new List<string>();
-            if (_testSettings.SearchBaseUrl != null)
+            if (_azureManagementAPIWrapper != null)
             {
-                searchBaseUrls.Add(_testSettings.SearchBaseUrl);
+                string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
+                                    _testSettings.Subscription,
+                                    _testSettings.SearchServiceResourceGroup,
+                                    _testSettings.SearchServiceName,
+                                    ProductionSlot,
+                                    CancellationToken.None);
+
+                var cloudService = AzureHelper.ParseCloudServiceProperties(result);
+
+                return new List<SearchService>() { new SearchService { Uri = cloudService.Uri, InstanceCount = cloudService.InstanceCount } };
             }
             else
             {
-                searchBaseUrls.AddRange(await _v3IndexClient.GetSearchBaseUrlsAsync());
+                var urls = await _v3IndexClient.GetSearchBaseUrlsAsync();
+                return urls.Select(url => new SearchService { Uri = new Uri(url), InstanceCount = DefaultServiceInstanceCount }).ToList();
             }
-
-            return searchBaseUrls;
         }
 
         private static string BuildAutocompleteQueryString(
@@ -178,10 +200,10 @@ namespace NuGet.Services.EndToEnd.Support
             string failureMessageFormat,
             ITestOutputHelper logger)
         {
-            var searchBaseUrls = await GetSearchBaseUrlsAsync();
+            var searchServices = await GetSearchServicesAsync();
 
-            var v2SearchUrls = searchBaseUrls
-                .SelectMany(u => GetSearchUrlsForPolling(u))
+            var v2SearchUrls = searchServices
+                .SelectMany(service => GetSearchUrlsForPolling(service))
                 .ToList();
 
             Assert.True(v2SearchUrls.Count > 0, "At least one search base URL must be configured.");
@@ -322,7 +344,12 @@ namespace NuGet.Services.EndToEnd.Support
             public string Index { get; set; }
             public long TotalHits { get; set; }
             public DateTimeOffset LastReopen { get; set; }
+        }
 
+        public class SearchService
+        {
+            public Uri Uri { get; set; }
+            public int InstanceCount { get; set; }
         }
     }
 }
