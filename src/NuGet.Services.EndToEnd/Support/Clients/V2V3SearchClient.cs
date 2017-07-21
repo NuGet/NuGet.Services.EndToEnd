@@ -27,16 +27,12 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly TestSettings _testSettings;
         private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper; 
 
-        public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings)
+        public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings, IAzureManagementAPIWrapper azureManagementAPIWrapper)
         {
             _httpClient = httpClient;
             _v3IndexClient = v3IndexClient;
             _testSettings = testSettings;
-
-            if (testSettings.AzureManagementAPIWrapperConfiguration != null)
-            {
-                _azureManagementAPIWrapper = new AzureManagementAPIWrapper(testSettings.AzureManagementAPIWrapperConfiguration);
-            }
+            _azureManagementAPIWrapper = azureManagementAPIWrapper;
         }
 
         [Obsolete]
@@ -143,10 +139,15 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        public async Task<IReadOnlyList<SearchService>> GetSearchServicesAsync()
+        public async Task<IReadOnlyList<SearchService>> GetSearchServicesAsync(ITestOutputHelper logger)
         {
             if (_azureManagementAPIWrapper != null)
             {
+                logger.WriteLine($"Extracting search service properties from Azure. " +
+                    $"Subscription: {_testSettings.Subscription}," +
+                    $" Resource group: {_testSettings.SearchServiceResourceGroup}," +
+                    $" Service name: {_testSettings.SearchServiceName}");
+
                 string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
                                     _testSettings.Subscription,
                                     _testSettings.SearchServiceResourceGroup,
@@ -160,6 +161,8 @@ namespace NuGet.Services.EndToEnd.Support
             }
             else
             {
+                logger.WriteLine($"Extracting search services URLs from index.json: {_testSettings.V3IndexUrl}");
+
                 var urls = await _v3IndexClient.GetSearchBaseUrlsAsync();
                 return urls.Select(url => new SearchService { Uri = new Uri(url), InstanceCount = DefaultServiceInstanceCount }).ToList();
             }
@@ -195,7 +198,7 @@ namespace NuGet.Services.EndToEnd.Support
             string failureMessageFormat,
             ITestOutputHelper logger)
         {
-            var searchServices = await GetSearchServicesAsync();
+            var searchServices = await GetSearchServicesAsync(logger);
 
             var v2SearchUrls = searchServices
                 .SelectMany(service => GetSearchUrlsForPolling(service))

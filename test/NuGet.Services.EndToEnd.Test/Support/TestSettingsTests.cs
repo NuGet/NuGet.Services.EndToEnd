@@ -30,7 +30,7 @@ namespace NuGet.Services.EndToEnd.Support
         public void TestSettingsShouldNotMentionRealApiKeys(TestSettings.Mode mode)
         {
             // Arrange
-            Assert.Equal("API_KEY", TestSettings.DefaultTestSettings[mode].ApiKey);
+            Assert.Equal("API_KEY", TestSettings.GetDefaultConfiguration(mode).ApiKey);
         }
     }
 }

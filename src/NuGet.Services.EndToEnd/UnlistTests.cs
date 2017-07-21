@@ -69,7 +69,7 @@ namespace NuGet.Services.EndToEnd
 
             await _clients.V2V3Search.WaitForListedStateAsync(package.Id, package.FullVersion, listed, _logger);
 
-            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync();
+            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
 
             foreach (var searchService in searchServices)
             {

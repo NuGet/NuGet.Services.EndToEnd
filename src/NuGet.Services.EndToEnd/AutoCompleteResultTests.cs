@@ -45,7 +45,7 @@ namespace NuGet.Services.EndToEnd
                 semVerLevel, 
                 _logger);
 
-            foreach (var searchService in await _clients.V2V3Search.GetSearchServicesAsync())
+            foreach (var searchService in await _clients.V2V3Search.GetSearchServicesAsync(_logger))
             {
                 var v3Response = await _clients.V2V3Search.AutocompletePackageVersionsAsync(
                     searchService,
@@ -80,7 +80,7 @@ namespace NuGet.Services.EndToEnd
                 semVerLevel,
                 _logger);
 
-            foreach (var searchService in await _clients.V2V3Search.GetSearchServicesAsync())
+            foreach (var searchService in await _clients.V2V3Search.GetSearchServicesAsync(_logger))
             {
                 var v3Response = await _clients.V2V3Search.AutocompletePackageIdsAsync(
                     searchService,

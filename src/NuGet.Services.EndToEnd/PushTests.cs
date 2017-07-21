@@ -47,7 +47,7 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
-            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync();
+            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
 
             // Wait for package to become available
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);

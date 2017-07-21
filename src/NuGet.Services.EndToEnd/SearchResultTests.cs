@@ -30,7 +30,7 @@ namespace NuGet.Services.EndToEnd
             // Arrange
             var allRegistrationAddresses = await _clients.V3Index.GetRegistrationBaseUrlsAsync();
             var semVer2RegistrationAddresses = await _clients.V3Index.GetSemVer2RegistrationBaseUrlsAsync();
-            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync();
+            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
             
             var semVer2Package = await _pushedPackages.PrepareAsync(PackageType.SemVer2Prerel, _logger);
             var semVer1Package = await _pushedPackages.PrepareAsync(PackageType.SemVer1Stable, _logger);

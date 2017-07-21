@@ -46,7 +46,7 @@ namespace NuGet.Services.EndToEnd
         [Fact]
         public async Task SearchIsReachable()
         {
-            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync();
+            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
             foreach (var searchService in searchServices)
             {
                 _logger.WriteLine($"Verifying connectivity to search base URL: {searchService.Uri.AbsoluteUri}");
