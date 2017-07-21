@@ -26,6 +26,7 @@ namespace NuGet.Services.EndToEnd.Support
                 aggressivePush: true,
                 galleryBaseUrl: "https://example-gallery",
                 v3IndexUrl: "https://example-v3/index.json",
+                searchServiceInstanceCount: 2,
                 trustedHttpsCertificates: new List<string>(),
                 apiKey: "API_KEY",
                 semVer2Enabled: true);
