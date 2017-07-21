@@ -40,7 +40,7 @@ namespace NuGet.Services.EndToEnd.Support
                 new TestSettings(
                              DefaultAggressivePush,
                              "https://dev.nugettest.org",
-                             "http://api.dev.nugettest.org/v3-index/index.json",
+                             "https://api.dev.nugettest.org/v3-index/index.json",
                              new List<string>(),
                              "fa133685-cfc3-43f3-81c7-0a36d0969987",
                              semVer2Enabled: true)
@@ -50,7 +50,7 @@ namespace NuGet.Services.EndToEnd.Support
                 new TestSettings(
                             DefaultAggressivePush,
                             "https://int.nugettest.org",
-                            "http://api.int.nugettest.org/v3-index/index.json",
+                            "https://api.int.nugettest.org/v3-index/index.json",
                             new List<string>(),
                             "API_KEY",
                             semVer2Enabled: false)
@@ -79,7 +79,8 @@ namespace NuGet.Services.EndToEnd.Support
             IAzureManagementAPIWrapperConfiguration azureManagementAPIWrapperConfiguration = null,
             string subscription = "",
             string searchServiceResourceGroup = "",
-            string searchServiceName = "")
+            string searchServiceName = "",
+            string searchServiceSlot = "")
         {
             GalleryBaseUrl = galleryBaseUrl ?? throw new ArgumentNullException(nameof(galleryBaseUrl));
             V3IndexUrl = v3IndexUrl ?? throw new ArgumentNullException(nameof(v3IndexUrl));
@@ -92,6 +93,7 @@ namespace NuGet.Services.EndToEnd.Support
             Subscription = subscription;
             SearchServiceResourceGroup = searchServiceResourceGroup;
             SearchServiceName = searchServiceName;
+            SearchServiceSlot = searchServiceSlot;
         }
 
         public string GalleryBaseUrl { get; }
@@ -104,6 +106,7 @@ namespace NuGet.Services.EndToEnd.Support
         public string Subscription { get; }
         public string SearchServiceResourceGroup { get; }
         public string SearchServiceName { get; }
+        public string SearchServiceSlot { get; }
 
         public static TestSettings Create()
         {

@@ -18,11 +18,6 @@ namespace NuGet.Services.EndToEnd.Support
     public class V2V3SearchClient
     {
         /// <summary>
-        /// To be used for <see cref="IAzureManagementAPIWrapper"/> request
-        /// </summary>
-        private const string ProductionSlot = "production";
-
-        /// <summary>
         /// In case cloud service information is not provided, this will be the fallback instance count.
         /// </summary>
         private const int DefaultServiceInstanceCount = 2;
@@ -156,7 +151,7 @@ namespace NuGet.Services.EndToEnd.Support
                                     _testSettings.Subscription,
                                     _testSettings.SearchServiceResourceGroup,
                                     _testSettings.SearchServiceName,
-                                    ProductionSlot,
+                                    _testSettings.SearchServiceSlot,
                                     CancellationToken.None);
 
                 var cloudService = AzureHelper.ParseCloudServiceProperties(result);
