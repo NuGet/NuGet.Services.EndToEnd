@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
+    <Compile Include="Support\AzureManagementAPIWrapperConfiguration.cs" />
     <Compile Include="ConnectivityTests.cs" />
     <Compile Include="NuGetExeTests.cs" />
     <Compile Include="RelistTests.cs" />

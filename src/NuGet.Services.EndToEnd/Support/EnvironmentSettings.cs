@@ -38,16 +38,7 @@ namespace NuGet.Services.EndToEnd.Support
         public static string V3IndexUrl => GetEnvironmentVariable("V3IndexUrl", required: true);
 
         /// <summary>
-        /// The base URL to search service. This value is optional. If not provided, the search services that will
-        /// be tested will be found in the V3 index.json (via <see cref="V3IndexUrl"/>).
-        /// </summary>
-        /// <example>
-        /// http://nuget-int-0-v2v3search.cloudapp.net
-        /// </example>
-        public static string SearchBaseUrl => GetEnvironmentVariable("SearchBaseUrl", required: false)?.TrimEnd('/');
-
-        /// <summary>
-        /// The number of search service instances. This value is required and is used when polling the search service
+        /// The number of search service instances to be used when Azure API is not configured. This value is required and is used when polling the search service
         /// for package ability to make sure all instances have the requested package.
         /// </summary>
         public static int SearchInstanceCount
@@ -115,6 +106,46 @@ namespace NuGet.Services.EndToEnd.Support
                 return semVer2Enabled;
             }
         }
+
+        /// <summary>
+        /// Name of KeyVault to extract secrets from. Empty if none is used.
+        /// </summary>
+        public static string KeyVaultName => GetEnvironmentVariable("KeyVaultName", required: false);
+
+        /// <summary>
+        /// Client id to access KeyVault.
+        /// </summary>
+        public static string KeyVaultClientId => GetEnvironmentVariable("KeyVaultClientId", required: false);
+
+        /// <summary>
+        /// Certificate thumbprint to access KeyVault.
+        /// </summary>
+        public static string KeyVaultCertificateThumbprint => GetEnvironmentVariable("KeyVaultCertificateThumbprint", required: false);
+
+        /// <summary>
+        /// Client id of AAD app that enables Azure management API access
+        /// </summary>
+        public static string AzureManagementAPIClientId => GetEnvironmentVariable("AzureManagementAPIClientId", required: false);
+
+        /// <summary>
+        /// Client secret of AAD app that enables Azure management API access
+        /// </summary>
+        public static string AzureManagementAPIClientSecret => GetEnvironmentVariable("AzureManagementAPIClientSecret", required: false);
+
+        /// <summary>
+        /// The subscription id for search service (or other resources).
+        /// </summary>
+        public static string Subscription => GetEnvironmentVariable("Subscription", required: false);
+
+        /// <summary>
+        /// Search service resource group.
+        /// </summary>
+        public static string SearchServiceResourceGroup => GetEnvironmentVariable("SearchServiceResourceGroup", required: false);
+
+        /// <summary>
+        /// Search service service name.
+        /// </summary>
+        public static string SearchServiceName => GetEnvironmentVariable("SearchServiceName", required: false);
 
         private static string GetEnvironmentVariable(string key, bool required)
         {

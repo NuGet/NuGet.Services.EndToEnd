@@ -2,6 +2,8 @@
   "dependencies": {
     "Microsoft.AspNetCore.WebUtilities": "1.1.1",
     "NuGet.Commands": "4.0.0",
+    "NuGet.Services.AzureManagement": "2.2.4",
+    "NuGet.Services.KeyVault": "2.2.4",
     "xunit": "2.2.0",
     "xunit.runner.visualstudio": "2.2.0"
   },
