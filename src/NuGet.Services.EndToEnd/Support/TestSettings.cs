@@ -38,6 +38,7 @@ namespace NuGet.Services.EndToEnd.Support
             bool aggressivePush,
             string galleryBaseUrl,
             string v3IndexUrl,
+            int searchServiceInstanceCount,
             IReadOnlyList<string> trustedHttpsCertificates,
             string apiKey,
             bool semVer2Enabled,
@@ -52,6 +53,7 @@ namespace NuGet.Services.EndToEnd.Support
             TrustedHttpsCertificates = trustedHttpsCertificates ?? throw new ArgumentNullException(nameof(trustedHttpsCertificates));
             ApiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
 
+            SearchInstanceCount = searchServiceInstanceCount;
             AggressivePush = aggressivePush;
             SemVer2Enabled = semVer2Enabled;
             AzureManagementAPIWrapperConfiguration = azureManagementAPIWrapperConfiguration;
@@ -63,6 +65,11 @@ namespace NuGet.Services.EndToEnd.Support
 
         public string GalleryBaseUrl { get; }
         public string V3IndexUrl { get; }
+
+        /// <summary>
+        /// Will be used as fallback in case Azure API is not configured
+        /// </summary>
+        public int SearchInstanceCount { get; }
         public IReadOnlyList<string> TrustedHttpsCertificates { get; }
         public string ApiKey { get; }
         public bool SemVer2Enabled { get; }
@@ -90,6 +97,7 @@ namespace NuGet.Services.EndToEnd.Support
                              DefaultAggressivePush,
                              "https://dev.nugettest.org",
                              "https://api.dev.nugettest.org/v3-index/index.json",
+                             2,
                              new List<string>(),
                              "API_KEY",
                              semVer2Enabled: true);
@@ -98,6 +106,7 @@ namespace NuGet.Services.EndToEnd.Support
                             DefaultAggressivePush,
                             "https://int.nugettest.org",
                             "https://api.int.nugettest.org/v3-index/index.json",
+                            2,
                             new List<string>(),
                             "API_KEY",
                             semVer2Enabled: false);
@@ -106,6 +115,7 @@ namespace NuGet.Services.EndToEnd.Support
                             DefaultAggressivePush,
                             "https://www.nuget.org",
                             "https://api.nuget.org/v3/index.json",
+                            5,
                             new List<string>(),
                             "API_KEY",
                             semVer2Enabled: false);
@@ -132,6 +142,7 @@ namespace NuGet.Services.EndToEnd.Support
                             DefaultAggressivePush,
                             EnvironmentSettings.GalleryBaseUrl,
                             EnvironmentSettings.V3IndexUrl,
+                            EnvironmentSettings.SearchInstanceCount,
                             EnvironmentSettings.TrustedHttpsCertificates,
                             EnvironmentSettings.ApiKey,
                             EnvironmentSettings.SemVer2Enabled,

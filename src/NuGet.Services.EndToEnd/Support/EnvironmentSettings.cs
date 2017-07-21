@@ -38,6 +38,24 @@ namespace NuGet.Services.EndToEnd.Support
         public static string V3IndexUrl => GetEnvironmentVariable("V3IndexUrl", required: true);
 
         /// <summary>
+        /// The number of search service instances to be used when Azure API is not configured. This value is required and is used when polling the search service
+        /// for package ability to make sure all instances have the requested package.
+        /// </summary>
+        public static int SearchInstanceCount
+        {
+            get
+            {
+                var unparsedInstanceCount = GetEnvironmentVariable("SearchInstanceCount", required: true);
+                if (!int.TryParse(unparsedInstanceCount, out int instanceCount))
+                {
+                    throw new ArgumentException("The environment variable 'SearchInstanceCount' must be parsable as an integer.");
+                }
+
+                return instanceCount;
+            }
+        }
+
+        /// <summary>
         /// An optional comma-seperated list of SHA1 certificate fingerprints to trust. In this case, trust means to
         /// allow SSL failures of type "remote certificate name mismatch". That is, we are attempting to hit and HTTPS
         /// endpoint that via a domain name that does not match the SSL certificate. This is important when hitting the

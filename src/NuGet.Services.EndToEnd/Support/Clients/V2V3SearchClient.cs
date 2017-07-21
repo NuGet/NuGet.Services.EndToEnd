@@ -17,11 +17,6 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class V2V3SearchClient
     {
-        /// <summary>
-        /// In case cloud service information is not provided, this will be the fallback instance count.
-        /// </summary>
-        private const int DefaultServiceInstanceCount = 2;
-
         private readonly V3IndexClient _v3IndexClient;
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
@@ -164,7 +159,7 @@ namespace NuGet.Services.EndToEnd.Support
                 logger.WriteLine($"Extracting search services URLs from index.json: {_testSettings.V3IndexUrl}");
 
                 var urls = await _v3IndexClient.GetSearchBaseUrlsAsync();
-                return urls.Select(url => new SearchService { Uri = new Uri(url), InstanceCount = DefaultServiceInstanceCount }).ToList();
+                return urls.Select(url => new SearchService { Uri = new Uri(url), InstanceCount = _testSettings.SearchInstanceCount }).ToList();
             }
         }
 
