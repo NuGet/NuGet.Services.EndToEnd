@@ -28,7 +28,7 @@ namespace NuGet.Services.EndToEnd
         /// </summary>
         [Theory]
         [InlineData(PackageType.SemVer1Stable, false)]
-        [SemVer2InlineData(PackageType.SemVer2Prerel, true)]
+        [InlineData(PackageType.SemVer2Prerel, true)]
         public async Task PackageInitiallyShowsAsListedInRegistration(PackageType packageType, bool semVer2)
         {
             // Arrange
@@ -43,8 +43,8 @@ namespace NuGet.Services.EndToEnd
         /// </summary>
         [Theory]
         [InlineData(PackageType.SemVer1StableUnlisted, false)]
-        [SemVer2InlineData(PackageType.SemVer2PrerelUnlisted, true)]
-        [SemVer2InlineData(PackageType.SemVer2StableMetadataUnlisted, true)]
+        [InlineData(PackageType.SemVer2PrerelUnlisted, true)]
+        [InlineData(PackageType.SemVer2StableMetadataUnlisted, true)]
         public async Task UnlistedPackageShowsAsUnlistedInRegistration(PackageType packageType, bool semVer2)
         {
             // Arrange
@@ -59,8 +59,8 @@ namespace NuGet.Services.EndToEnd
         /// </summary>
         [Theory]
         [InlineData(PackageType.SemVer1StableUnlisted)]
-        [SemVer2InlineData(PackageType.SemVer2PrerelUnlisted)]
-        [SemVer2InlineData(PackageType.SemVer2StableMetadataUnlisted)]
+        [InlineData(PackageType.SemVer2PrerelUnlisted)]
+        [InlineData(PackageType.SemVer2StableMetadataUnlisted)]
         public async Task UnlistedPackageIsHiddenFromSearch(PackageType packageType)
         {
             // Arrange

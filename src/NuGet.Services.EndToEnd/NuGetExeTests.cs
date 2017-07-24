@@ -40,7 +40,7 @@ namespace NuGet.Services.EndToEnd
             _testDirectory.Dispose();
         }
 
-        [SemVer2Theory]
+        [Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
         public async Task LatestNuGetExeCanRestorePackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
         {
@@ -58,7 +58,7 @@ namespace NuGet.Services.EndToEnd
             Assert.Equal(0, result.ExitCode);
         }
 
-        [SemVer2Theory]
+        [Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
         public async Task LatestNuGetExeCanInstallPackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
         {
@@ -78,7 +78,7 @@ namespace NuGet.Services.EndToEnd
             Assert.Equal(0, result.ExitCode);
         }
 
-        [SemVer2Theory]
+        [Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
         public async Task LatestNuGetExeCanInstallLatestPackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
         {
@@ -99,7 +99,7 @@ namespace NuGet.Services.EndToEnd
             Assert.Equal(0, result.ExitCode);
         }
 
-        [SemVer2Theory]
+        [Theory]
         [MemberData(nameof(SemVer2PackageTypes))]
         public async Task Pre430NuGetExeCannotInstallLatestSemVer2Packages(PackageType packageType, PackageType[] dependencies, SourceType sourceType)
         {

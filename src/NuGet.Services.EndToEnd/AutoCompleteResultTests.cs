@@ -28,8 +28,8 @@ namespace NuGet.Services.EndToEnd
         [Theory]
         [InlineData(PackageType.SemVer1Stable, true, null)]
         [InlineData(PackageType.SemVer1Stable, false, null)]
-        [SemVer2InlineData(PackageType.SemVer2Prerel, true, "2.0.0")]
-        [SemVer2InlineData(PackageType.SemVer2StableMetadata, false, "2.0.0")]
+        [InlineData(PackageType.SemVer2Prerel, true, "2.0.0")]
+        [InlineData(PackageType.SemVer2StableMetadata, false, "2.0.0")]
         public async Task V2PackageVersionsAutocompleteResultsMatchV3Results(
             PackageType packageType,
             bool includePrerelease,
@@ -63,8 +63,8 @@ namespace NuGet.Services.EndToEnd
         [Theory]
         [InlineData(PackageType.SemVer1Stable, true, null)]
         [InlineData(PackageType.SemVer1Stable, false, null)]
-        [SemVer2InlineData(PackageType.SemVer2Prerel, true, "2.0.0")]
-        [SemVer2InlineData(PackageType.SemVer2StableMetadata, false, "2.0.0")]
+        [InlineData(PackageType.SemVer2Prerel, true, "2.0.0")]
+        [InlineData(PackageType.SemVer2StableMetadata, false, "2.0.0")]
         public async Task V2PackageIdsAutocompleteResultsMatchV3Results(
             PackageType packageType,
             bool includePrerelease,

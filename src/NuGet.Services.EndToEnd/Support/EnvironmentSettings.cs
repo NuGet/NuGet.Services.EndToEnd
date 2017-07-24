@@ -98,24 +98,6 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         public static string ApiKey => GetEnvironmentVariable("ApiKey", required: true);
 
-        /// <summary>
-        /// Whether or not SemVer 2.0.0 is enabled. If this is not boolean parsabled, set to false, or is not set at
-        /// all, SemVer 2.0.0 end-to-end tests will not be run.
-        /// </summary>
-        public static bool SemVer2Enabled
-        {
-            get
-            {
-                var unparsedBool = GetEnvironmentVariable("SemVer2Enabled", required: false);
-                if (!bool.TryParse(unparsedBool, out bool semVer2Enabled))
-                {
-                    return false;
-                }
-
-                return semVer2Enabled;
-            }
-        }
-
         private static string GetEnvironmentVariable(string key, bool required)
         {
             var output = Targets

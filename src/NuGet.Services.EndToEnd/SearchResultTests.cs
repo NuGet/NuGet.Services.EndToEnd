@@ -24,7 +24,7 @@ namespace NuGet.Services.EndToEnd
             _logger = logger;
         }
 
-        [SemVer2Fact]
+        [Fact]
         public async Task RegistrationValuesInResultMatchRequestSemVerLevel()
         {
             // Arrange
