@@ -121,10 +121,10 @@ namespace NuGet.Services.EndToEnd.Support
         {
             for (var instanceIndex = 0; instanceIndex < _testSettings.SearchInstanceCount; instanceIndex++)
             {
-                var port = 8080 + instanceIndex;
+                var port = 44301 + instanceIndex;
                 var uriBuilder = new UriBuilder(originalBaseUrl)
                 {
-                    Scheme = "http",
+                    Scheme = "https",
                     Port = port,
                     Path = "/search/query"
                 };
