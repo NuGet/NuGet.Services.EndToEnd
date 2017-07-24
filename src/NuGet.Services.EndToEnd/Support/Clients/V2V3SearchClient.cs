@@ -15,6 +15,8 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class V2V3SearchClient
     {
+        private const int MinPort = 44301;
+
         private readonly V3IndexClient _v3IndexClient;
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
@@ -121,7 +123,7 @@ namespace NuGet.Services.EndToEnd.Support
         {
             for (var instanceIndex = 0; instanceIndex < _testSettings.SearchInstanceCount; instanceIndex++)
             {
-                var port = 44301 + instanceIndex;
+                var port = MinPort + instanceIndex;
                 var uriBuilder = new UriBuilder(originalBaseUrl)
                 {
                     Scheme = "https",
