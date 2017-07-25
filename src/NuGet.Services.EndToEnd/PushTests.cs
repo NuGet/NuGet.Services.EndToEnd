@@ -27,8 +27,8 @@ namespace NuGet.Services.EndToEnd
         /// </summary>
         [Theory]
         [InlineData(PackageType.SemVer1Stable, false)]
-        [SemVer2InlineData(PackageType.SemVer2Prerel, true)]
-        [SemVer2InlineData(PackageType.SemVer2StableMetadata, true)]
+        [InlineData(PackageType.SemVer2Prerel, true)]
+        [InlineData(PackageType.SemVer2StableMetadata, true)]
         public async Task NewlyPushedIsAvailableInV3(PackageType packageType, bool semVer2)
         {
             // Arrange
@@ -41,8 +41,8 @@ namespace NuGet.Services.EndToEnd
         }
 
         [Theory]
-        [SemVer2InlineData(PackageType.SemVer2Prerel)]
-        [SemVer2InlineData(PackageType.SemVer2StableMetadata)]
+        [InlineData(PackageType.SemVer2Prerel)]
+        [InlineData(PackageType.SemVer2StableMetadata)]
         public async Task NewSemVer2PackageIsFiltered(PackageType packageType)
         {
             // Arrange
