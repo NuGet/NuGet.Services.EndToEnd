@@ -3,104 +3,58 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace NuGet.Services.EndToEnd.Support
 {
     public class TestSettings
     {
-        public enum Mode
-        {
-            EnvironmentVariables,
-            Dev,
-            Int,
-            Prod,
-        };
-
         /// <summary>
-        /// Manually override this value to easily test end-to-end tests against on of the deployed environments. The
-        /// checked in value should always be <see cref="Mode.EnvironmentVariables"/>.
+        /// Change this value to test against one of the pre-configured environments: Dev/Int/Prod.
+        /// When there is no setting, the configuration will be extracted from an environment variable
         /// </summary>
-        public static Mode CurrentMode => Mode.EnvironmentVariables;
+        public static string ManualConfigurationOverride = "Dev";
 
         /// <summary>
         /// Manually override this value to easily enable aggressive pushing. This means each test will push its own
         /// packages. This is helpful when debugging a single test.
         /// </summary>
-        public static bool DefaultAggressivePush => true;
+        public static bool AggressivePush => true;
 
-        public TestSettings(
-            bool aggressivePush,
-            string galleryBaseUrl,
-            string v3IndexUrl,
-            IReadOnlyList<string> trustedHttpsCertificates,
-            string apiKey,
-            string searchBaseUrl,
-            int searchInstanceCount)
+        private TestSettings(string configurationName)
         {
-            GalleryBaseUrl = galleryBaseUrl ?? throw new ArgumentNullException(nameof(galleryBaseUrl));
-            V3IndexUrl = v3IndexUrl ?? throw new ArgumentNullException(nameof(v3IndexUrl));
-            TrustedHttpsCertificates = trustedHttpsCertificates ?? throw new ArgumentNullException(nameof(trustedHttpsCertificates));
-            ApiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
+            var builder = new ConfigurationBuilder()
+              .SetBasePath(Path.Combine(Environment.CurrentDirectory, "config"))
+              .AddJsonFile(configurationName + ".json");
 
-            AggressivePush = aggressivePush;
-            SearchBaseUrl = searchBaseUrl;
-            SearchInstanceCount = searchInstanceCount;
+            var configurationRoot = builder.Build();
+
+            configurationRoot.GetSection("TestSettings").Bind(this);
         }
 
-        public string GalleryBaseUrl { get; }
-        public string V3IndexUrl { get; }
-        public string SearchBaseUrl { get; }
-        public IReadOnlyList<string> TrustedHttpsCertificates { get; }
-        public string ApiKey { get; }
-        public int SearchInstanceCount { get; }
-        public bool AggressivePush { get; }
+        public string GalleryBaseUrl { get; set; }
+        public string V3IndexUrl { get; set; }
+        public string SearchBaseUrl { get; set; }
+        public IReadOnlyList<string> TrustedHttpsCertificates { get; set; }
+        public string ApiKey { get; set; }
+        public int SearchInstanceCount { get; set; }
 
         public static TestSettings Create()
         {
-            return Create(CurrentMode);
+            string configurationName = ManualConfigurationOverride;
+
+            if (string.IsNullOrEmpty(configurationName))
+            {
+                configurationName = EnvironmentSettings.ConfigurationName;
+            }
+
+            return Create(configurationName);
         }
 
-        public static TestSettings Create(Mode mode)
+        public static TestSettings Create(string configurationName)
         {
-            switch (mode)
-            {
-                case Mode.Dev:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        "https://dev.nugettest.org",
-                        "http://api.dev.nugettest.org/v3-index/index.json",
-                        new List<string>(),
-                        "API_KEY",
-                        searchBaseUrl: null,
-                        searchInstanceCount: 2);
-                case Mode.Int:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        "https://int.nugettest.org",
-                        "http://api.int.nugettest.org/v3-index/index.json",
-                        new List<string>(),
-                        "API_KEY",
-                        searchBaseUrl: null,
-                        searchInstanceCount: 2);
-                case Mode.Prod:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        "https://www.nuget.org",
-                        "https://api.nuget.org/v3/index.json",
-                        new List<string>(),
-                        "API_KEY",
-                        searchBaseUrl: null,
-                        searchInstanceCount: 5);
-                default:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        EnvironmentSettings.GalleryBaseUrl,
-                        EnvironmentSettings.V3IndexUrl,
-                        EnvironmentSettings.TrustedHttpsCertificates,
-                        EnvironmentSettings.ApiKey,
-                        EnvironmentSettings.SearchBaseUrl,
-                        EnvironmentSettings.SearchInstanceCount);
-            }
+            return new TestSettings(configurationName);
         }
     }
 }

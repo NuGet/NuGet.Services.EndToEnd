@@ -22,15 +22,7 @@ namespace NuGet.Services.EndToEnd.Support
         public PushedPackagesFixtureTests()
         {
             _galleryClient = new Mock<IGalleryClient>();
-            _testSettings = new TestSettings(
-                aggressivePush: true,
-                galleryBaseUrl: "https://example-gallery",
-                v3IndexUrl: "https://example-v3/index.json",
-                trustedHttpsCertificates: new List<string>(),
-                apiKey: "API_KEY",
-                searchBaseUrl: null,
-                searchInstanceCount: 2);
-            _fixture = new PushedPackagesFixture(_galleryClient.Object, _testSettings);
+            _fixture = new PushedPackagesFixture(_galleryClient.Object);
             _logger = new Mock<ITestOutputHelper>();
         }
 

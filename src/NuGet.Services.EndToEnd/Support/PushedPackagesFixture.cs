@@ -38,16 +38,14 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly object _packageIdsLock = new object();
         private readonly IDictionary<PackageType, string> _packageIds;
         private readonly IGalleryClient _galleryClient;
-        private readonly TestSettings _testSettings;
 
-        public PushedPackagesFixture() : this(Clients.Initialize().Gallery, TestSettings.Create())
+        public PushedPackagesFixture() : this(Clients.Initialize().Gallery)
         {
         }
 
-        public PushedPackagesFixture(IGalleryClient galleryClient, TestSettings testSettings)
+        public PushedPackagesFixture(IGalleryClient galleryClient)
         {
             _galleryClient = galleryClient;
-            _testSettings = testSettings;
             _pushLock = new SemaphoreSlim(initialCount: 1);
             _packageIds = new Dictionary<PackageType, string>();
             _packages = new Dictionary<PackageType, Package>();
@@ -179,7 +177,7 @@ namespace NuGet.Services.EndToEnd.Support
             var selectedPackageTypes = new List<PackageType>();
 
             // Add all package types, supporting aggressive push.
-            if (_testSettings.AggressivePush)
+            if (TestSettings.AggressivePush)
             {
                 selectedPackageTypes.AddRange(Enum
                     .GetValues(typeof(PackageType))

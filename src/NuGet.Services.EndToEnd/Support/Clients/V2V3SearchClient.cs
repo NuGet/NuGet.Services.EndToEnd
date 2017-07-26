@@ -138,7 +138,7 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task<IReadOnlyList<string>> GetSearchBaseUrlsAsync()
         {
             var searchBaseUrls = new List<string>();
-            if (_testSettings.SearchBaseUrl != null)
+            if (!string.IsNullOrEmpty(_testSettings.SearchBaseUrl))
             {
                 searchBaseUrls.Add(_testSettings.SearchBaseUrl);
             }

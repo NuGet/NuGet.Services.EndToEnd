@@ -21,6 +21,9 @@ namespace NuGet.Services.EndToEnd.Support
             EnvironmentVariableTarget.Machine
         };
 
+        public static string ConfigurationName => GetEnvironmentVariable("ConfigurationName", required: true);
+
+
         /// <summary>
         /// The base URL of the gallery. Gallery UI and V2 endpoint URLs are derived off of this value.
         /// </summary>

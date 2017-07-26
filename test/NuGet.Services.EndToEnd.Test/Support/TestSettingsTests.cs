@@ -8,29 +8,29 @@ namespace NuGet.Services.EndToEnd.Support
     public class TestSettingsTests
     {
         [Fact]
-        public void TestSettingsModeShouldAlwaysBeEnvironmentVariables()
+        public void TestSettingsManualConfigurationOverrideShouldBeEmpty()
         {
-            /// This test is expected to fail when there is a local change to <see cref="TestSettings.CurrentMode"/>.
+            /// This test is expected to fail when there is a local change to <see cref="TestSettings.ManualConfigurationOverride"/>.
             /// This is okay. We just want to be sure not to check this change in.
-            Assert.Equal(TestSettings.Mode.EnvironmentVariables, TestSettings.CurrentMode);
+            Assert.Equal(string.Empty, TestSettings.ManualConfigurationOverride);
         }
 
         [Fact]
         public void TestSettingsAggressivePushShouldAlwaysBeTrue()
         {
-            /// This test is expected to fail when there is a local change to <see cref="TestSettings.DefaultAggressivePush"/>.
+            /// This test is expected to fail when there is a local change to <see cref="TestSettings.AggressivePush"/>.
             /// This is okay. We just want to be sure not to check this change in.
-            Assert.True(TestSettings.DefaultAggressivePush);
+            Assert.True(TestSettings.AggressivePush);
         }
 
         [Theory]
-        [InlineData(TestSettings.Mode.Dev)]
-        [InlineData(TestSettings.Mode.Int)]
-        [InlineData(TestSettings.Mode.Prod)]
-        public void TestSettingsShouldNotMentionRealApiKeys(TestSettings.Mode mode)
+        [InlineData("Dev")]
+        [InlineData("Int")]
+        [InlineData("Prod")]
+        public void TestSettingsShouldNotMentionRealApiKeys(string configurationName)
         {
             // Arrange
-            Assert.Equal("API_KEY", TestSettings.Create(mode).ApiKey);
+            Assert.Equal("API_KEY", TestSettings.Create(configurationName).ApiKey);
         }
     }
 }

@@ -1,0 +1,10 @@
+﻿{
+  "TestSettings": {
+    "GalleryBaseUrl": "https://wwww.nuget.org",
+    "V3IndexUrl": "http://api.nugettest.org/v3/index.json",
+    "SearchBaseUrl": "",
+    "TrustedHttpsCertificates": {},
+    "ApiKey": "API_KEY",
+    "SearchInstanceCount": "5"
+  }
+}
