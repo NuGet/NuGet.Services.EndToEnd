@@ -184,14 +184,6 @@ namespace NuGet.Services.EndToEnd.Support
                 selectedPackageTypes.AddRange(Enum
                     .GetValues(typeof(PackageType))
                     .Cast<PackageType>());
-
-                // If SemVer 2.0.0 is not enabled, don't automatically push SemVer 2.0.0 packages.
-                if (!_testSettings.SemVer2Enabled)
-                {
-                    selectedPackageTypes = selectedPackageTypes
-                        .Except(SemVer2PackageTypes)
-                        .ToList();
-                }
             }
 
             // Add the requested package type.

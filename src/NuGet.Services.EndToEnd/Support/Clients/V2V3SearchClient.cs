@@ -15,6 +15,8 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class V2V3SearchClient
     {
+        private const int MinPort = 44301;
+
         private readonly V3IndexClient _v3IndexClient;
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
@@ -121,10 +123,10 @@ namespace NuGet.Services.EndToEnd.Support
         {
             for (var instanceIndex = 0; instanceIndex < _testSettings.SearchInstanceCount; instanceIndex++)
             {
-                var port = 8080 + instanceIndex;
+                var port = MinPort + instanceIndex;
                 var uriBuilder = new UriBuilder(originalBaseUrl)
                 {
-                    Scheme = "http",
+                    Scheme = "https",
                     Port = port,
                     Path = "/search/query"
                 };
@@ -227,12 +229,12 @@ namespace NuGet.Services.EndToEnd.Support
                 var response = await _httpClient.GetJsonAsync<V2SearchResponse>(url, logger: null);
                 complete = isComplete(response);
 
-                if (!complete && duration.Elapsed + TestData.V3SleepDuration < TestData.V3WaitDuration)
+                if (!complete && duration.Elapsed + TestData.V3SleepDuration < TestData.SearchWaitDuration)
                 {
                     await Task.Delay(TestData.V3SleepDuration);
                 }
             }
-            while (!complete && duration.Elapsed < TestData.V3WaitDuration);
+            while (!complete && duration.Elapsed < TestData.SearchWaitDuration);
 
             Assert.True(complete, string.Format(failureMessageFormat, v2SearchUrl, duration.Elapsed));
             logger.WriteLine(string.Format(successMessageFormat, v2SearchUrl, duration.Elapsed));

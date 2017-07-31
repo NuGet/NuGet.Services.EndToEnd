@@ -23,7 +23,7 @@ namespace NuGet.Services.EndToEnd
         }
 
         [Theory]
-        [SemVer2InlineData(PackageType.SemVer2PrerelRelisted, true)]
+        [InlineData(PackageType.SemVer2PrerelRelisted, true)]
         public async Task RelistedPackageReappearsInRegistrationAndSearch(PackageType packageType, bool semVer2)
         {
             // Arrange

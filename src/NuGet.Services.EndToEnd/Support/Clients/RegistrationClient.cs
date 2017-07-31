@@ -150,12 +150,12 @@ namespace NuGet.Services.EndToEnd.Support
                     complete = isComplete(response);
                 }
 
-                if (!complete && duration.Elapsed + TestData.V3SleepDuration < TestData.V3WaitDuration)
+                if (!complete && duration.Elapsed + TestData.V3SleepDuration < TestData.RegistrationWaitDuration)
                 {
                     await Task.Delay(TestData.V3SleepDuration);
                 }
             }
-            while (!complete && duration.Elapsed < TestData.V3WaitDuration);
+            while (!complete && duration.Elapsed < TestData.RegistrationWaitDuration);
 
             Assert.True(complete, string.Format(failureMessageFormat, baseUrl, duration.Elapsed));
             logger.WriteLine(string.Format(successMessageFormat, baseUrl, duration.Elapsed));

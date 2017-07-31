@@ -35,7 +35,6 @@ namespace NuGet.Services.EndToEnd.Support
             IReadOnlyList<string> trustedHttpsCertificates,
             string apiKey,
             string searchBaseUrl,
-            bool semVer2Enabled,
             int searchInstanceCount)
         {
             GalleryBaseUrl = galleryBaseUrl ?? throw new ArgumentNullException(nameof(galleryBaseUrl));
@@ -45,7 +44,6 @@ namespace NuGet.Services.EndToEnd.Support
 
             AggressivePush = aggressivePush;
             SearchBaseUrl = searchBaseUrl;
-            SemVer2Enabled = semVer2Enabled;
             SearchInstanceCount = searchInstanceCount;
         }
 
@@ -54,7 +52,6 @@ namespace NuGet.Services.EndToEnd.Support
         public string SearchBaseUrl { get; }
         public IReadOnlyList<string> TrustedHttpsCertificates { get; }
         public string ApiKey { get; }
-        public bool SemVer2Enabled { get; }
         public int SearchInstanceCount { get; }
         public bool AggressivePush { get; }
 
@@ -75,7 +72,6 @@ namespace NuGet.Services.EndToEnd.Support
                         new List<string>(),
                         "API_KEY",
                         searchBaseUrl: null,
-                        semVer2Enabled: true,
                         searchInstanceCount: 2);
                 case Mode.Int:
                     return new TestSettings(
@@ -85,7 +81,6 @@ namespace NuGet.Services.EndToEnd.Support
                         new List<string>(),
                         "API_KEY",
                         searchBaseUrl: null,
-                        semVer2Enabled: false,
                         searchInstanceCount: 2);
                 case Mode.Prod:
                     return new TestSettings(
@@ -95,7 +90,6 @@ namespace NuGet.Services.EndToEnd.Support
                         new List<string>(),
                         "API_KEY",
                         searchBaseUrl: null,
-                        semVer2Enabled: false,
                         searchInstanceCount: 5);
                 default:
                     return new TestSettings(
@@ -105,7 +99,6 @@ namespace NuGet.Services.EndToEnd.Support
                         EnvironmentSettings.TrustedHttpsCertificates,
                         EnvironmentSettings.ApiKey,
                         EnvironmentSettings.SearchBaseUrl,
-                        EnvironmentSettings.SemVer2Enabled,
                         EnvironmentSettings.SearchInstanceCount);
             }
         }
