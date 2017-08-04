@@ -134,14 +134,14 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 using (var nupkgStream = new MemoryStream(packageToPrepare.Package.NupkgBytes.ToArray()))
                 {
-                    await _galleryClient.PushAsync(nupkgStream);
+                    await _galleryClient.PushAsync(nupkgStream, logger);
                 }
                 logger.WriteLine($"Package {packageToPrepare} has been pushed.");
 
                 if (packageToPrepare.Unlist)
                 {
                     logger.WriteLine($"Package of type {packageType} need to be unlisted. Unlisting {packageToPrepare}.");
-                    await _galleryClient.UnlistAsync(packageToPrepare.Package.Id, packageToPrepare.Package.NormalizedVersion);
+                    await _galleryClient.UnlistAsync(packageToPrepare.Package.Id, packageToPrepare.Package.NormalizedVersion, logger);
                     logger.WriteLine($"Package {packageToPrepare} has been unlisted.");
                 }
             }

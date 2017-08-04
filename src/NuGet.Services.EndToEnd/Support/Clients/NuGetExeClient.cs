@@ -17,9 +17,11 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly SourceType _sourceType;
         private readonly string _httpCachePath;
         private readonly string _globalPackagesPath;
+        private readonly GalleryClient _galleryClient;
 
-        public NuGetExeClient(TestSettings testSettings) : this(
+        public NuGetExeClient(TestSettings testSettings, GalleryClient galleryClient) : this(
             testSettings,
+            galleryClient,
             LatestVersion,
             SourceType.V3,
             httpCachePath: null,
@@ -29,6 +31,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         private NuGetExeClient(
             TestSettings testSettings,
+            GalleryClient galleryClient,
             string version,
             SourceType sourceType,
             string httpCachePath,
@@ -39,12 +42,14 @@ namespace NuGet.Services.EndToEnd.Support
             _sourceType = sourceType;
             _httpCachePath = httpCachePath;
             _globalPackagesPath = globalPackagesPath;
+            _galleryClient = galleryClient;
         }
 
         public NuGetExeClient WithHttpCachePath(string httpCachePath)
         {
             return new NuGetExeClient(
                 _testSettings,
+                _galleryClient,
                 _version,
                 _sourceType,
                 httpCachePath,
@@ -55,6 +60,7 @@ namespace NuGet.Services.EndToEnd.Support
         {
             return new NuGetExeClient(
                 _testSettings,
+                _galleryClient,
                 _version,
                 _sourceType,
                 _httpCachePath,
@@ -71,6 +77,7 @@ namespace NuGet.Services.EndToEnd.Support
         {
             return new NuGetExeClient(
                 _testSettings,
+                _galleryClient,
                 version ?? LatestVersion,
                 _sourceType,
                 _httpCachePath,
@@ -81,23 +88,21 @@ namespace NuGet.Services.EndToEnd.Support
         {
             return new NuGetExeClient(
                 _testSettings,
+                _galleryClient,
                 _version,
                 _sourceType,
                 _httpCachePath,
                 _globalPackagesPath);
         }
 
-        private string Source
+        private async Task<string> GetSource(ITestOutputHelper logger)
         {
-            get
+            if (_sourceType == SourceType.V2)
             {
-                if (_sourceType == SourceType.V2)
-                {
-                    return $"{_testSettings.GalleryBaseUrl}/api/v2";
-                }
-
-                return _testSettings.V3IndexUrl;
+                return $"{await _galleryClient.GetGalleryUrl(logger)}/api/v2";
             }
+
+            return _testSettings.V3IndexUrl;
         }
 
         public async Task<CommandRunnerResult> RestoreAsync(string projectPath, ITestOutputHelper logger)
@@ -107,7 +112,7 @@ namespace NuGet.Services.EndToEnd.Support
                 "restore",
                 projectPath,
                 "-Source",
-                Source,
+                await GetSource(logger),
             };
 
             var projectDirectory = Path.GetDirectoryName(projectPath);
@@ -122,7 +127,7 @@ namespace NuGet.Services.EndToEnd.Support
                 "install",
                 id,
                 "-Source",
-                Source,
+                await GetSource(logger),
                 "-OutputDirectory",
                 outputDirectory,
             };
@@ -144,7 +149,7 @@ namespace NuGet.Services.EndToEnd.Support
                 "-Version",
                 version,
                 "-Source",
-                Source,
+                await GetSource(logger),
                 "-OutputDirectory",
                 outputDirectory,
             };

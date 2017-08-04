@@ -30,7 +30,7 @@ namespace NuGet.Services.EndToEnd.Support
         public void TestSettingsShouldNotMentionRealApiKeys(string configurationName)
         {
             // Arrange
-            Assert.Equal("API_KEY", TestSettings.Create(configurationName).ApiKey);
+            Assert.Equal("API_KEY", TestSettings.CreateLocalTestConfiguration(configurationName).ApiKey);
         }
     }
 }

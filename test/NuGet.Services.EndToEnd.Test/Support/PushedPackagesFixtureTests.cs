@@ -17,13 +17,13 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly Mock<IGalleryClient> _galleryClient;
         private readonly TestSettings _testSettings;
         private readonly PushedPackagesFixture _fixture;
-        private readonly Mock<ITestOutputHelper> _logger;
+        private readonly ITestOutputHelper _logger;
 
         public PushedPackagesFixtureTests()
         {
             _galleryClient = new Mock<IGalleryClient>();
             _fixture = new PushedPackagesFixture(_galleryClient.Object);
-            _logger = new Mock<ITestOutputHelper>();
+            _logger = new Mock<ITestOutputHelper>().Object;
         }
 
         [Theory]
@@ -40,7 +40,7 @@ namespace NuGet.Services.EndToEnd.Support
             var idPrefix = $"E2E.{packageType}.";
 
             // Act
-            var package = await _fixture.PrepareAsync(packageType, _logger.Object);
+            var package = await _fixture.PrepareAsync(packageType, _logger);
 
             // Assert
             Assert.StartsWith(idPrefix, package.Id);
@@ -52,11 +52,11 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task PushesAllPackagesOnFirstPush()
         {
             // Act
-            await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger.Object);
+            await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger);
 
             // Assert
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>()),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger),
                 Times.Exactly(Enum.GetNames(typeof(PackageType)).Count()));
         }
 
@@ -64,14 +64,14 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task CachesPushedPackage()
         {
             // Act
-            var packageA = await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger.Object);
+            var packageA = await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger);
             _galleryClient.Reset();
-            var packageB = await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger.Object);
+            var packageB = await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger);
 
             // Assert
             Assert.Same(packageA, packageB);
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>()),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger),
                 Times.Never); // "never" because we reset the mock
         }
 
@@ -79,11 +79,11 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task CanPushUnnamedPackageType()
         {
             // Arrange
-            await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger.Object);
+            await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger);
             _galleryClient.Reset();
 
             // Act
-            var package = await _fixture.PrepareAsync((PackageType) 999, _logger.Object);
+            var package = await _fixture.PrepareAsync((PackageType) 999, _logger);
 
             // Assert
             Assert.NotNull(package);
@@ -91,7 +91,7 @@ namespace NuGet.Services.EndToEnd.Support
             Assert.Equal("1.0.0", package.NormalizedVersion);
             Assert.Equal("1.0.0", package.FullVersion);
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>()),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger),
                 Times.Once);
         }
     }

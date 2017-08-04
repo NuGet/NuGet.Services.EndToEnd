@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
+using NuGet.Services.AzureManagement;
 using NuGet.Versioning;
 using Xunit.Abstractions;
 
@@ -21,16 +23,59 @@ namespace NuGet.Services.EndToEnd.Support
 
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
+        private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper;
 
-        public GalleryClient(SimpleHttpClient httpClient, TestSettings testSettings)
+        private string _galleryUrl = null;
+
+        public async Task<string> GetGalleryUrl(ITestOutputHelper logger)
+        {
+            if (_galleryUrl != null)
+            {
+                return _galleryUrl;
+            }
+
+            if (_azureManagementAPIWrapper == null || _testSettings.GalleryConfiguration.ServiceDetails == null)
+            {
+                _galleryUrl = _testSettings.GalleryConfiguration.OverrideServiceUrl;
+                logger.WriteLine($"Configured gallery mode: use hardcoded URL {_galleryUrl}");
+            }
+            else
+            {
+                var serviceDetails = _testSettings.GalleryConfiguration.ServiceDetails;
+
+                logger.WriteLine($"Configured gallery mode: get service properties from Azure. " +
+                   $"Subscription: {serviceDetails.Subscription}, " +
+                   $"Resource group: {serviceDetails.ResourceGroup}, " +
+                   $"Service name: {serviceDetails.Name}");
+
+                string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
+                                serviceDetails.Subscription,
+                                serviceDetails.ResourceGroup,
+                                serviceDetails.Name,
+                                serviceDetails.Slot,
+                                CancellationToken.None);
+
+                var cloudService = AzureHelper.ParseCloudServiceProperties(result);
+
+                _galleryUrl = cloudService.Uri.AbsoluteUri;
+
+                logger.WriteLine($"Gallery URL to use: {_galleryUrl}");
+            }
+
+            return _galleryUrl;
+        }
+
+        public GalleryClient(SimpleHttpClient httpClient, TestSettings testSettings, IAzureManagementAPIWrapper azureManagementAPIWrapper)
         {
             _httpClient = httpClient;
             _testSettings = testSettings;
+            _azureManagementAPIWrapper = azureManagementAPIWrapper;
         }
 
         public async Task<IList<string>> AutocompletePackageIdsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger)
         {
-            var serviceEndpoint = $"{_testSettings.GalleryBaseUrl}/api/v2/package-ids";
+            var galleryEndpoint = await GetGalleryUrl(logger);
+            var serviceEndpoint = $"{galleryEndpoint}/api/v2/package-ids";
             var uri = AppendAutocompletePackageIdsQueryString(serviceEndpoint, id, includePrerelease, semVerLevel);
 
             return await _httpClient.GetJsonAsync<List<string>>(uri, logger);
@@ -38,15 +83,17 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<IList<string>> AutocompletePackageVersionsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger)
         {
-            var serviceEndpoint = $"{_testSettings.GalleryBaseUrl}/api/v2/package-versions";
+            var galleryEndpoint = await GetGalleryUrl(logger);
+            var serviceEndpoint = $"{galleryEndpoint}/api/v2/package-versions";
             var uri = AppendAutocompletePackageVersionsQueryString($"{serviceEndpoint}/{id}", includePrerelease, semVerLevel);
 
             return await _httpClient.GetJsonAsync<List<string>>(uri, logger);
         }
 
-        public async Task PushAsync(Stream nupkgStream)
+        public async Task PushAsync(Stream nupkgStream, ITestOutputHelper logger)
         {
-            var url = $"{_testSettings.GalleryBaseUrl}/api/v2/package";
+            var galleryEndpoint = await GetGalleryUrl(logger);
+            var url = $"{galleryEndpoint}/api/v2/package";
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Put, url))
             {
@@ -63,14 +110,14 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        public async Task RelistAsync(string id, string version)
+        public async Task RelistAsync(string id, string version, ITestOutputHelper logger)
         {
-            await SendToPackageAsync(HttpMethod.Post, id, version);
+            await SendToPackageAsync(HttpMethod.Post, id, version, logger);
         }
 
-        public async Task UnlistAsync(string id, string version)
+        public async Task UnlistAsync(string id, string version, ITestOutputHelper logger)
         {
-            await SendToPackageAsync(HttpMethod.Delete, id, version);
+            await SendToPackageAsync(HttpMethod.Delete, id, version, logger);
         }
 
         private static string AppendAutocompletePackageIdsQueryString(string uri, string id, bool? includePrerelease, string semVerLevel = null)
@@ -108,9 +155,10 @@ namespace NuGet.Services.EndToEnd.Support
             return queryStringBuilder.ToString();
         }
 
-        private async Task SendToPackageAsync(HttpMethod method, string id, string version)
+        private async Task SendToPackageAsync(HttpMethod method, string id, string version, ITestOutputHelper logger)
         {
-            var url = $"{_testSettings.GalleryBaseUrl}/api/v2/package/{id}/{version}";
+            var galleryEndpoint = await GetGalleryUrl(logger);
+            var url = $"{galleryEndpoint}/api/v2/package/{id}/{version}";
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(method, url))
             {

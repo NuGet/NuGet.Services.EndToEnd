@@ -41,11 +41,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
+    <Compile Include="Support\Configuration\AzureCloudServiceDetails.cs" />
+    <Compile Include="Support\Configuration\AzureManagementAPIWrapperConfiguration.cs" />
     <Compile Include="ConnectivityTests.cs" />
     <Compile Include="NuGetExeTests.cs" />
     <Compile Include="RelistTests.cs" />
     <Compile Include="SearchResultTests.cs" />
     <Compile Include="Support\Clients\Clients.cs" />
+    <Compile Include="Support\Configuration\GalleryConfiguration.cs" />
+    <Compile Include="Support\Configuration\SearchServiceConfiguration.cs" />
     <Compile Include="Support\PackageCreationContext.cs" />
     <Compile Include="Support\SourceType.cs" />
     <Compile Include="Support\CommandRunner.cs" />

@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using NuGet.Services.AzureManagement;
+using NuGet.Services.Configuration;
 
 namespace NuGet.Services.EndToEnd.Support
 {
@@ -22,6 +24,8 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         public static bool AggressivePush => true;
 
+        private static readonly Lazy<TestSettings> _testSettings = new Lazy<TestSettings>(() => CreateInternal());
+
         private TestSettings(string configurationName)
         {
             var builder = new ConfigurationBuilder()
@@ -30,17 +34,40 @@ namespace NuGet.Services.EndToEnd.Support
 
             var configurationRoot = builder.Build();
 
+            var configuration = new SecretConfigurationReader(configurationRoot, new ConfigurationRootSecretReaderFactory(configurationRoot));
             configurationRoot.GetSection("TestSettings").Bind(this);
         }
 
-        public string GalleryBaseUrl { get; set; }
-        public string V3IndexUrl { get; set; }
-        public string SearchBaseUrl { get; set; }
-        public IReadOnlyList<string> TrustedHttpsCertificates { get; set; }
-        public string ApiKey { get; set; }
-        public int SearchInstanceCount { get; set; }
+        public IAzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; }
 
+        public string V3IndexUrl { get; set; }
+
+        public SearchServiceConfiguration SearchServiceConfiguration { get; set; }
+
+        public GalleryConfiguration GalleryConfiguration { get; set; }
+
+        public IReadOnlyList<string> TrustedHttpsCertificates { get; set; }
+
+        public string ApiKey { get; set; }
+        
         public static TestSettings Create()
+        {
+            return _testSettings.Value;
+        }
+
+        public static TestSettings CreateLocalTestConfiguration(string configurationName)
+        {
+            if (configurationName == "Dev" ||
+                configurationName == "Int" ||
+                configurationName == "Prod")
+            {
+                return new TestSettings(configurationName);
+            }
+
+            throw new ArgumentException($"{configurationName} is not one of the local test supported configurations!");
+        }
+
+        private static TestSettings CreateInternal()
         {
             string configurationName = ManualConfigurationOverride;
 
@@ -49,11 +76,6 @@ namespace NuGet.Services.EndToEnd.Support
                 configurationName = EnvironmentSettings.ConfigurationName;
             }
 
-            return Create(configurationName);
-        }
-
-        public static TestSettings Create(string configurationName)
-        {
             return new TestSettings(configurationName);
         }
     }

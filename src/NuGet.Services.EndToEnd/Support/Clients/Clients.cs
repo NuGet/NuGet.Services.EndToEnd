@@ -1,6 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
+using NuGet.Services.AzureManagement;
+using Xunit.Abstractions;
+
 namespace NuGet.Services.EndToEnd.Support
 {
     /// <summary>
@@ -37,13 +41,15 @@ namespace NuGet.Services.EndToEnd.Support
         public static Clients Initialize()
         {
             var testSettings = TestSettings.Create();
+            var azureManagementAPI = GetAzureManagementAPIWrapper(testSettings);
+            
             var httpClient = new SimpleHttpClient();
-            var gallery = new GalleryClient(httpClient, testSettings);
+            var gallery = new GalleryClient(httpClient, testSettings, azureManagementAPI);
             var v3Index = new V3IndexClient(httpClient, testSettings);
-            var v2v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings);
+            var v2v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings, azureManagementAPI);
             var flatContainer = new FlatContainerClient(httpClient, v3Index);
             var registration = new RegistrationClient(httpClient, v3Index);
-            var nuGetExe = new NuGetExeClient(testSettings);
+            var nuGetExe = new NuGetExeClient(testSettings, gallery);
 
             return new Clients(
                 gallery,
@@ -52,6 +58,16 @@ namespace NuGet.Services.EndToEnd.Support
                 flatContainer,
                 registration,
                 nuGetExe);
+        }
+
+        private static IAzureManagementAPIWrapper GetAzureManagementAPIWrapper(TestSettings testSettings)
+        {
+            if (testSettings.AzureManagementAPIWrapperConfiguration != null)
+            {
+                return new AzureManagementAPIWrapper(testSettings.AzureManagementAPIWrapperConfiguration);
+            }
+
+            return null;
         }
     }
 }

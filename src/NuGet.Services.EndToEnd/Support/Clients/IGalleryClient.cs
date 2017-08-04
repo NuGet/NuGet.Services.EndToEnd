@@ -10,9 +10,10 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public interface IGalleryClient
     {
-        Task PushAsync(Stream nupkgStream);
-        Task UnlistAsync(string id, string version);
-        Task RelistAsync(string id, string version);
+        Task<string> GetGalleryUrl(ITestOutputHelper logger);
+        Task PushAsync(Stream nupkgStream, ITestOutputHelper logger);
+        Task UnlistAsync(string id, string version, ITestOutputHelper logger);
+        Task RelistAsync(string id, string version, ITestOutputHelper logger);
         Task<IList<string>> AutocompletePackageIdsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger);
         Task<IList<string>> AutocompletePackageVersionsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger);
     }
