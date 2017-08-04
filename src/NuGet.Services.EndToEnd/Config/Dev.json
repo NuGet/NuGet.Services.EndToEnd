@@ -1,11 +1,13 @@
 ﻿{
   "TestSettings": {
-    "GalleryBaseUrl": "https://dev.nugettest.org",
     "V3IndexUrl": "http://api.dev.nugettest.org/v3-index/index.json",
     "TrustedHttpsCertificates": [],
-    "ApiKey": "de147feb-59f9-478b-9b8f-6fac87a7334e",
+    "ApiKey": "API_KEY",
+    "GalleryConfiguration": {
+      "OverrideServiceUrl": "https://dev.nugettest.org"
+    },
     "SearchServiceConfiguration": {
-		  "OverrideInstanceCount": 2
-	  }
+      "OverrideInstanceCount": 2
+    }
   }
 }

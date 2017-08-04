@@ -4,10 +4,6 @@ param (
     [ValidateSet("Production", "Staging", "", IgnoreCase=$true)]
     [string]$GallerySlot,
     [string]$GalleryCloudServiceName,
-    [string]$SearchBaseUrl,
-    [ValidateSet("Production", "Staging", "", IgnoreCase=$true)]
-    [string]$SearchSlot,
-    [string]$SearchCloudServiceName,
     [string]$SubscriptionId,
     [string]$ApplicationId,
     [string]$TenantId,
@@ -74,15 +70,3 @@ Write-Host "Using the following GalleryBaseUrl: $GalleryBaseUrl"
 $env:GalleryBaseUrl = $GalleryBaseUrl
 Write-Host "##vso[task.setvariable variable=GalleryBaseUrl;]$GalleryBaseUrl"
 
-$SearchBaseUrl = Get-BaseUrl `
-    -ApplicationId $ApplicationId `
-    -CertificateThumbprint $CertificateThumbprint `
-    -SubscriptionId $SubscriptionId `
-    -TenantId $TenantId `
-    -BaseUrl $SearchBaseUrl `
-    -Slot $SearchSlot `
-    -CloudServiceName $SearchCloudServiceName
-
-Write-Host "Using the following SearchBaseUrl: $SearchBaseUrl" 
-$env:SearchBaseUrl = $SearchBaseUrl
-Write-Host "##vso[task.setvariable variable=SearchBaseUrl;]$SearchBaseUrl"

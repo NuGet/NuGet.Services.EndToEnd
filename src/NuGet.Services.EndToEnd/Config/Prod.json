@@ -1,11 +1,13 @@
 ﻿{
   "TestSettings": {
-    "GalleryBaseUrl": "https://wwww.nuget.org",
     "V3IndexUrl": "http://api.nugettest.org/v3/index.json",
     "TrustedHttpsCertificates": {},
     "ApiKey": "API_KEY",
-    "SearchServiceConfiguration":	{
-		  "OverrideInstanceCount": 5
-	  }
+    "GalleryConfiguration": {
+      "OverrideServiceUrl": "https://wwww.nuget.org"
+    },
+    "SearchServiceConfiguration": {
+      "OverrideInstanceCount": 5
+    }
   }
 }

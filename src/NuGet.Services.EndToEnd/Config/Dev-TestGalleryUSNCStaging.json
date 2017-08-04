@@ -1,0 +1,44 @@
+﻿{
+  // Configuration for tests that run on Gallery staging slot during deployment.
+  "TestSettings": {
+    "V3IndexUrl": "http://api.dev.nugettest.org/v3-index/index.json",
+    "TrustedHttpsCertificates": [ "8c11c16610b7a147d10bbcc6a65ce23d321c12c2" ],
+    "ApiKey": "$$Dev-E2E-ApiKey$$",
+    "GalleryConfiguration": {
+      "ServiceDetails": {
+        "Subscription": "fa8b3229-dc0f-4633-a285-ad597076921d",
+        "ResourceGroup": "nuget-dev-0-v2gallery",
+        "Name": "nuget-dev-0-v2gallery",
+        "Slot": "staging"
+      }
+    },
+    "SearchServiceConfiguration": {
+      "IndexJsonMappedSearchServices": {
+        "api-v2v3search-0.nuget.org": {
+          "Subscription": "fa8b3229-dc0f-4633-a285-ad597076921d",
+          "ResourceGroup": "nuget-dev-0-v2v3search",
+          "Name": "nuget-dev-0-v2v3search",
+          "Slot": "production"
+        },
+        "api-v2v3search-1.nuget.org": {
+          "Subscription": "fa8b3229-dc0f-4633-a285-ad597076921d",
+          "ResourceGroup": "nuget-dev-ussc-search",
+          "Name": "nuget-dev-ussc-search",
+          "Slot": "production"
+        }
+      }
+    },
+    "AzureManagementAPIWrapperConfiguration": {
+      "ClientId": "622f5d2f-0144-4f03-8b29-4432739d54f2",
+      "ClientSecret": "$$Dev-NuGetMonitoring-MDMClientSecret$$"
+    }
+  },
+  "KeyVault_VaultName": "NuGetDevTestKeyVault",
+  "KeyVault_ClientId": "2002bea2-610e-4057-b9f5-9d1a680ad2e3",
+  "KeyVault_CertificateThumbprint": "1fa59131b5afbedc95f57d34c4b69e7bb3782a1e",
+  "KeyVault_StoreName": "My",
+  "KeyVault_StoreLocation": "LocalMachine",
+  "KeyVault_ValidateCertificate": "false"
+}
+  
+‎
