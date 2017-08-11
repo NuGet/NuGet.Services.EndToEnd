@@ -25,41 +25,56 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly TestSettings _testSettings;
         private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper;
 
-        private string _galleryUrl = null;
+        private Uri _galleryUrl = null;
+        private SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
-        public async Task<string> GetGalleryUrl(ITestOutputHelper logger)
+        public async Task<Uri> GetGalleryUrl(ITestOutputHelper logger)
         {
             if (_galleryUrl != null)
             {
                 return _galleryUrl;
             }
 
-            if (_azureManagementAPIWrapper == null || _testSettings.GalleryConfiguration.ServiceDetails == null)
+            try
             {
-                _galleryUrl = _testSettings.GalleryConfiguration.OverrideServiceUrl;
-                logger.WriteLine($"Configured gallery mode: use hardcoded URL {_galleryUrl}");
+                await _semaphore.WaitAsync();
+
+                if (_galleryUrl != null)
+                {
+                    return _galleryUrl;
+                }
+
+                if (_azureManagementAPIWrapper == null || _testSettings.GalleryConfiguration.ServiceDetails == null)
+                {
+                    _galleryUrl = new Uri(_testSettings.GalleryConfiguration.OverrideServiceUrl);
+                    logger.WriteLine($"Configured gallery mode: use hardcoded URL {_galleryUrl}");
+                }
+                else
+                {
+                    var serviceDetails = _testSettings.GalleryConfiguration.ServiceDetails;
+
+                    logger.WriteLine($"Configured gallery mode: get service properties from Azure. " +
+                       $"Subscription: {serviceDetails.Subscription}, " +
+                       $"Resource group: {serviceDetails.ResourceGroup}, " +
+                       $"Service name: {serviceDetails.Name}");
+
+                    string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
+                                    serviceDetails.Subscription,
+                                    serviceDetails.ResourceGroup,
+                                    serviceDetails.Name,
+                                    serviceDetails.Slot,
+                                    CancellationToken.None);
+
+                    var cloudService = AzureHelper.ParseCloudServiceProperties(result);
+
+                    _galleryUrl = Helper.ConvertToHttpsAndClean(cloudService.Uri);
+
+                    logger.WriteLine($"Gallery URL to use: {_galleryUrl}");
+                }
             }
-            else
+            finally
             {
-                var serviceDetails = _testSettings.GalleryConfiguration.ServiceDetails;
-
-                logger.WriteLine($"Configured gallery mode: get service properties from Azure. " +
-                   $"Subscription: {serviceDetails.Subscription}, " +
-                   $"Resource group: {serviceDetails.ResourceGroup}, " +
-                   $"Service name: {serviceDetails.Name}");
-
-                string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
-                                serviceDetails.Subscription,
-                                serviceDetails.ResourceGroup,
-                                serviceDetails.Name,
-                                serviceDetails.Slot,
-                                CancellationToken.None);
-
-                var cloudService = AzureHelper.ParseCloudServiceProperties(result);
-
-                _galleryUrl = cloudService.Uri.AbsoluteUri;
-
-                logger.WriteLine($"Gallery URL to use: {_galleryUrl}");
+                _semaphore.Release();
             }
 
             return _galleryUrl;

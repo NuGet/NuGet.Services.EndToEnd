@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Configuration;
-using NuGet.Services.AzureManagement;
 using NuGet.Services.Configuration;
 
 namespace NuGet.Services.EndToEnd.Support
@@ -16,7 +15,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// Change this value to test against one of the pre-configured environments: Dev/Int/Prod.
         /// When there is no setting, the configuration will be extracted from an environment variable
         /// </summary>
-        public static string ManualConfigurationOverride = "Dev-TestGalleryUSNCStaging";
+        public static string ManualConfigurationOverride = "";
 
         /// <summary>
         /// Manually override this value to easily enable aggressive pushing. This means each test will push its own
@@ -38,7 +37,7 @@ namespace NuGet.Services.EndToEnd.Support
             configurationRoot.GetSection("TestSettings").Bind(this);
         }
 
-        public IAzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; set; }
+        public AzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; set; }
 
         public string V3IndexUrl { get; set; }
 
@@ -46,7 +45,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public GalleryConfiguration GalleryConfiguration { get; set; }
 
-        public IReadOnlyList<string> TrustedHttpsCertificates { get; set; }
+        public List<string> TrustedHttpsCertificates { get; set; }
 
         public string ApiKey { get; set; }
         

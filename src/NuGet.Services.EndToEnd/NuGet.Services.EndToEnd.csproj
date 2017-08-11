@@ -2,9 +2,6 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-  </PropertyGroup>
-  <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{35CA0B78-DE1A-4C4E-A97F-85E84DB17A2F}</ProjectGuid>
@@ -44,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
+    <Compile Include="Support\Clients\Helper.cs" />
     <Compile Include="Support\Configuration\AzureCloudServiceDetails.cs" />
     <Compile Include="Support\Configuration\AzureManagementAPIWrapperConfiguration.cs" />
     <Compile Include="ConnectivityTests.cs" />
@@ -85,9 +83,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Config\Dev-TestGalleryUSNCStaging.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Config\Dev.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

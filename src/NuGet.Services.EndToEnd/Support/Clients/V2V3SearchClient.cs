@@ -170,7 +170,6 @@ namespace NuGet.Services.EndToEnd.Support
                 foreach (var url in searchBaseUrls)
                 {
                     // Clean the URL
-                    // TODO: rename map to host
                     var host = new Uri(url).Host;
 
                     if (!_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices.ContainsKey(host))
@@ -208,7 +207,7 @@ namespace NuGet.Services.EndToEnd.Support
 
             var cloudService = AzureHelper.ParseCloudServiceProperties(result);
 
-            return new SearchService { Uri = cloudService.Uri, InstanceCount = cloudService.InstanceCount };
+            return new SearchService { Uri = Helper.ConvertToHttpsAndClean(cloudService.Uri), InstanceCount = cloudService.InstanceCount };
         }
 
         private static string BuildAutocompleteQueryString(
