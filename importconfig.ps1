@@ -10,6 +10,8 @@ param (
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
+New-Item $OutputDirectory -type directory
+
 $basicAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f 'PAT', $PersonalAccessToken)))
 $headers = @{ Authorization = ("Basic {0}" -f $basicAuth) }
 
