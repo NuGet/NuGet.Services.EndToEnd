@@ -5,7 +5,7 @@ param (
     [string]$PersonalAccessToken,
     [string]$Repository,
 	[string]$FileName,
-    [string]$OutputPath,
+    [string]$OutputPath
 )
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
