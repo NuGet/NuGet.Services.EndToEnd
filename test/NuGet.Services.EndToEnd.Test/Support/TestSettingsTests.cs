@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace NuGet.Services.EndToEnd.Support
@@ -33,25 +31,6 @@ namespace NuGet.Services.EndToEnd.Support
         {
             // Arrange
             Assert.Equal("API_KEY", TestSettings.CreateLocalTestConfiguration(configurationName).ApiKey);
-        }
-
-        [Fact]
-        public void RemoveMeTest()
-        {
-            //var a = new SearchServiceConfiguration();
-            //a.IndexJsonMappedSearchServices = new System.Collections.Generic.Dictionary<string, AzureCloudServiceDetails>
-            //{
-            //    { "api-v2v3search-0.nuget.org", new AzureCloudServiceDetails()
-            //    {
-            //        Name = "bla",
-            //        ResourceGroup = "res",
-            //        Slot = "pro",
-            //        Subscription = "asdsefs"
-            //    }
-            //} };
-
-            var a = new List<string>() { "a", "b", "c" };
-            string output = JsonConvert.SerializeObject(a);
         }
     }
 }
