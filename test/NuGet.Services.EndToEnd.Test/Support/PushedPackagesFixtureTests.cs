@@ -15,7 +15,6 @@ namespace NuGet.Services.EndToEnd.Support
     public class PushedPackagesFixtureTests
     {
         private readonly Mock<IGalleryClient> _galleryClient;
-        private readonly TestSettings _testSettings;
         private readonly PushedPackagesFixture _fixture;
         private readonly ITestOutputHelper _logger;
 
