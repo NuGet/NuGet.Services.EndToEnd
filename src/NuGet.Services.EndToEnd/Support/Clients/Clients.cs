@@ -1,9 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
+using System;
 using NuGet.Services.AzureManagement;
-using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd.Support
 {
@@ -12,6 +11,8 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class Clients
     {
+        private static Lazy<Clients> _clients = new Lazy<Clients>(() => InitializeInternal());
+
         public Clients(
             IGalleryClient gallery,
             V3IndexClient v3Index,
@@ -35,10 +36,15 @@ namespace NuGet.Services.EndToEnd.Support
         public RegistrationClient Registration { get; }
         public NuGetExeClient NuGetExe { get; }
 
+        public static Clients Initialize()
+        {
+            return _clients.Value;
+        }
+
         /// <summary>
         /// In lieu of proper dependency injection, initialize dependencies manually.
         /// </summary>
-        public static Clients Initialize()
+        private static Clients InitializeInternal()
         {
             var testSettings = TestSettings.Create();
             var azureManagementAPI = GetAzureManagementAPIWrapper(testSettings);
