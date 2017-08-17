@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using NuGet.Services.Configuration;
 
@@ -15,7 +17,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// Change this value to test against one of the pre-configured environments: Dev/Int/Prod.
         /// When there is no setting, the configuration will be extracted from an environment variable
         /// </summary>
-        public static string ManualConfigurationOverride = "";
+        public static string ManualConfigurationOverride = "Int-TestGalleryUSNCStaging";
 
         /// <summary>
         /// Manually override this value to easily enable aggressive pushing. This means each test will push its own
@@ -23,18 +25,11 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         public static bool AggressivePush => true;
 
-        private static readonly Lazy<TestSettings> _testSettings = new Lazy<TestSettings>(() => CreateInternal());
+        private static TestSettings _testSettings = null;
+        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
-        private TestSettings(string configurationName)
+        private TestSettings()
         {
-            var builder = new ConfigurationBuilder()
-              .SetBasePath(Path.Combine(Environment.CurrentDirectory, "config"))
-              .AddJsonFile(configurationName + ".json");
-
-            var configurationRoot = builder.Build();
-
-            var configuration = new SecretConfigurationReader(configurationRoot, new ConfigurationRootSecretReaderFactory(configurationRoot));
-            configurationRoot.GetSection("TestSettings").Bind(this);
         }
 
         public AzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; set; }
@@ -49,24 +44,45 @@ namespace NuGet.Services.EndToEnd.Support
 
         public string ApiKey { get; set; }
         
-        public static TestSettings Create()
+        public static async Task<TestSettings> CreateAsync()
         {
-            return _testSettings.Value;
+            if (_testSettings != null)
+            {
+                return _testSettings;
+            }
+
+            try
+            {
+                await _semaphore.WaitAsync();
+
+                if (_testSettings != null)
+                {
+                    return _testSettings;
+                }
+
+                _testSettings = await CreateInternalAsync();
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+            
+            return _testSettings;
         }
 
-        public static TestSettings CreateLocalTestConfiguration(string configurationName)
+        public static async Task<TestSettings> CreateLocalTestConfigurationAsync(string configurationName)
         {
             if (configurationName == "Dev" ||
                 configurationName == "Int" ||
                 configurationName == "Prod")
             {
-                return new TestSettings(configurationName);
+                return await CreateInternalAsync(configurationName);
             }
 
             throw new ArgumentException($"{configurationName} is not one of the local test supported configurations!");
         }
 
-        private static TestSettings CreateInternal()
+        private static async Task<TestSettings> CreateInternalAsync()
         {
             string configurationName = ManualConfigurationOverride;
 
@@ -75,7 +91,24 @@ namespace NuGet.Services.EndToEnd.Support
                 configurationName = EnvironmentSettings.ConfigurationName;
             }
 
-            return new TestSettings(configurationName);
+            return await CreateInternalAsync(configurationName);
+        }
+
+        private static async Task<TestSettings> CreateInternalAsync(string configurationName)
+        {
+            var builder = new ConfigurationBuilder()
+             .SetBasePath(Path.Combine(Environment.CurrentDirectory, "config"))
+             .AddJsonFile(configurationName + ".json");
+
+            var configurationRoot = builder.Build();
+
+            var configuration = new E2ESecretConfigurationReader(configurationRoot, new ConfigurationRootSecretReaderFactory(configurationRoot));
+            await configuration.InjectSecrets();
+
+            var testSettings = new TestSettings();
+            configurationRoot.GetSection("TestSettings").Bind(testSettings);
+
+            return testSettings;
         }
     }
 }

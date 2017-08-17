@@ -18,7 +18,7 @@ namespace NuGet.Services.EndToEnd
         public PushTests(PushedPackagesFixture pushedPackages, ITestOutputHelper logger)
         {
             _pushedPackages = pushedPackages;
-            _clients = Clients.Initialize();
+            _clients = pushedPackages.Clients;
             _logger = logger;
         }
 

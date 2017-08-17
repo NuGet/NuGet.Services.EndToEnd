@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Xunit;
 
 namespace NuGet.Services.EndToEnd.Support
@@ -27,10 +28,10 @@ namespace NuGet.Services.EndToEnd.Support
         [InlineData("Dev")]
         [InlineData("Int")]
         [InlineData("Prod")]
-        public void TestSettingsShouldNotMentionRealApiKeys(string configurationName)
+        public async Task TestSettingsShouldNotMentionRealApiKeys(string configurationName)
         {
             // Arrange
-            Assert.Equal("API_KEY", TestSettings.CreateLocalTestConfiguration(configurationName).ApiKey);
+            Assert.Equal("API_KEY", (await TestSettings.CreateLocalTestConfigurationAsync(configurationName)).ApiKey);
         }
     }
 }

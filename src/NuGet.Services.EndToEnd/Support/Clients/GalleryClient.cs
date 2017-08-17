@@ -28,7 +28,7 @@ namespace NuGet.Services.EndToEnd.Support
         private Uri _galleryUrl = null;
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
-        public async Task<Uri> GetGalleryUrl(ITestOutputHelper logger)
+        public async Task<Uri> GetGalleryUrlAsync(ITestOutputHelper logger)
         {
             if (_galleryUrl != null)
             {
@@ -89,7 +89,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<IList<string>> AutocompletePackageIdsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger)
         {
-            var galleryEndpoint = await GetGalleryUrl(logger);
+            var galleryEndpoint = await GetGalleryUrlAsync(logger);
             var serviceEndpoint = $"{galleryEndpoint}/api/v2/package-ids";
             var uri = AppendAutocompletePackageIdsQueryString(serviceEndpoint, id, includePrerelease, semVerLevel);
 
@@ -98,7 +98,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<IList<string>> AutocompletePackageVersionsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger)
         {
-            var galleryEndpoint = await GetGalleryUrl(logger);
+            var galleryEndpoint = await GetGalleryUrlAsync(logger);
             var serviceEndpoint = $"{galleryEndpoint}/api/v2/package-versions";
             var uri = AppendAutocompletePackageVersionsQueryString($"{serviceEndpoint}/{id}", includePrerelease, semVerLevel);
 
@@ -107,7 +107,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task PushAsync(Stream nupkgStream, ITestOutputHelper logger)
         {
-            var galleryEndpoint = await GetGalleryUrl(logger);
+            var galleryEndpoint = await GetGalleryUrlAsync(logger);
             var url = $"{galleryEndpoint}/api/v2/package";
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Put, url))
@@ -172,7 +172,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         private async Task SendToPackageAsync(HttpMethod method, string id, string version, ITestOutputHelper logger)
         {
-            var galleryEndpoint = await GetGalleryUrl(logger);
+            var galleryEndpoint = await GetGalleryUrlAsync(logger);
             var url = $"{galleryEndpoint}/api/v2/package/{id}/{version}";
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(method, url))

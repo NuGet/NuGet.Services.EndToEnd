@@ -13,15 +13,13 @@ namespace NuGet.Services.EndToEnd
         : IClassFixture<TrustedHttpsCertificatesFixture>
     {
         private readonly PushedPackagesFixture _pushedPackages;
-        private readonly TestSettings _testSettings;
         private readonly ITestOutputHelper _logger;
         private readonly Clients _clients;
 
         public AutocompleteResultTests(PushedPackagesFixture pushedPackages, ITestOutputHelper logger)
         {
             _pushedPackages = pushedPackages;
-            _clients = Clients.Initialize();
-            _testSettings = TestSettings.Create();
+            _clients = pushedPackages.Clients;
             _logger = logger;
         }
 

@@ -11,7 +11,7 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public interface IGalleryClient
     {
-        Task<Uri> GetGalleryUrl(ITestOutputHelper logger);
+        Task<Uri> GetGalleryUrlAsync(ITestOutputHelper logger);
         Task PushAsync(Stream nupkgStream, ITestOutputHelper logger);
         Task UnlistAsync(string id, string version, ITestOutputHelper logger);
         Task RelistAsync(string id, string version, ITestOutputHelper logger);

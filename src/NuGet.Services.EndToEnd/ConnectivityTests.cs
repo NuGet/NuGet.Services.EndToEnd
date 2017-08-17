@@ -10,23 +10,24 @@ using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd
 {
+    [Collection(nameof(CommonCollection))]
     public class ConnectivityTests : IClassFixture<TrustedHttpsCertificatesFixture>
     {
         private readonly Clients _clients;
         private readonly ITestOutputHelper _logger;
         private readonly TestSettings _testSettings;
 
-        public ConnectivityTests(ITestOutputHelper logger)
+        public ConnectivityTests(CommonFixture commonFixture, ITestOutputHelper logger)
         {
-            _testSettings = TestSettings.Create();
-            _clients = Clients.Initialize();
+            _testSettings = commonFixture.TestSettings;
+            _clients = commonFixture.Clients;
             _logger = logger;
         }
 
         [Fact]
         public async Task GalleryIsReachable()
         {
-            var galleryUrl = await _clients.Gallery.GetGalleryUrl(_logger);
+            var galleryUrl = await _clients.Gallery.GetGalleryUrlAsync(_logger);
             using (var httpClient = new HttpClient())
             using (var response = await httpClient.GetAsync(galleryUrl))
             {

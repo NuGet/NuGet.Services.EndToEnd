@@ -99,7 +99,7 @@ namespace NuGet.Services.EndToEnd.Support
         {
             if (_sourceType == SourceType.V2)
             {
-                return $"{await _galleryClient.GetGalleryUrl(logger)}/api/v2";
+                return $"{await _galleryClient.GetGalleryUrlAsync(logger)}/api/v2";
             }
 
             return _testSettings.V3IndexUrl;

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Threading;
 using NuGet.Services.AzureManagement;
 
 namespace NuGet.Services.EndToEnd.Support
@@ -11,7 +11,8 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class Clients
     {
-        private static Lazy<Clients> _clients = new Lazy<Clients>(() => InitializeInternal());
+        private static Clients _clients = null;
+        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         public Clients(
             IGalleryClient gallery,
@@ -36,17 +37,38 @@ namespace NuGet.Services.EndToEnd.Support
         public RegistrationClient Registration { get; }
         public NuGetExeClient NuGetExe { get; }
 
-        public static Clients Initialize()
+        public static Clients Initialize(TestSettings testSettings)
         {
-            return _clients.Value;
+            if (_clients != null)
+            {
+                return _clients;
+            }
+
+            try
+            {
+                _semaphore.Wait();
+
+                if (_clients != null)
+                {
+                    return _clients;
+                }
+
+                _clients = InitializeInternal(testSettings);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+            
+
+            return _clients;
         }
 
         /// <summary>
         /// In lieu of proper dependency injection, initialize dependencies manually.
         /// </summary>
-        private static Clients InitializeInternal()
+        private static Clients InitializeInternal(TestSettings testSettings)
         {
-            var testSettings = TestSettings.Create();
             var azureManagementAPI = GetAzureManagementAPIWrapper(testSettings);
             
             var httpClient = new SimpleHttpClient();

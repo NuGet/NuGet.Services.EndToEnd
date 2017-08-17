@@ -42,6 +42,8 @@
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
     <Compile Include="Support\Clients\Helper.cs" />
+    <Compile Include="Support\CommonCollection.cs" />
+    <Compile Include="Support\CommonFixture.cs" />
     <Compile Include="Support\Configuration\AzureCloudServiceDetails.cs" />
     <Compile Include="Support\Configuration\AzureManagementAPIWrapperConfiguration.cs" />
     <Compile Include="ConnectivityTests.cs" />
@@ -49,6 +51,7 @@
     <Compile Include="RelistTests.cs" />
     <Compile Include="SearchResultTests.cs" />
     <Compile Include="Support\Clients\Clients.cs" />
+    <Compile Include="Support\Configuration\E2ESecretConfigurationReader.cs" />
     <Compile Include="Support\Configuration\GalleryConfiguration.cs" />
     <Compile Include="Support\Configuration\SearchServiceConfiguration.cs" />
     <Compile Include="Support\PackageCreationContext.cs" />
@@ -106,7 +109,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-	<ExternalConfig Include="ExternalConfig/*.*"></ExternalConfig>
+    <ExternalConfig Include="ExternalConfig/*.*">
+    </ExternalConfig>
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(ExternalConfig)" DestinationFolder="$(TargetDir)Config" />
