@@ -17,7 +17,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// Change this value to test against one of the pre-configured environments: Dev/Int/Prod.
         /// When there is no setting, the configuration will be extracted from an environment variable
         /// </summary>
-        public static string ManualConfigurationOverride = "Int-TestGalleryUSNCStaging";
+        public static string ManualConfigurationOverride = "";
 
         /// <summary>
         /// Manually override this value to easily enable aggressive pushing. This means each test will push its own
