@@ -26,7 +26,7 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper;
 
         private Uri _galleryUrl = null;
-        private SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         public async Task<Uri> GetGalleryUrlAsync(ITestOutputHelper logger)
         {

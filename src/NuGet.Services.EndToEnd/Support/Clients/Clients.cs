@@ -12,7 +12,7 @@ namespace NuGet.Services.EndToEnd.Support
     public class Clients
     {
         private static Clients _clients = null;
-        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         public Clients(
             IGalleryClient gallery,

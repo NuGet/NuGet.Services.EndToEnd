@@ -95,7 +95,7 @@ namespace NuGet.Services.EndToEnd.Support
                 _globalPackagesPath);
         }
 
-        private async Task<string> GetSource(ITestOutputHelper logger)
+        private async Task<string> GetSourceAsync(ITestOutputHelper logger)
         {
             if (_sourceType == SourceType.V2)
             {
@@ -112,7 +112,7 @@ namespace NuGet.Services.EndToEnd.Support
                 "restore",
                 projectPath,
                 "-Source",
-                await GetSource(logger),
+                await GetSourceAsync(logger),
             };
 
             var projectDirectory = Path.GetDirectoryName(projectPath);
@@ -127,7 +127,7 @@ namespace NuGet.Services.EndToEnd.Support
                 "install",
                 id,
                 "-Source",
-                await GetSource(logger),
+                await GetSourceAsync(logger),
                 "-OutputDirectory",
                 outputDirectory,
             };
@@ -149,7 +149,7 @@ namespace NuGet.Services.EndToEnd.Support
                 "-Version",
                 version,
                 "-Source",
-                await GetSource(logger),
+                await GetSourceAsync(logger),
                 "-OutputDirectory",
                 outputDirectory,
             };
