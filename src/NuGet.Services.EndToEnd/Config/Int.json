@@ -1,6 +1,6 @@
 ﻿{
   "TestSettings": {
-    "V3IndexUrl": "http://api.int.nugettest.org/v3-index/index.json",
+    "V3IndexUrl": "https://apiint.nugettest.org/v3-index/index.json",
     "TrustedHttpsCertificates": {},
     "ApiKey": "API_KEY",
     "GalleryConfiguration": {

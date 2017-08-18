@@ -15,7 +15,8 @@ namespace NuGet.Services.EndToEnd.Support
     {
         /// <summary>
         /// Change this value to test against one of the pre-configured environments: Dev/Int/Prod.
-        /// When there is no setting, the configuration will be extracted from an environment variable
+        /// When there is no setting, the configuration will be extracted from an environment variable 
+        /// <see cref="EnvironmentSettings.ConfigurationName"/>
         /// </summary>
         public static string ManualConfigurationOverride = "";
 

@@ -4,14 +4,14 @@ param (
     [string]$Project,
     [string]$PersonalAccessToken,
     [string]$Repository,
-	[string]$FileName,
+    [string]$FileName,
     [string]$OutputDirectory,
-	[string]$OutputFile
+    [string]$OutputFile
 )
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-New-Item $OutputDirectory -type directory
+New-Item $OutputDirectory -type directory -force
 
 $basicAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f 'PAT', $PersonalAccessToken)))
 $headers = @{ Authorization = ("Basic {0}" -f $basicAuth) }

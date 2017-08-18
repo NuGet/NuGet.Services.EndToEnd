@@ -5,7 +5,7 @@ using System;
 
 namespace NuGet.Services.EndToEnd.Support
 {
-    public static class Helper
+    public static class ClientHelper
     {
         public static Uri ConvertToHttpsAndClean(Uri uri)
         {

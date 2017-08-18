@@ -67,7 +67,7 @@ namespace NuGet.Services.EndToEnd.Support
 
                     var cloudService = AzureHelper.ParseCloudServiceProperties(result);
 
-                    _galleryUrl = Helper.ConvertToHttpsAndClean(cloudService.Uri);
+                    _galleryUrl = ClientHelper.ConvertToHttpsAndClean(cloudService.Uri);
 
                     logger.WriteLine($"Gallery URL to use: {_galleryUrl}");
                 }

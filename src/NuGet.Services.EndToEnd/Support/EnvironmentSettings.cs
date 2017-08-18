@@ -20,6 +20,10 @@ namespace NuGet.Services.EndToEnd.Support
             EnvironmentVariableTarget.Machine
         };
 
+        /// <summary>
+        /// The name of the configuration to be used. The location of all configurations is assumed to be in target directory under Config folder.
+        /// The config file name to be used is [ConfigurationName].json
+        /// </summary>
         public static string ConfigurationName => GetEnvironmentVariable("ConfigurationName", required: true);
 
         private static string GetEnvironmentVariable(string key, bool required)
