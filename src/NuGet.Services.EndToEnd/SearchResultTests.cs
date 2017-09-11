@@ -20,7 +20,7 @@ namespace NuGet.Services.EndToEnd
         public SearchResultTests(PushedPackagesFixture pushedPackages, ITestOutputHelper logger)
         {
             _pushedPackages = pushedPackages;
-            _clients = Clients.Initialize();
+            _clients = pushedPackages.Clients;
             _logger = logger;
         }
 
@@ -30,7 +30,7 @@ namespace NuGet.Services.EndToEnd
             // Arrange
             var allRegistrationAddresses = await _clients.V3Index.GetRegistrationBaseUrlsAsync();
             var semVer2RegistrationAddresses = await _clients.V3Index.GetSemVer2RegistrationBaseUrlsAsync();
-            var searchBaseAddresses = await _clients.V2V3Search.GetSearchBaseUrlsAsync();
+            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
             
             var semVer2Package = await _pushedPackages.PrepareAsync(PackageType.SemVer2Prerel, _logger);
             var semVer1Package = await _pushedPackages.PrepareAsync(PackageType.SemVer1Stable, _logger);
@@ -41,16 +41,16 @@ namespace NuGet.Services.EndToEnd
             await _clients.Registration.WaitForPackageAsync(semVer1Package.Id, semVer1Package.FullVersion, semVer2: false, logger: _logger);
             await _clients.V2V3Search.WaitForPackageAsync(semVer1Package.Id, semVer1Package.FullVersion, _logger);
 
-            foreach (var searchBaseAddress in searchBaseAddresses)
+            foreach (var searchService in searchServices)
             {
                 // Search service changes the registration URL scheme to match the request URL. Modify what we found in
                 // the index.json so match this.
-                var allReg = allRegistrationAddresses.Select(u => MatchSchemeAndPort(searchBaseAddress, u));
-                var semVer2Reg = semVer2RegistrationAddresses.Select(u => MatchSchemeAndPort(searchBaseAddress, u));
+                var allReg = allRegistrationAddresses.Select(u => MatchSchemeAndPort(searchService.Uri, u));
+                var semVer2Reg = semVer2RegistrationAddresses.Select(u => MatchSchemeAndPort(searchService.Uri, u));
 
                 // Act
-                var semVer1Query = await _clients.V2V3Search.QueryAsync(searchBaseAddress, $"q=", _logger);
-                var semVer2Query = await _clients.V2V3Search.QueryAsync(searchBaseAddress, $"q=&semVerLevel=2.0.0", _logger);
+                var semVer1Query = await _clients.V2V3Search.QueryAsync(searchService, $"q=", _logger);
+                var semVer2Query = await _clients.V2V3Search.QueryAsync(searchService, $"q=&semVerLevel=2.0.0", _logger);
 
                 // Assert
                 Assert.True(semVer1Query.Data.Count > 0);
@@ -75,12 +75,11 @@ namespace NuGet.Services.EndToEnd
             }
         }
 
-        private static string MatchSchemeAndPort(string reference, string toChange)
+        private static string MatchSchemeAndPort(Uri reference, string toChange)
         {
-            var parsedReference = new Uri(reference);
             var builder = new UriBuilder(toChange);
-            builder.Scheme = parsedReference.Scheme;
-            builder.Port = parsedReference.Port;
+            builder.Scheme = reference.Scheme;
+            builder.Port = reference.Port;
             return builder.Uri.ToString();
         }
     }

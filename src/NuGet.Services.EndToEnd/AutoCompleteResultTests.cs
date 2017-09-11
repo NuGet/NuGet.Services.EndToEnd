@@ -13,15 +13,13 @@ namespace NuGet.Services.EndToEnd
         : IClassFixture<TrustedHttpsCertificatesFixture>
     {
         private readonly PushedPackagesFixture _pushedPackages;
-        private readonly TestSettings _testSettings;
         private readonly ITestOutputHelper _logger;
         private readonly Clients _clients;
 
         public AutocompleteResultTests(PushedPackagesFixture pushedPackages, ITestOutputHelper logger)
         {
             _pushedPackages = pushedPackages;
-            _clients = Clients.Initialize();
-            _testSettings = TestSettings.Create();
+            _clients = pushedPackages.Clients;
             _logger = logger;
         }
 
@@ -45,10 +43,10 @@ namespace NuGet.Services.EndToEnd
                 semVerLevel, 
                 _logger);
 
-            foreach (var v3Endpoint in await _clients.V2V3Search.GetSearchBaseUrlsAsync())
+            foreach (var searchService in await _clients.V2V3Search.GetSearchServicesAsync(_logger))
             {
                 var v3Response = await _clients.V2V3Search.AutocompletePackageVersionsAsync(
-                    v3Endpoint,
+                    searchService,
                     package.Id,
                     includePrerelease,
                     semVerLevel,
@@ -80,10 +78,10 @@ namespace NuGet.Services.EndToEnd
                 semVerLevel,
                 _logger);
 
-            foreach (var v3Endpoint in await _clients.V2V3Search.GetSearchBaseUrlsAsync())
+            foreach (var searchService in await _clients.V2V3Search.GetSearchServicesAsync(_logger))
             {
                 var v3Response = await _clients.V2V3Search.AutocompletePackageIdsAsync(
-                    v3Endpoint,
+                    searchService,
                     package.Id,
                     includePrerelease,
                     semVerLevel,

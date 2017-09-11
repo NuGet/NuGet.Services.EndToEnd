@@ -1,16 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26424.2
+VisualStudioVersion = 15.0.26719.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D505F569-4DF7-42EE-BAA0-472FEC55B28F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Services.EndToEnd", "src\NuGet.Services.EndToEnd\NuGet.Services.EndToEnd.csproj", "{35CA0B78-DE1A-4C4E-A97F-85E84DB17A2F}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{A6B37EC3-8EC7-443D-A928-C328A18886F3}"
-	ProjectSection(SolutionItems) = preProject
-		scripts\Configure-Environment.ps1 = scripts\Configure-Environment.ps1
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5BC6A97C-227D-4213-9A6B-58A1FED9ADE6}"
 	ProjectSection(SolutionItems) = preProject
@@ -47,5 +42,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{35CA0B78-DE1A-4C4E-A97F-85E84DB17A2F} = {D505F569-4DF7-42EE-BAA0-472FEC55B28F}
 		{B69317BE-FA10-4458-A083-D9CECDABD61D} = {E8BAB621-E8D9-4994-BE47-F63B74C76927}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {42884BA2-9EE9-45AC-8646-2DCDA48CFE8F}
 	EndGlobalSection
 EndGlobal

@@ -10,24 +10,26 @@ using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd
 {
+    [Collection(nameof(CommonCollection))]
     public class ConnectivityTests : IClassFixture<TrustedHttpsCertificatesFixture>
     {
         private readonly Clients _clients;
         private readonly ITestOutputHelper _logger;
         private readonly TestSettings _testSettings;
 
-        public ConnectivityTests(ITestOutputHelper logger)
+        public ConnectivityTests(CommonFixture commonFixture, ITestOutputHelper logger)
         {
-            _testSettings = TestSettings.Create();
-            _clients = Clients.Initialize();
+            _testSettings = commonFixture.TestSettings;
+            _clients = commonFixture.Clients;
             _logger = logger;
         }
 
         [Fact]
         public async Task GalleryIsReachable()
         {
+            var galleryUrl = await _clients.Gallery.GetGalleryUrlAsync(_logger);
             using (var httpClient = new HttpClient())
-            using (var response = await httpClient.GetAsync(_testSettings.GalleryBaseUrl))
+            using (var response = await httpClient.GetAsync(galleryUrl))
             {
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
@@ -46,13 +48,13 @@ namespace NuGet.Services.EndToEnd
         [Fact]
         public async Task SearchIsReachable()
         {
-            var searchBaseUrls = await _clients.V2V3Search.GetSearchBaseUrlsAsync();
-            foreach (var searchBaseUrl in searchBaseUrls)
+            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
+            foreach (var searchService in searchServices)
             {
-                _logger.WriteLine($"Verifying connectivity to search base URL: {searchBaseUrl}");
+                _logger.WriteLine($"Verifying connectivity to search base URL: {searchService.Uri.AbsoluteUri}");
 
                 using (var httpClient = new HttpClient())
-                using (var response = await httpClient.GetAsync(searchBaseUrl))
+                using (var response = await httpClient.GetAsync(searchService.Uri))
                 {
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 }

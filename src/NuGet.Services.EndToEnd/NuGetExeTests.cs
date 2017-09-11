@@ -28,7 +28,7 @@ namespace NuGet.Services.EndToEnd
         public NuGetExeTests(PushedPackagesFixture pushedPackages, ITestOutputHelper logger)
         {
             _pushedPackages = pushedPackages;
-            _clients = Clients.Initialize();
+            _clients = pushedPackages.Clients;
             _logger = logger;
             _testDirectory = TestDirectory.Create();
             _outputDirectory = Path.Combine(_testDirectory, "output");
