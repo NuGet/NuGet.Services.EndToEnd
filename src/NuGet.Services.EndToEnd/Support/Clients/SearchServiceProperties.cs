@@ -8,9 +8,9 @@ namespace NuGet.Services.EndToEnd.Support
     /// <summary>
     /// Represents a cloud search service with multiple instances.
     /// </summary>
-    public class SearchService
+    public class SearchServiceProperties
     {
-        public SearchService(Uri uri, int instanceCount)
+        public SearchServiceProperties(Uri uri, int instanceCount)
         {
             Uri = uri;
             InstanceCount = instanceCount;

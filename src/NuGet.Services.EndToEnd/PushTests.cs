@@ -55,7 +55,7 @@ namespace NuGet.Services.EndToEnd
             // Act
             foreach (var searchService in searchServices)
             {
-                var shouldBeEmptyV3 = await _clients.V2V3Search.QueryAsync(searchService.Uri, $"q=packageid:{package.Id}&prerelease=true", _logger);
+                var shouldBeEmptyV3 = await _clients.V2V3Search.QueryAsync(searchService, $"q=packageid:{package.Id}&prerelease=true", _logger);
                 var shouldBeEmptyAutocomplete = await _clients.V2V3Search.AutocompletePackageIdsAsync(
                     searchService,
                     package.Id,
@@ -63,7 +63,7 @@ namespace NuGet.Services.EndToEnd
                     semVerLevel: null,
                     logger: _logger);
 
-                var shouldNotBeEmptyV3 = await _clients.V2V3Search.QueryAsync(searchService.Uri, $"q=packageid:{package.Id}&semVerLevel=2.0.0&prerelease=true", _logger);
+                var shouldNotBeEmptyV3 = await _clients.V2V3Search.QueryAsync(searchService, $"q=packageid:{package.Id}&semVerLevel=2.0.0&prerelease=true", _logger);
                 var shouldNotBeEmptyAutocomplete = await _clients.V2V3Search.AutocompletePackageIdsAsync(
                     searchService,
                     package.Id,

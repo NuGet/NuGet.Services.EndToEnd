@@ -49,8 +49,8 @@ namespace NuGet.Services.EndToEnd
                 var semVer2Reg = semVer2RegistrationAddresses.Select(u => MatchSchemeAndPort(searchService.Uri, u));
 
                 // Act
-                var semVer1Query = await _clients.V2V3Search.QueryAsync(searchService.Uri, $"q=", _logger);
-                var semVer2Query = await _clients.V2V3Search.QueryAsync(searchService.Uri, $"q=&semVerLevel=2.0.0", _logger);
+                var semVer1Query = await _clients.V2V3Search.QueryAsync(searchService, $"q=", _logger);
+                var semVer2Query = await _clients.V2V3Search.QueryAsync(searchService, $"q=&semVerLevel=2.0.0", _logger);
 
                 // Assert
                 Assert.True(semVer1Query.Data.Count > 0);

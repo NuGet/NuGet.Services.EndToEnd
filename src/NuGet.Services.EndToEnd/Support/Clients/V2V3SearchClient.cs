@@ -32,14 +32,14 @@ namespace NuGet.Services.EndToEnd.Support
             _azureManagementAPIWrapper = azureManagementAPIWrapper;
         }
 
-        public async Task<V3SearchResponse> QueryAsync(Uri searchServiceUri, string queryString, ITestOutputHelper logger)
+        public async Task<V3SearchResponse> QueryAsync(SearchServiceProperties searchService, string queryString, ITestOutputHelper logger)
         {
-            var queryUrl = new Uri(searchServiceUri, $"query?{queryString}");
+            var queryUrl = new Uri(searchService.Uri, $"query?{queryString}");
             return await _httpClient.GetJsonAsync<V3SearchResponse>(queryUrl.AbsoluteUri, logger);
         }
 
         public async Task<AutocompleteResponse> AutocompletePackageIdsAsync(
-            SearchService searchService,
+            SearchServiceProperties searchService,
             string packageId,
             bool includePrerelease,
             string semVerLevel,
@@ -51,7 +51,7 @@ namespace NuGet.Services.EndToEnd.Support
         }
 
         public async Task<AutocompleteResponse> AutocompletePackageVersionsAsync(
-            SearchService searchService,
+            SearchServiceProperties searchService,
             string packageId,
             bool includePrerelease,
             string semVerLevel,
@@ -112,7 +112,7 @@ namespace NuGet.Services.EndToEnd.Support
                 logger);
         }
 
-        private IEnumerable<string> GetSearchUrlsForPolling(SearchService searchServices)
+        private IEnumerable<string> GetSearchUrlsForPolling(SearchServiceProperties searchServices)
         {
             for (var instanceIndex = 0; instanceIndex < searchServices.InstanceCount; instanceIndex++)
             {
@@ -128,9 +128,9 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        public async Task<IReadOnlyList<SearchService>> GetSearchServicesAsync(ITestOutputHelper logger)
+        public async Task<IReadOnlyList<SearchServiceProperties>> GetSearchServicesAsync(ITestOutputHelper logger)
         {
-            List<SearchService> searchServices = null;
+            List<SearchServiceProperties> searchServices = null;
 
             if (_azureManagementAPIWrapper == null)
             {
@@ -144,7 +144,7 @@ namespace NuGet.Services.EndToEnd.Support
                     throw new ArgumentException(nameof(_testSettings.SearchServiceConfiguration.OverrideInstanceCount));
                 }
 
-                searchServices = searchBaseUrls.Select(url => new SearchService(new Uri(url), _testSettings.SearchServiceConfiguration.OverrideInstanceCount))
+                searchServices = searchBaseUrls.Select(url => new SearchServiceProperties(new Uri(url), _testSettings.SearchServiceConfiguration.OverrideInstanceCount))
                                                .ToList();
             }
             else if(_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices != null)
@@ -154,7 +154,7 @@ namespace NuGet.Services.EndToEnd.Support
                 logger.WriteLine($"Configured search service mode: use index.json search services and get service" +
                                  $" properties from Azure. Services: { string.Join(", ", searchBaseUrls)}");
 
-                searchServices = new List<SearchService>();
+                searchServices = new List<SearchServiceProperties>();
 
                 foreach (var url in searchBaseUrls)
                 {
@@ -174,7 +174,7 @@ namespace NuGet.Services.EndToEnd.Support
             else if (_testSettings.SearchServiceConfiguration.SingleSearchService != null)
             {
                 logger.WriteLine($"Configured search service mode: use single search service.");
-                searchServices = new List<SearchService>
+                searchServices = new List<SearchServiceProperties>
                 {
                     await GetSearchServiceFromAzureAsync(_testSettings.SearchServiceConfiguration.SingleSearchService, logger)
                 };
@@ -183,7 +183,7 @@ namespace NuGet.Services.EndToEnd.Support
             return searchServices;
         }
 
-        private async Task<SearchService> GetSearchServiceFromAzureAsync(AzureCloudServiceDetails serviceDetails, ITestOutputHelper logger)
+        private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(AzureCloudServiceDetails serviceDetails, ITestOutputHelper logger)
         {
             logger.WriteLine($"Extracting search service properties from Azure. " +
                    $"Subscription: {serviceDetails.Subscription}, " +
@@ -199,7 +199,7 @@ namespace NuGet.Services.EndToEnd.Support
 
             var cloudService = AzureHelper.ParseCloudServiceProperties(result);
 
-            return new SearchService(ClientHelper.ConvertToHttpsAndClean(cloudService.Uri), cloudService.InstanceCount);
+            return new SearchServiceProperties(ClientHelper.ConvertToHttpsAndClean(cloudService.Uri), cloudService.InstanceCount);
         }
 
         private static string BuildAutocompleteQueryString(

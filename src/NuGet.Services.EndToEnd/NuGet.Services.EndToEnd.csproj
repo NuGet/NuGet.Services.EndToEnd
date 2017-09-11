@@ -42,7 +42,7 @@
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
     <Compile Include="Support\Clients\ClientHelper.cs" />
-    <Compile Include="Support\Clients\SearchService.cs" />
+    <Compile Include="Support\Clients\SearchServiceProperties.cs" />
     <Compile Include="Support\CommonCollection.cs" />
     <Compile Include="Support\CommonFixture.cs" />
     <Compile Include="Support\Configuration\AzureCloudServiceDetails.cs" />

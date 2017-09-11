@@ -75,7 +75,7 @@ namespace NuGet.Services.EndToEnd
             {
                 // Act
                 var results = await _clients.V2V3Search.QueryAsync(
-                    searchService.Uri,
+                    searchService,
                     $"q=packageid:{package.Id}&prerelease=true&semVerLevel=2.0.0",
                     _logger);
 
