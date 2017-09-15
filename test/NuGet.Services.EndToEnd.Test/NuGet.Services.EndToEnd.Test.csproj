@@ -45,6 +45,10 @@
     <Compile Include="Support\TestSettingsTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>

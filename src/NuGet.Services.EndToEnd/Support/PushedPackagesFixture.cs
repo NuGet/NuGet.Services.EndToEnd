@@ -18,7 +18,7 @@ namespace NuGet.Services.EndToEnd.Support
     /// A test fixture for sharing pushed packages between tests. Since packages take quite a while (minutes) to make
     /// their way through the V3 pipeline, packages should be pushed all at once and shared between tests, if possible.
     /// </summary>
-    public class PushedPackagesFixture : IDisposable
+    public class PushedPackagesFixture : CommonFixture
     {
         private const string SemVer2PrerelVersion = "1.0.0-alpha.1";
 
@@ -32,25 +32,35 @@ namespace NuGet.Services.EndToEnd.Support
             PackageType.SemVer2DueToSemVer2Dep,
         };
 
-        private readonly SemaphoreSlim _pushLock;
+        private readonly SemaphoreSlim _pushLock = new SemaphoreSlim(initialCount: 1);
         private readonly object _packagesLock = new object();
-        private readonly IDictionary<PackageType, Package> _packages;
+        private readonly IDictionary<PackageType, Package> _packages = new Dictionary<PackageType, Package>();
         private readonly object _packageIdsLock = new object();
-        private readonly IDictionary<PackageType, string> _packageIds;
-        private readonly IGalleryClient _galleryClient;
-        private readonly TestSettings _testSettings;
+        private readonly IDictionary<PackageType, string> _packageIds = new Dictionary<PackageType, string>();
+        private IGalleryClient _galleryClient;
 
-        public PushedPackagesFixture() : this(Clients.Initialize().Gallery, TestSettings.Create())
+        public PushedPackagesFixture()
         {
         }
 
-        public PushedPackagesFixture(IGalleryClient galleryClient, TestSettings testSettings)
+        public PushedPackagesFixture(IGalleryClient galleryClient)
         {
             _galleryClient = galleryClient;
-            _testSettings = testSettings;
-            _pushLock = new SemaphoreSlim(initialCount: 1);
-            _packageIds = new Dictionary<PackageType, string>();
-            _packages = new Dictionary<PackageType, Package>();
+        }
+
+        public override async Task InitializeAsync()
+        {
+            await base.InitializeAsync();
+
+            if (_galleryClient == null)
+            {
+                _galleryClient = Clients.Gallery;
+            }
+        }
+
+        public override Task DisposeAsync()
+        {
+            return base.DisposeAsync();
         }
 
         public async Task<Package> PrepareAsync(PackageType requestedPackageType, ITestOutputHelper logger)
@@ -136,14 +146,14 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 using (var nupkgStream = new MemoryStream(packageToPrepare.Package.NupkgBytes.ToArray()))
                 {
-                    await _galleryClient.PushAsync(nupkgStream);
+                    await _galleryClient.PushAsync(nupkgStream, logger);
                 }
                 logger.WriteLine($"Package {packageToPrepare} has been pushed.");
 
                 if (packageToPrepare.Unlist)
                 {
                     logger.WriteLine($"Package of type {packageType} need to be unlisted. Unlisting {packageToPrepare}.");
-                    await _galleryClient.UnlistAsync(packageToPrepare.Package.Id, packageToPrepare.Package.NormalizedVersion);
+                    await _galleryClient.UnlistAsync(packageToPrepare.Package.Id, packageToPrepare.Package.NormalizedVersion, logger);
                     logger.WriteLine($"Package {packageToPrepare} has been unlisted.");
                 }
             }
@@ -179,7 +189,7 @@ namespace NuGet.Services.EndToEnd.Support
             var selectedPackageTypes = new List<PackageType>();
 
             // Add all package types, supporting aggressive push.
-            if (_testSettings.AggressivePush)
+            if (TestSettings.AggressivePush)
             {
                 selectedPackageTypes.AddRange(Enum
                     .GetValues(typeof(PackageType))

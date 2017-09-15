@@ -3,104 +3,113 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using NuGet.Services.Configuration;
 
 namespace NuGet.Services.EndToEnd.Support
 {
     public class TestSettings
     {
-        public enum Mode
-        {
-            EnvironmentVariables,
-            Dev,
-            Int,
-            Prod,
-        };
-
         /// <summary>
-        /// Manually override this value to easily test end-to-end tests against on of the deployed environments. The
-        /// checked in value should always be <see cref="Mode.EnvironmentVariables"/>.
+        /// Change this value to test against one of the pre-configured environments: Dev/Int/Prod.
+        /// When there is no setting, the configuration will be extracted from an environment variable 
+        /// <see cref="EnvironmentSettings.ConfigurationName"/>
         /// </summary>
-        public static Mode CurrentMode => Mode.EnvironmentVariables;
+        public static string ManualConfigurationOverride = "";
 
         /// <summary>
         /// Manually override this value to easily enable aggressive pushing. This means each test will push its own
         /// packages. This is helpful when debugging a single test.
         /// </summary>
-        public static bool DefaultAggressivePush => true;
+        public static bool AggressivePush => true;
 
-        public TestSettings(
-            bool aggressivePush,
-            string galleryBaseUrl,
-            string v3IndexUrl,
-            IReadOnlyList<string> trustedHttpsCertificates,
-            string apiKey,
-            string searchBaseUrl,
-            int searchInstanceCount)
+        private static TestSettings _testSettings = null;
+        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+
+        private TestSettings()
         {
-            GalleryBaseUrl = galleryBaseUrl ?? throw new ArgumentNullException(nameof(galleryBaseUrl));
-            V3IndexUrl = v3IndexUrl ?? throw new ArgumentNullException(nameof(v3IndexUrl));
-            TrustedHttpsCertificates = trustedHttpsCertificates ?? throw new ArgumentNullException(nameof(trustedHttpsCertificates));
-            ApiKey = apiKey ?? throw new ArgumentNullException(nameof(apiKey));
-
-            AggressivePush = aggressivePush;
-            SearchBaseUrl = searchBaseUrl;
-            SearchInstanceCount = searchInstanceCount;
         }
 
-        public string GalleryBaseUrl { get; }
-        public string V3IndexUrl { get; }
-        public string SearchBaseUrl { get; }
-        public IReadOnlyList<string> TrustedHttpsCertificates { get; }
-        public string ApiKey { get; }
-        public int SearchInstanceCount { get; }
-        public bool AggressivePush { get; }
+        public AzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; set; }
 
-        public static TestSettings Create()
-        {
-            return Create(CurrentMode);
-        }
+        public string V3IndexUrl { get; set; }
 
-        public static TestSettings Create(Mode mode)
+        public SearchServiceConfiguration SearchServiceConfiguration { get; set; }
+
+        public GalleryConfiguration GalleryConfiguration { get; set; }
+
+        public List<string> TrustedHttpsCertificates { get; set; }
+
+        public string ApiKey { get; set; }
+        
+        public static async Task<TestSettings> CreateAsync()
         {
-            switch (mode)
+            if (_testSettings != null)
             {
-                case Mode.Dev:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        "https://dev.nugettest.org",
-                        "http://api.dev.nugettest.org/v3-index/index.json",
-                        new List<string>(),
-                        "API_KEY",
-                        searchBaseUrl: null,
-                        searchInstanceCount: 2);
-                case Mode.Int:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        "https://int.nugettest.org",
-                        "http://api.int.nugettest.org/v3-index/index.json",
-                        new List<string>(),
-                        "API_KEY",
-                        searchBaseUrl: null,
-                        searchInstanceCount: 2);
-                case Mode.Prod:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        "https://www.nuget.org",
-                        "https://api.nuget.org/v3/index.json",
-                        new List<string>(),
-                        "API_KEY",
-                        searchBaseUrl: null,
-                        searchInstanceCount: 5);
-                default:
-                    return new TestSettings(
-                        DefaultAggressivePush,
-                        EnvironmentSettings.GalleryBaseUrl,
-                        EnvironmentSettings.V3IndexUrl,
-                        EnvironmentSettings.TrustedHttpsCertificates,
-                        EnvironmentSettings.ApiKey,
-                        EnvironmentSettings.SearchBaseUrl,
-                        EnvironmentSettings.SearchInstanceCount);
+                return _testSettings;
             }
+
+            try
+            {
+                await _semaphore.WaitAsync();
+
+                if (_testSettings != null)
+                {
+                    return _testSettings;
+                }
+
+                _testSettings = await CreateInternalAsync();
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+            
+            return _testSettings;
+        }
+
+        public static async Task<TestSettings> CreateLocalTestConfigurationAsync(string configurationName)
+        {
+            if (configurationName == "Dev" ||
+                configurationName == "Int" ||
+                configurationName == "Prod")
+            {
+                return await CreateInternalAsync(configurationName);
+            }
+
+            throw new ArgumentException($"{configurationName} is not one of the local test supported configurations!");
+        }
+
+        private static async Task<TestSettings> CreateInternalAsync()
+        {
+            string configurationName = ManualConfigurationOverride;
+
+            if (string.IsNullOrEmpty(configurationName))
+            {
+                configurationName = EnvironmentSettings.ConfigurationName;
+            }
+
+            return await CreateInternalAsync(configurationName);
+        }
+
+        private static async Task<TestSettings> CreateInternalAsync(string configurationName)
+        {
+            var builder = new ConfigurationBuilder()
+             .SetBasePath(Path.Combine(Environment.CurrentDirectory, "config"))
+             .AddJsonFile(configurationName + ".json");
+
+            var configurationRoot = builder.Build();
+
+            var configuration = new E2ESecretConfigurationReader(configurationRoot, new ConfigurationRootSecretReaderFactory(configurationRoot));
+            await configuration.InjectSecrets();
+
+            var testSettings = new TestSettings();
+            configurationRoot.GetSection("TestSettings").Bind(testSettings);
+
+            return testSettings;
         }
     }
 }

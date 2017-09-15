@@ -6,12 +6,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace NuGet.Services.EndToEnd.Support
 {
-    public class TrustedHttpsCertificatesFixture : IDisposable
+    public class TrustedHttpsCertificatesFixture : IAsyncLifetime
     {
-        private static readonly TestSettings TestSettings = TestSettings.Create();
+        private static TestSettings TestSettings;
 
         static TrustedHttpsCertificatesFixture()
         {
@@ -40,6 +42,16 @@ namespace NuGet.Services.EndToEnd.Support
             }
 
             return false;
+        }
+
+        public async Task InitializeAsync()
+        {
+            TestSettings = await TestSettings.CreateAsync();
+        }
+
+        public Task DisposeAsync()
+        {
+            return Task.FromResult(true);
         }
 
         public void Dispose()

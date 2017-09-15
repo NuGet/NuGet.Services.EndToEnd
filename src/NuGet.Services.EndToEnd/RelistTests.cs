@@ -18,7 +18,7 @@ namespace NuGet.Services.EndToEnd
         public RelistTests(PushedPackagesFixture pushedPackages, ITestOutputHelper logger)
         {
             _pushedPackages = pushedPackages;
-            _clients = Clients.Initialize();
+            _clients = pushedPackages.Clients;
             _logger = logger;
         }
 
@@ -34,7 +34,7 @@ namespace NuGet.Services.EndToEnd
             await _clients.V2V3Search.WaitForListedStateAsync(package.Id, package.FullVersion, listed, _logger);
 
             // Act
-            await _clients.Gallery.RelistAsync(package.Id, package.NormalizedVersion);
+            await _clients.Gallery.RelistAsync(package.Id, package.NormalizedVersion, _logger);
 
             // Assert
             listed = true;
