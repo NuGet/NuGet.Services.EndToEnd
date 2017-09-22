@@ -35,6 +35,9 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+            
+            // Wait for package to become available
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
 
             // Act
             var v2Response = await _clients.Gallery.AutocompletePackageVersionsAsync(
@@ -70,6 +73,9 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+
+            // Wait for package to become available
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
 
             // Act
             var v2Response = await _clients.Gallery.AutocompletePackageIdsAsync(
