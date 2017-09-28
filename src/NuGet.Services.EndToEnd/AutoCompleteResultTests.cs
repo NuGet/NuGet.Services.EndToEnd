@@ -35,6 +35,9 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+            
+            // Wait for package to become available
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
 
             // Act
             var v2Response = await _clients.Gallery.AutocompletePackageVersionsAsync(
@@ -42,6 +45,9 @@ namespace NuGet.Services.EndToEnd
                 includePrerelease, 
                 semVerLevel, 
                 _logger);
+
+            // Assert
+            Assert.NotEmpty(v2Response);
 
             foreach (var searchService in await _clients.V2V3Search.GetSearchServicesAsync(_logger))
             {
@@ -51,8 +57,8 @@ namespace NuGet.Services.EndToEnd
                     includePrerelease,
                     semVerLevel,
                     _logger);
-                
-                // Assert
+
+                Assert.NotEmpty(v3Response.Data);
                 Assert.Equal(v2Response.Count, v3Response.Data.Count);
                 Assert.Equal(v2Response, v3Response.Data);
             }
@@ -71,12 +77,18 @@ namespace NuGet.Services.EndToEnd
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
+            // Wait for package to become available
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
+
             // Act
             var v2Response = await _clients.Gallery.AutocompletePackageIdsAsync(
                 package.Id,
                 includePrerelease,
                 semVerLevel,
                 _logger);
+
+            // Assert
+            Assert.NotEmpty(v2Response);
 
             foreach (var searchService in await _clients.V2V3Search.GetSearchServicesAsync(_logger))
             {
@@ -87,7 +99,7 @@ namespace NuGet.Services.EndToEnd
                     semVerLevel,
                     _logger);
 
-                // Assert
+                Assert.NotEmpty(v3Response.Data);
                 Assert.Equal(v2Response.Count, v3Response.Data.Count);
                 Assert.Equal(v2Response, v3Response.Data);
             }

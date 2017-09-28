@@ -4,7 +4,7 @@
     "TrustedHttpsCertificates": {},
     "ApiKey": "API_KEY",
     "GalleryConfiguration": {
-      "OverrideServiceUrl": "https://wwww.nuget.org"
+      "OverrideServiceUrl": "https://www.nuget.org"
     },
     "SearchServiceConfiguration": {
       "OverrideInstanceCount": 5
