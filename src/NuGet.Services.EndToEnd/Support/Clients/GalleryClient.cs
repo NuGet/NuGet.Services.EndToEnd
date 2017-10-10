@@ -20,6 +20,8 @@ namespace NuGet.Services.EndToEnd.Support
     public class GalleryClient : IGalleryClient
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
+        private const string NuGetProtocolHeader = "X-NuGet-Protocol-Version";
+        private const string NuGetProtocolVersion = "4.1.0";
 
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
@@ -116,6 +118,8 @@ namespace NuGet.Services.EndToEnd.Support
                 httpClient.Timeout = TimeSpan.FromMinutes(5);
 
                 request.Headers.Add(ApiKeyHeader, _testSettings.ApiKey);
+                request.Headers.Add(NuGetProtocolHeader, NuGetProtocolVersion);
+
                 request.Content = new StreamContent(nupkgStream);
 
                 using (var response = await httpClient.SendAsync(request))
