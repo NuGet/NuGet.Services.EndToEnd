@@ -79,7 +79,7 @@
     <Compile Include="Support\TrustedHttpsCertificatesFixture.cs" />
     <Compile Include="Support\TestData.cs" />
     <Compile Include="Support\TestDirectory.cs" />
-    <Compile Include="Support\Clients\V3IndexClient.cs" />
+    <Compile Include="Support\Clients\V2V3IndexClient.cs" />
     <Compile Include="UnlistTests.cs" />
   </ItemGroup>
   <ItemGroup>

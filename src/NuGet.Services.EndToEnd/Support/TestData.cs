@@ -12,9 +12,9 @@ namespace NuGet.Services.EndToEnd.Support
     public static class TestData
     {
         public static readonly NuGetFramework TargetFramework = NuGetFramework.Parse("net40");
-        public static readonly TimeSpan FlatContainerWaitDuration = TimeSpan.FromMinutes(10);
-        public static readonly TimeSpan RegistrationWaitDuration = TimeSpan.FromMinutes(10);
-        public static readonly TimeSpan SearchWaitDuration = TimeSpan.FromMinutes(25);
+        public static readonly TimeSpan FlatContainerWaitDuration = TimeSpan.FromMinutes(15);
+        public static readonly TimeSpan RegistrationWaitDuration = TimeSpan.FromMinutes(15);
+        public static readonly TimeSpan SearchWaitDuration = TimeSpan.FromMinutes(30);
         public static readonly TimeSpan V3SleepDuration = TimeSpan.FromSeconds(5);
 
         public static Stream BuildPackageStream(PackageCreationContext context)
