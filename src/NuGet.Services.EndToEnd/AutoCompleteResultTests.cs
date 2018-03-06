@@ -23,6 +23,7 @@ namespace NuGet.Services.EndToEnd
             _logger = logger;
         }
 
+        //[GalleryTestTheory] Uncomment this line, and remove the Theory bellow once the test is fixed
         [Theory(Skip = "Flaky, tracked https://github.com/NuGet/NuGetGallery/issues/5407")]
         [InlineData(PackageType.SemVer1Stable, true, null)]
         [InlineData(PackageType.SemVer1Stable, false, null)]
@@ -64,6 +65,7 @@ namespace NuGet.Services.EndToEnd
             }
         }
 
+        //[GalleryTestTheory] Uncomment this line, and remove the Theory bellow once the test is fixed
         [Theory(Skip = "Flaky, tracked https://github.com/NuGet/NuGetGallery/issues/5407")]
         [InlineData(PackageType.SemVer1Stable, true, null)]
         [InlineData(PackageType.SemVer1Stable, false, null)]

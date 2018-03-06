@@ -44,6 +44,8 @@ namespace NuGet.Services.EndToEnd.Support
         public List<string> TrustedHttpsCertificates { get; set; }
 
         public string ApiKey { get; set; }
+
+        public bool RunGalleryTests { get; set; }
         
         public static async Task<TestSettings> CreateAsync()
         {

@@ -3,6 +3,7 @@
     "V3IndexUrl": "https://apiint.nugettest.org/v3-index/index.json",
     "TrustedHttpsCertificates": {},
     "ApiKey": "API_KEY",
+    "RunGalleryTests": true,
     "GalleryConfiguration": {
       "OverrideServiceUrl": "https://int.nugettest.org"
     },
