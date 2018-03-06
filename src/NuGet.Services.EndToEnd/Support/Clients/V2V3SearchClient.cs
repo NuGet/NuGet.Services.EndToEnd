@@ -22,14 +22,16 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly V3IndexClient _v3IndexClient;
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
-        private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper; 
+        private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper;
+        private readonly bool _includeUnmappedUrls;
 
-        public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings, IAzureManagementAPIWrapper azureManagementAPIWrapper)
+        public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings, IAzureManagementAPIWrapper azureManagementAPIWrapper, bool includeUnmappedUrl = false)
         {
             _httpClient = httpClient;
             _v3IndexClient = v3IndexClient;
             _testSettings = testSettings;
             _azureManagementAPIWrapper = azureManagementAPIWrapper;
+            _includeUnmappedUrls = includeUnmappedUrl;
         }
 
         public async Task<V3SearchResponse> QueryAsync(SearchServiceProperties searchService, string queryString, ITestOutputHelper logger)
@@ -169,6 +171,10 @@ namespace NuGet.Services.EndToEnd.Support
                     var mappedService = _testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices[host];
 
                     searchServices.Add(await GetSearchServiceFromAzureAsync(mappedService, logger));
+                    if (_includeUnmappedUrls)
+                    {
+                        searchServices.Add(new SearchServiceProperties(new Uri(url), _testSettings.SearchServiceConfiguration.OverrideInstanceCount));
+                    }
                 }
             }
             else if (_testSettings.SearchServiceConfiguration.SingleSearchService != null)

@@ -19,5 +19,7 @@ namespace NuGet.Services.EndToEnd.Support
         public Dictionary<string, AzureCloudServiceDetails> IndexJsonMappedSearchServices { get; set; }
 
         public AzureCloudServiceDetails SingleSearchService { get; set; }
+
+        public bool IncludeUnmappedUrls { get; set; }
     }
 }

@@ -74,7 +74,7 @@ namespace NuGet.Services.EndToEnd.Support
             var httpClient = new SimpleHttpClient();
             var gallery = new GalleryClient(httpClient, testSettings, azureManagementAPI);
             var v3Index = new V3IndexClient(httpClient, testSettings);
-            var v2v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings, azureManagementAPI);
+            var v2v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings, azureManagementAPI, testSettings.SearchServiceConfiguration.IncludeUnmappedUrls);
             var flatContainer = new FlatContainerClient(httpClient, v3Index);
             var registration = new RegistrationClient(httpClient, v3Index);
             var nuGetExe = new NuGetExeClient(testSettings, gallery);
