@@ -130,7 +130,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<IReadOnlyList<SearchServiceProperties>> GetSearchServicesAsync(ITestOutputHelper logger)
         {
-            List<SearchServiceProperties> searchServices = new List<SearchServiceProperties>();
+            var searchServices = new List<SearchServiceProperties>();
 
             if (_azureManagementAPIWrapper == null)
             {
