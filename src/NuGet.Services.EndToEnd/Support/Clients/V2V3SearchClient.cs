@@ -22,7 +22,7 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly V3IndexClient _v3IndexClient;
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
-        private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper; 
+        private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper;
 
         public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings, IAzureManagementAPIWrapper azureManagementAPIWrapper)
         {
@@ -130,7 +130,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<IReadOnlyList<SearchServiceProperties>> GetSearchServicesAsync(ITestOutputHelper logger)
         {
-            List<SearchServiceProperties> searchServices = null;
+            var searchServices = new List<SearchServiceProperties>();
 
             if (_azureManagementAPIWrapper == null)
             {
@@ -144,40 +144,39 @@ namespace NuGet.Services.EndToEnd.Support
                     throw new ArgumentException(nameof(_testSettings.SearchServiceConfiguration.OverrideInstanceCount));
                 }
 
-                searchServices = searchBaseUrls.Select(url => new SearchServiceProperties(new Uri(url), _testSettings.SearchServiceConfiguration.OverrideInstanceCount))
-                                               .ToList();
+                searchServices.AddRange(searchBaseUrls.Select(url => new SearchServiceProperties(new Uri(url), _testSettings.SearchServiceConfiguration.OverrideInstanceCount))
+                                               .ToList());
             }
-            else if(_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices != null)
+            else
             {
-                var searchBaseUrls = await _v3IndexClient.GetSearchBaseUrlsAsync();
-
-                logger.WriteLine($"Configured search service mode: use index.json search services and get service" +
-                                 $" properties from Azure. Services: { string.Join(", ", searchBaseUrls)}");
-
-                searchServices = new List<SearchServiceProperties>();
-
-                foreach (var url in searchBaseUrls)
+                if (_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices != null)
                 {
-                    // Clean the URL
-                    var host = new Uri(url).Host;
+                    var searchBaseUrls = await _v3IndexClient.GetSearchBaseUrlsAsync();
 
-                    if (!_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices.ContainsKey(host))
+                    logger.WriteLine($"Configured search service mode: use index.json search services and get service" +
+                                     $" properties from Azure. Services: { string.Join(", ", searchBaseUrls)}");
+
+                    foreach (var url in searchBaseUrls)
                     {
-                        throw new ArgumentException($"IndexJsonMappedSearchServices doesn't contain map for service {host}");
+                        // Clean the URL
+                        var host = new Uri(url).Host;
+
+                        if (!_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices.ContainsKey(host))
+                        {
+                            throw new ArgumentException($"IndexJsonMappedSearchServices doesn't contain map for service {host}");
+                        }
+
+                        var mappedService = _testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices[host];
+
+                        searchServices.Add(await GetSearchServiceFromAzureAsync(mappedService, logger));
                     }
-
-                    var mappedService = _testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices[host];
-
-                    searchServices.Add(await GetSearchServiceFromAzureAsync(mappedService, logger));
                 }
-            }
-            else if (_testSettings.SearchServiceConfiguration.SingleSearchService != null)
-            {
-                logger.WriteLine($"Configured search service mode: use single search service.");
-                searchServices = new List<SearchServiceProperties>
+
+                if (_testSettings.SearchServiceConfiguration.SingleSearchService != null)
                 {
-                    await GetSearchServiceFromAzureAsync(_testSettings.SearchServiceConfiguration.SingleSearchService, logger)
-                };
+                    logger.WriteLine($"Configured search service mode: use single search service.");
+                    searchServices.Add(await GetSearchServiceFromAzureAsync(_testSettings.SearchServiceConfiguration.SingleSearchService, logger));
+                }
             }
 
             return searchServices;
