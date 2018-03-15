@@ -43,6 +43,7 @@
     <Compile Include="AutocompleteResultTests.cs" />
     <Compile Include="Support\Clients\ClientHelper.cs" />
     <Compile Include="Support\Clients\SearchServiceProperties.cs" />
+    <Compile Include="Support\Clients\V3IndexClient.cs" />
     <Compile Include="Support\CommonCollection.cs" />
     <Compile Include="Support\CommonFixture.cs" />
     <Compile Include="Support\Configuration\AzureCloudServiceDetails.cs" />
@@ -79,7 +80,6 @@
     <Compile Include="Support\TrustedHttpsCertificatesFixture.cs" />
     <Compile Include="Support\TestData.cs" />
     <Compile Include="Support\TestDirectory.cs" />
-    <Compile Include="Support\Clients\V2V3IndexClient.cs" />
     <Compile Include="Support\XUnitExtensions\GalleryTestTheoryAttribute.cs" />
     <Compile Include="UnlistTests.cs" />
   </ItemGroup>

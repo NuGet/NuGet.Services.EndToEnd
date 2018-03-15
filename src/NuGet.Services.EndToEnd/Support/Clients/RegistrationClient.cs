@@ -85,8 +85,8 @@ namespace NuGet.Services.EndToEnd.Support
                     .Where(c => c.Id == id && c.Version == version)
                     .Any(),
                 startingMessage: $"Waiting for package {id} {version} to be available on registration base URLs:",
-                successMessageFormat: $"Package {id} {version} became available on {{0}} after waiting {{1}}.",
-                failureMessageFormat: $"Package {id} {version} was not available on {{0}} after waiting {{1}}.",
+                successMessageFormat: $"Package {id} {version} was found on {{0}} after waiting {{1}}.",
+                failureMessageFormat: $"Package {id} {version} was not found on {{0}} after waiting {{1}}.",
                 logger: logger);
         }
 
@@ -157,8 +157,8 @@ namespace NuGet.Services.EndToEnd.Support
             }
             while (!complete && duration.Elapsed < TestData.RegistrationWaitDuration);
 
-            Assert.True(complete, string.Format(failureMessageFormat, baseUrl, duration.Elapsed));
-            logger.WriteLine(string.Format(successMessageFormat, baseUrl, duration.Elapsed));
+            Assert.True(complete, string.Format(failureMessageFormat, url, duration.Elapsed));
+            logger.WriteLine(string.Format(successMessageFormat, url, duration.Elapsed));
         }
 
         private class RegistrationIndexResponse
