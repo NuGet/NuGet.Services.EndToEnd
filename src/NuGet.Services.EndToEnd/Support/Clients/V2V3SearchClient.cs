@@ -287,8 +287,8 @@ namespace NuGet.Services.EndToEnd.Support
             }
             while (!complete && duration.Elapsed < TestData.SearchWaitDuration);
 
-            Assert.True(complete, string.Format(failureMessageFormat, v2SearchUrl, duration.Elapsed));
-            logger.WriteLine(string.Format(successMessageFormat, v2SearchUrl, duration.Elapsed));
+            Assert.True(complete, string.Format(failureMessageFormat, url, duration.Elapsed));
+            logger.WriteLine(string.Format(successMessageFormat, url, duration.Elapsed));
         }
 
         public class V2SearchResponse

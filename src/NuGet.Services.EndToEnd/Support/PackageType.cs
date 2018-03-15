@@ -17,5 +17,6 @@ namespace NuGet.Services.EndToEnd.Support
         SemVer2PrerelUnlisted,
         SemVer2StableMetadata,
         SemVer2StableMetadataUnlisted,
+        FullValidation,
     }
 }

@@ -29,6 +29,7 @@ namespace NuGet.Services.EndToEnd
         [InlineData(PackageType.SemVer1Stable, false)]
         [InlineData(PackageType.SemVer2Prerel, true)]
         [InlineData(PackageType.SemVer2StableMetadata, true)]
+        [InlineData(PackageType.FullValidation, false)]
         public async Task NewlyPushedIsAvailableInV3(PackageType packageType, bool semVer2)
         {
             // Arrange

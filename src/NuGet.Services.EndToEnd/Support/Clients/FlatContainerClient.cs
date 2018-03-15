@@ -72,8 +72,8 @@ namespace NuGet.Services.EndToEnd.Support
             }
             while (!found && duration.Elapsed < TestData.FlatContainerWaitDuration);
 
-            Assert.True(found, $"Package {id} {version} was not found on {baseUrl} after waiting {TestData.FlatContainerWaitDuration}.");
-            logger.WriteLine($"Package {id} {version} was found on {baseUrl} after waiting {duration.Elapsed}.");
+            Assert.True(found, $"Package {id} {version} was not found on {url} after waiting {TestData.FlatContainerWaitDuration}.");
+            logger.WriteLine($"Package {id} {version} was found on {url} after waiting {duration.Elapsed}.");
         }
 
         private class FlatContainerIndexResponse

@@ -255,6 +255,7 @@ namespace NuGet.Services.EndToEnd.Support
                         unlist: true);
 
                 case PackageType.SemVer1Stable:
+                case PackageType.FullValidation:
                 default:
                     return new PackageToPrepare(Package.Create(id, "1.0.0"));
             }
