@@ -46,7 +46,7 @@ namespace NuGet.Services.EndToEnd.Support
         public string ApiKey { get; set; }
 
         public bool SkipGalleryTests { get; set; }
-        
+
         public static async Task<TestSettings> CreateAsync()
         {
             if (_testSettings != null)

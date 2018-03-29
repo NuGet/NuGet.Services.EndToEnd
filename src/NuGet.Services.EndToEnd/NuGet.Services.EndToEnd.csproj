@@ -81,6 +81,7 @@
     <Compile Include="Support\TestData.cs" />
     <Compile Include="Support\TestDirectory.cs" />
     <Compile Include="Support\XUnitExtensions\GalleryTestTheoryAttribute.cs" />
+    <Compile Include="Support\XUnitExtensions\SignedPackageTestFactAttribute.cs" />
     <Compile Include="UnlistTests.cs" />
   </ItemGroup>
   <ItemGroup>

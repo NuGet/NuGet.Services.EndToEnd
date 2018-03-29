@@ -199,6 +199,12 @@ namespace NuGet.Services.EndToEnd.Support
             // Add the requested package type.
             selectedPackageTypes.Add(requestedPackageType);
 
+            // Only return the signed package type if the environment provided a path to a signed package.
+            if (string.IsNullOrEmpty(EnvironmentSettings.SignedPackagePath))
+            {
+                selectedPackageTypes.Where(t => t != PackageType.Signed);
+            }
+
             return selectedPackageTypes
                 .Distinct()
                 .OrderBy(x => x);
@@ -252,6 +258,11 @@ namespace NuGet.Services.EndToEnd.Support
                 case PackageType.SemVer1StableUnlisted:
                     return new PackageToPrepare(
                         Package.Create(id, "1.0.0"),
+                        unlist: true);
+
+                case PackageType.Signed:
+                    return new PackageToPrepare(
+                        Package.SignedPackage(),
                         unlist: true);
 
                 case PackageType.SemVer1Stable:
