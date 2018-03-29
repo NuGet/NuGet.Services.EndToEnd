@@ -202,7 +202,7 @@ namespace NuGet.Services.EndToEnd.Support
             // Only return the signed package type if the environment provided a path to a signed package.
             if (string.IsNullOrEmpty(EnvironmentSettings.SignedPackagePath))
             {
-                selectedPackageTypes.Where(t => t != PackageType.Signed);
+                selectedPackageTypes.RemoveAll(p => p == PackageType.Signed);
             }
 
             return selectedPackageTypes
