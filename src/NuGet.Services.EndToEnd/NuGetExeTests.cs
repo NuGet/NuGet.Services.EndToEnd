@@ -113,8 +113,8 @@ namespace NuGet.Services.EndToEnd
                 _logger);
 
             VerifyInstalled(package);
-            VerifySignature(nuGetExe, package);
-            Assert.Equal(0, result.ExitCode);
+
+            await VerifySignature(nuGetExe, package);
         }
 
         [Theory]
