@@ -10,7 +10,7 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class NuGetExeClient
     {
-        private const string LatestVersion = "4.3.0-preview1-4044";
+        private const string LatestVersion = "4.6.1";
 
         private readonly TestSettings _testSettings;
         private readonly string _version;
@@ -155,6 +155,20 @@ namespace NuGet.Services.EndToEnd.Support
             };
 
             return await RunAsync(outputDirectory, arguments, logger);
+        }
+
+        public async Task<CommandRunnerResult> VerifyAsync(string workingDirectory, string packagePath, ITestOutputHelper logger)
+        {
+            var arguments = new List<string>
+            {
+                "verify",
+                "-All",
+                "-Verbosity",
+                "detailed",
+                packagePath,
+            };
+
+            return await RunAsync(workingDirectory, arguments, logger);
         }
 
         private async Task<CommandRunnerResult> RunAsync(string workingDirectory, List<string> arguments, ITestOutputHelper logger)
