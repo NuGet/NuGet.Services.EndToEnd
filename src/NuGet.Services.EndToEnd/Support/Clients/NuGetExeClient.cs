@@ -157,7 +157,7 @@ namespace NuGet.Services.EndToEnd.Support
             return await RunAsync(outputDirectory, arguments, logger);
         }
 
-        public async Task<CommandRunnerResult> VerifyAsync(string workingDirectory, string packagePath, ITestOutputHelper logger)
+        public Task<CommandRunnerResult> VerifyAsync(string workingDirectory, string packagePath, ITestOutputHelper logger)
         {
             var arguments = new List<string>
             {
@@ -168,7 +168,7 @@ namespace NuGet.Services.EndToEnd.Support
                 packagePath,
             };
 
-            return await RunAsync(workingDirectory, arguments, logger);
+            return RunAsync(workingDirectory, arguments, logger);
         }
 
         private async Task<CommandRunnerResult> RunAsync(string workingDirectory, List<string> arguments, ITestOutputHelper logger)
