@@ -25,7 +25,7 @@ namespace NuGet.Services.EndToEnd
         /// <summary>
         /// Push a package to the gallery and wait for it to be available in V3.
         /// </summary>
-        [Theory(Skip = "TODO: Remove this skip!")]
+        [Theory]
         [InlineData(PackageType.SemVer1Stable, false)]
         [InlineData(PackageType.SemVer2Prerel, true)]
         [InlineData(PackageType.SemVer2StableMetadata, true)]
@@ -53,7 +53,7 @@ namespace NuGet.Services.EndToEnd
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
         }
 
-        [Theory(Skip = "TODO: Remove this skip!")]
+        [Theory]
         [InlineData(PackageType.SemVer2Prerel)]
         [InlineData(PackageType.SemVer2StableMetadata)]
         public async Task NewSemVer2PackageIsFiltered(PackageType packageType)

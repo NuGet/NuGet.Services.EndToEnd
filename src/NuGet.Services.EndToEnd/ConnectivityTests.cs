@@ -45,7 +45,7 @@ namespace NuGet.Services.EndToEnd
             }
         }
 
-        [Fact(Skip = "TODO Enable this!")]
+        [Fact]
         public async Task SearchIsReachable()
         {
             var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
