@@ -261,9 +261,7 @@ namespace NuGet.Services.EndToEnd.Support
                         unlist: true);
 
                 case PackageType.Signed:
-                    return new PackageToPrepare(
-                        Package.SignedPackage(),
-                        unlist: true);
+                    return new PackageToPrepare(Package.SignedPackage());
 
                 case PackageType.SemVer1Stable:
                 case PackageType.FullValidation:

@@ -63,6 +63,13 @@ namespace NuGet.Services.EndToEnd.Support
 
         public static Package SignedPackage()
         {
+            if (string.IsNullOrEmpty(EnvironmentSettings.SignedPackagePath) ||
+                !File.Exists(EnvironmentSettings.SignedPackagePath))
+            {
+                throw new InvalidOperationException(
+                    $"Environment variable '{EnvironmentSettings.SignedPackagePath}' must point to a valid path");
+            }
+
             string id;
             string normalizedVersion;
             string fullVersion;
