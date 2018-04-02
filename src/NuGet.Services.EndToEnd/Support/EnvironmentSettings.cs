@@ -26,6 +26,11 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         public static string ConfigurationName => GetEnvironmentVariable("ConfigurationName", required: true);
 
+        /// <summary>
+        /// The path to the signed package that should be used for tests.
+        /// </summary>
+        public static string SignedPackagePath = GetEnvironmentVariable("SignedPackagePath", required: false);
+
         private static string GetEnvironmentVariable(string key, bool required)
         {
             var output = Targets

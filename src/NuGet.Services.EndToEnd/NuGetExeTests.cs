@@ -99,6 +99,24 @@ namespace NuGet.Services.EndToEnd
             Assert.Equal(0, result.ExitCode);
         }
 
+        [SignedPackageTestFact]
+        public async Task LatestNuGetExeCanVerifySignedPackage()
+        {
+            var nuGetExe = PrepareNuGetExe(SourceType.V3);
+            var prerelease = false;
+            var package = await PreparePackageAsync(PackageType.Signed, dependencies: new PackageType[0], semVer2: false);
+
+            var result = await nuGetExe.InstallLatestAsync(
+                package.Id,
+                prerelease,
+                _outputDirectory,
+                _logger);
+
+            VerifyInstalled(package);
+
+            await VerifySignature(nuGetExe, package);
+        }
+
         [Theory]
         [MemberData(nameof(SemVer2PackageTypes))]
         public async Task Pre430NuGetExeCannotInstallLatestSemVer2Packages(PackageType packageType, PackageType[] dependencies, SourceType sourceType)
@@ -182,6 +200,21 @@ namespace NuGet.Services.EndToEnd
             var bytes = File.ReadAllBytes(expectedPath);
             Assert.Equal(package.NupkgBytes.Count, bytes.Length);
             Assert.Equal(package.NupkgBytes, bytes);
+        }
+
+        private async Task VerifySignature(NuGetExeClient nuGetExe, Package package)
+        {
+            var expectedPath = Path.Combine(
+                _outputDirectory,
+                $"{package.Id}.{package.NormalizedVersion}",
+                $"{package.Id}.{package.NormalizedVersion}.nupkg");
+
+            var result = await nuGetExe.VerifyAsync(_outputDirectory, expectedPath, _logger);
+
+            // These are the same assertions that the NuGet client does for signed packages
+            // in "NuGetVerifyCommandTest".
+            Assert.Contains("Successfully verified package(s).", result.Output);
+            Assert.Equal(0, result.ExitCode);
         }
 
         private void VerifyRestored(string projectDirectory, string id, string version)
