@@ -199,6 +199,12 @@ namespace NuGet.Services.EndToEnd.Support
             // Add the requested package type.
             selectedPackageTypes.Add(requestedPackageType);
 
+            // Only return the signed package type if the environment provided a path to a signed package.
+            if (string.IsNullOrEmpty(EnvironmentSettings.SignedPackagePath))
+            {
+                selectedPackageTypes.RemoveAll(p => p == PackageType.Signed);
+            }
+
             return selectedPackageTypes
                 .Distinct()
                 .OrderBy(x => x);
@@ -253,6 +259,9 @@ namespace NuGet.Services.EndToEnd.Support
                     return new PackageToPrepare(
                         Package.Create(id, "1.0.0"),
                         unlist: true);
+
+                case PackageType.Signed:
+                    return new PackageToPrepare(Package.SignedPackage());
 
                 case PackageType.SemVer1Stable:
                 case PackageType.FullValidation:

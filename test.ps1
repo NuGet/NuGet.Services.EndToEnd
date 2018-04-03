@@ -3,7 +3,8 @@ param (
     [ValidateSet("debug", "release")]
     [string]$Configuration = 'debug',
     [int]$BuildNumber,
-    [switch]$OnlyUnitTests
+    [switch]$OnlyUnitTests,
+    [string]$SignedPackageDirectory = ''
 )
 
 # For TeamCity - If any issue occurs, this script fails the build. - By default, TeamCity returns an exit code of 0 for all powershell scripts, even if they fail
@@ -20,6 +21,21 @@ $env:DOTNET_INSTALL_DIR=$CLIRoot
 
 . "$PSScriptRoot\build\common.ps1"
 
+if ([string]::IsNullOrEmpty($SignedPackageDirectory)) {
+    $env:SignedPackagePath = ""
+}
+else {
+    $signedPackages = (Join-Path $SignedPackageDirectory "*.nupkg" | Get-ChildItem -Recurse)
+
+    if ($signedPackages.Length -lt 1) {
+        throw "Could not find any packages at path $($SignedPackageDirectory)"
+    }
+
+    $env:SignedPackagePath = $signedPackages[0].FullName
+}
+
+Trace-Log "Set signed package path to: '$($env:SignedPackagePath)'"
+
 Function Run-Tests {
     [CmdletBinding()]
     param()
@@ -27,15 +43,15 @@ Function Run-Tests {
     Trace-Log 'Running tests'
 
     $xUnitExe = (Join-Path $PSScriptRoot "packages\xunit.runner.console.2.2.0\tools\xunit.console.exe")
-	
-	$UnitTestAssemblies = @("test\NuGet.Services.EndToEnd.Test\bin\$Configuration\NuGet.Services.EndToEnd.Test.dll")
+
+    $UnitTestAssemblies = @("test\NuGet.Services.EndToEnd.Test\bin\$Configuration\NuGet.Services.EndToEnd.Test.dll")
 
     $AllTestAssemblies = $UnitTestAssemblies + `
-		@("src\NuGet.Services.EndToEnd\bin\$Configuration\NuGet.Services.EndToEnd.dll") 
+        @("src\NuGet.Services.EndToEnd\bin\$Configuration\NuGet.Services.EndToEnd.dll")
 
-	if ($OnlyUnitTests) {
-		$AllTestAssemblies = $UnitTestAssemblies
-	}
+    if ($OnlyUnitTests) {
+        $AllTestAssemblies = $UnitTestAssemblies
+    }
 
     $TestCount = 0
 

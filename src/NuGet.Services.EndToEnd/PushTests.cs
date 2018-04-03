@@ -41,6 +41,18 @@ namespace NuGet.Services.EndToEnd
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
         }
 
+        [SignedPackageTestFact]
+        public async Task NewlyPushedSignedPackageIsAvailableInV3()
+        {
+            // Arrange
+            var package = await _pushedPackages.PrepareAsync(PackageType.Signed, _logger);
+
+            // Act & Assert
+            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
+        }
+
         [Theory]
         [InlineData(PackageType.SemVer2Prerel)]
         [InlineData(PackageType.SemVer2StableMetadata)]

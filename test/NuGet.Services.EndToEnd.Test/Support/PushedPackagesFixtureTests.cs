@@ -53,10 +53,17 @@ namespace NuGet.Services.EndToEnd.Support
             // Act
             await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger);
 
-            // Assert
+            // Assert - The signed package will only be pushed if a path was provided.
+            var expectedPushes = Enum.GetNames(typeof(PackageType)).Count();
+
+            if (string.IsNullOrEmpty(EnvironmentSettings.SignedPackagePath))
+            {
+                expectedPushes -= 1;
+            }
+
             _galleryClient.Verify(
                 x => x.PushAsync(It.IsAny<Stream>(), _logger),
-                Times.Exactly(Enum.GetNames(typeof(PackageType)).Count()));
+                Times.Exactly(expectedPushes));
         }
 
         [Fact]

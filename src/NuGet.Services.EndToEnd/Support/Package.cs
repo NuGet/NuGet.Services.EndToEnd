@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using NuGet.Packaging;
 
 namespace NuGet.Services.EndToEnd.Support
 {
@@ -58,6 +59,46 @@ namespace NuGet.Services.EndToEnd.Support
             }
 
             return new Package(context.Id, context.NormalizedVersion, context.FullVersion, nupkgBytes);
+        }
+
+        public static Package SignedPackage()
+        {
+            if (string.IsNullOrEmpty(EnvironmentSettings.SignedPackagePath) ||
+                !File.Exists(EnvironmentSettings.SignedPackagePath))
+            {
+                throw new InvalidOperationException(
+                    $"Environment variable '{EnvironmentSettings.SignedPackagePath}' must point to a valid path");
+            }
+
+            string id;
+            string normalizedVersion;
+            string fullVersion;
+
+            ReadOnlyCollection<byte> nupkgBytes;
+
+            using (var nupkgStream = File.Open(EnvironmentSettings.SignedPackagePath, FileMode.Open))
+            {
+                // Extract the package's id and version.
+                using (var packageReader = new PackageArchiveReader(nupkgStream, leaveStreamOpen: true))
+                {
+                    var identity = packageReader.GetIdentity();
+
+                    id = identity.Id;
+                    normalizedVersion = identity.Version.ToNormalizedString();
+                    fullVersion = identity.Version.ToFullString();
+                }
+
+                // Copy the package's bytes into memory.
+                nupkgStream.Seek(0, SeekOrigin.Begin);
+
+                using (var bufferStream = new MemoryStream())
+                {
+                    nupkgStream.CopyTo(bufferStream);
+                    nupkgBytes = Array.AsReadOnly(bufferStream.ToArray());
+                }
+            }
+
+            return new Package(id, normalizedVersion, fullVersion, nupkgBytes);
         }
     }
 }
