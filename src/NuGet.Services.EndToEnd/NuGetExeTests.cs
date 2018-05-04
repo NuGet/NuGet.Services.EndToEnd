@@ -103,12 +103,11 @@ namespace NuGet.Services.EndToEnd
         public async Task LatestNuGetExeCanVerifySignedPackage()
         {
             var nuGetExe = PrepareNuGetExe(SourceType.V3);
-            var prerelease = false;
             var package = await PreparePackageAsync(PackageType.Signed, dependencies: new PackageType[0], semVer2: false);
 
-            var result = await nuGetExe.InstallLatestAsync(
+            var result = await nuGetExe.InstallAsync(
                 package.Id,
-                prerelease,
+                package.NormalizedVersion,
                 _outputDirectory,
                 _logger);
 
