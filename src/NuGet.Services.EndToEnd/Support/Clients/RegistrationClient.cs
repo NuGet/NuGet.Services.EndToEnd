@@ -164,11 +164,21 @@ namespace NuGet.Services.EndToEnd.Support
         private class RegistrationIndexResponse
         {
             public List<RegistrationPage> Items { get; set; }
+
+            public RegistrationIndexResponse()
+            {
+                Items = new List<RegistrationPage>();
+            }
         }
 
         private class RegistrationPage
         {
             public List<RegistrationPackage> Items { get; set; }
+
+            public RegistrationPage()
+            {
+                Items = new List<RegistrationPackage>();
+            }
         }
 
         private class RegistrationPackage
