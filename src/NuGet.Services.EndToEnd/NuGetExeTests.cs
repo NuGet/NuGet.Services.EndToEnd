@@ -20,6 +20,7 @@ namespace NuGet.Services.EndToEnd
     public class NuGetExeTests : IClassFixture<TrustedHttpsCertificatesFixture>, IDisposable
     {
         private readonly PushedPackagesFixture _pushedPackages;
+        private readonly TestSettings _testSettings;
         private readonly Clients _clients;
         private readonly ITestOutputHelper _logger;
         private readonly TestDirectory _testDirectory;
@@ -28,6 +29,7 @@ namespace NuGet.Services.EndToEnd
         public NuGetExeTests(PushedPackagesFixture pushedPackages, ITestOutputHelper logger)
         {
             _pushedPackages = pushedPackages;
+            _testSettings = pushedPackages.TestSettings;
             _clients = pushedPackages.Clients;
             _logger = logger;
             _testDirectory = TestDirectory.Create();
@@ -99,12 +101,15 @@ namespace NuGet.Services.EndToEnd
             Assert.Equal(0, result.ExitCode);
         }
 
-        [SignedPackageTestFact]
-        public async Task LatestNuGetExeCanVerifySignedPackage()
+        [Theory]
+        [MemberData(nameof(PackageAndSourceTypes))]
+        public async Task LatestNuGetExeCanVerifyRepositorySignedPackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
         {
-            var nuGetExe = PrepareNuGetExe(SourceType.V3);
-            var package = await PreparePackageAsync(PackageType.Signed, dependencies: new PackageType[0], semVer2: false);
+            // Arrange
+            var nuGetExe = PrepareNuGetExe(sourceType);
+            var package = await PreparePackageAsync(packageType, dependencies, semVer2);
 
+            // Act
             var result = await nuGetExe.InstallAsync(
                 package.Id,
                 package.NormalizedVersion,
@@ -112,8 +117,34 @@ namespace NuGet.Services.EndToEnd
                 _logger);
 
             VerifyInstalled(package);
+            await VerifySignature(
+                nuGetExe,
+                package,
+                hasAuthorSignature: false,
+                hasRepositorySignature: _testSettings.IsRepositorySigningEnabled);
+        }
 
-            await VerifySignature(nuGetExe, package);
+        [SignedPackageTestFact]
+        public async Task LatestNuGetExeCanVerifyAuthorSignedPackage()
+        {
+            // Arrange
+            var nuGetExe = PrepareNuGetExe(SourceType.V3);
+            var package = await PreparePackageAsync(PackageType.Signed, dependencies: new PackageType[0], semVer2: false);
+
+            // Act
+            var result = await nuGetExe.InstallAsync(
+                package.Id,
+                package.NormalizedVersion,
+                _outputDirectory,
+                _logger);
+
+            // Assert
+            VerifyInstalled(package);
+            await VerifySignature(
+                nuGetExe,
+                package,
+                hasAuthorSignature: true,
+                hasRepositorySignature: _testSettings.IsRepositorySigningEnabled);
         }
 
         [Theory]
@@ -197,7 +228,11 @@ namespace NuGet.Services.EndToEnd
                 $"The installed package was expected to be at path {expectedPath} but was not.");
         }
 
-        private async Task VerifySignature(NuGetExeClient nuGetExe, Package package)
+        private async Task VerifySignature(
+            NuGetExeClient nuGetExe,
+            Package package,
+            bool hasAuthorSignature,
+            bool hasRepositorySignature)
         {
             var expectedPath = Path.Combine(
                 _outputDirectory,
@@ -206,9 +241,19 @@ namespace NuGet.Services.EndToEnd
 
             var result = await nuGetExe.VerifyAsync(_outputDirectory, expectedPath, _logger);
 
+            if (hasAuthorSignature)
+            {
+                Assert.Contains("Signature type: Author", result.Output);
+            }
+
+            if (hasRepositorySignature)
+            {
+                Assert.Contains("Signature type: Repository", result.Output);
+            }
+
             // These are the same assertions that the NuGet client does for signed packages
             // in "NuGetVerifyCommandTest".
-            Assert.Contains("Successfully verified package(s).", result.Output);
+            Assert.Contains($"Successfully verified package '{package.Id}.{package.NormalizedVersion}'.", result.Output);
             Assert.Equal(0, result.ExitCode);
         }
 
