@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -48,12 +50,7 @@ namespace NuGet.Services.EndToEnd.Support
                 id,
                 version,
                 semVer2,
-                response => response
-                    .Items
-                    .SelectMany(p => p.Items)
-                    .Select(i => i.CatalogEntry)
-                    .Where(c => c.Id == id && c.Version == version && c.Listed == listed)
-                    .Any(),
+                catalogEntry => catalogEntry.Id == id && catalogEntry.Version == version && catalogEntry.Listed == listed,
                 startingMessage: $"Waiting for package {id} {version} to be {successState} on registration base URLs:",
                 successMessageFormat: $"Package {id} {version} became {successState} on {{0}} after waiting {{1}}.",
                 failureMessageFormat: $"Package {id} {version} was still {failureState} on {{0}} after waiting {{1}}.",
@@ -78,12 +75,7 @@ namespace NuGet.Services.EndToEnd.Support
                 id,
                 version,
                 semVer2,
-                response => response
-                    .Items
-                    .SelectMany(p => p.Items)
-                    .Select(i => i.CatalogEntry)
-                    .Where(c => c.Id == id && c.Version == version)
-                    .Any(),
+                catalogEntry => catalogEntry.Id == id && catalogEntry.Version == version,
                 startingMessage: $"Waiting for package {id} {version} to be available on registration base URLs:",
                 successMessageFormat: $"Package {id} {version} was found on {{0}} after waiting {{1}}.",
                 failureMessageFormat: $"Package {id} {version} was not found on {{0}} after waiting {{1}}.",
@@ -94,7 +86,7 @@ namespace NuGet.Services.EndToEnd.Support
             string id,
             string version,
             bool semVer2,
-            Func<RegistrationIndexResponse, bool> isComplete,
+            Func<CatalogEntry, bool> isComplete,
             string startingMessage,
             string successMessageFormat,
             string failureMessageFormat,
@@ -127,7 +119,7 @@ namespace NuGet.Services.EndToEnd.Support
             string baseUrl,
             string id,
             string version,
-            Func<RegistrationIndexResponse, bool> isComplete,
+            Func<CatalogEntry, bool> isComplete,
             string successMessageFormat,
             string failureMessageFormat,
             ITestOutputHelper logger)
@@ -136,18 +128,37 @@ namespace NuGet.Services.EndToEnd.Support
 
             var url = $"{baseUrl}/{id.ToLowerInvariant()}/index.json";
 
+            var nugetVersion = NuGetVersion.Parse(version);
             var duration = Stopwatch.StartNew();
             var complete = false;
+
             do
             {
-                // Note that this serialization currently does not support reading indexes that are broken up into
-                // pages. This is acceptable right now because the test packages never have more than 64 versions, which
-                // is the threshold that catalog2registration uses when deciding whether to break the registration index
-                // into pages.
-                var response = await _httpClient.GetJsonAsync<RegistrationIndexResponse>(url, allowNotFound: true, logger: null);
-                if (response != null)
+                var root = await _httpClient.GetJsonAsync<RegistrationRoot>(url, allowNotFound: true, logger: null);
+
+                if (root != null)
                 {
-                    complete = isComplete(response);
+                    var page = root.Items
+                        .SingleOrDefault(item => item.Lower <= nugetVersion && nugetVersion <= item.Upper);
+
+                    if (page != null)
+                    {
+                        if (!page.Items.Any())
+                        {
+                            page = await _httpClient.GetJsonAsync<RegistrationPage>(page.Id.AbsoluteUri, allowNotFound: true, logger: null);
+                        }
+
+                        if (page != null)
+                        {
+                            var package = page.Items
+                                .SingleOrDefault(item => item.CatalogEntry.Id == id && item.CatalogEntry.Version == version);
+
+                            if (package != null)
+                            {
+                                complete = isComplete(package.CatalogEntry);
+                            }
+                        }
+                    }
                 }
 
                 if (!complete && duration.Elapsed + TestData.V3SleepDuration < TestData.RegistrationWaitDuration)
@@ -161,11 +172,11 @@ namespace NuGet.Services.EndToEnd.Support
             logger.WriteLine(string.Format(successMessageFormat, url, duration.Elapsed));
         }
 
-        private class RegistrationIndexResponse
+        private class RegistrationRoot
         {
             public List<RegistrationPage> Items { get; set; }
 
-            public RegistrationIndexResponse()
+            public RegistrationRoot()
             {
                 Items = new List<RegistrationPage>();
             }
@@ -173,7 +184,11 @@ namespace NuGet.Services.EndToEnd.Support
 
         private class RegistrationPage
         {
+            [JsonProperty("@id")]
+            public Uri Id { get; set; }
             public List<RegistrationPackage> Items { get; set; }
+            public NuGetVersion Lower { get; set; }
+            public NuGetVersion Upper { get; set; }
 
             public RegistrationPage()
             {
