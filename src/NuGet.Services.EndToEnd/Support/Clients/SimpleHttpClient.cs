@@ -17,6 +17,21 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class SimpleHttpClient
     {
+        private readonly JsonSerializer _serializer;
+
+        internal SimpleHttpClient()
+        {
+            _serializer = JsonSerializer.Create(new JsonSerializerSettings()
+            {
+                Converters = new JsonConverter[]
+                {
+                    new NuGetVersionConverter()
+                },
+                Formatting = Formatting.None,
+                NullValueHandling = NullValueHandling.Ignore
+            });
+        }
+
         public async Task<T> GetJsonAsync<T>(string url, ITestOutputHelper logger)
         {
             return await GetJsonAsync<T>(url, allowNotFound: false, logger: logger);
@@ -46,7 +61,11 @@ namespace NuGet.Services.EndToEnd.Support
                         logger.WriteLine($" - URL: {url}{Environment.NewLine} - Response: {parsedJson.ToString(Formatting.None)}");
                     }
 
-                    return JsonConvert.DeserializeObject<T>(json);
+                    using (var stringReader = new StringReader(json))
+                    using (var jsonReader = new JsonTextReader(stringReader))
+                    {
+                        return _serializer.Deserialize<T>(jsonReader);
+                    }
                 }
             }
         }
