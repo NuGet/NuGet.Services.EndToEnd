@@ -42,7 +42,6 @@
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
     <Compile Include="Support\Clients\ClientHelper.cs" />
-    <Compile Include="Support\Clients\NuGetVersionConverter.cs" />
     <Compile Include="Support\Clients\SearchServiceProperties.cs" />
     <Compile Include="Support\Clients\V3IndexClient.cs" />
     <Compile Include="Support\CommonCollection.cs" />
