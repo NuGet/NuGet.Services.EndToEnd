@@ -195,10 +195,6 @@ namespace NuGet.Services.EndToEnd
             Assert.True(
                 File.Exists(expectedPath),
                 $"The installed package was expected to be at path {expectedPath} but was not.");
-
-            var bytes = File.ReadAllBytes(expectedPath);
-            Assert.Equal(package.NupkgBytes.Count, bytes.Length);
-            Assert.Equal(package.NupkgBytes, bytes);
         }
 
         private async Task VerifySignature(NuGetExeClient nuGetExe, Package package)
