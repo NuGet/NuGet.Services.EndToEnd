@@ -241,20 +241,28 @@ namespace NuGet.Services.EndToEnd
 
             var result = await nuGetExe.VerifyAsync(_outputDirectory, expectedPath, _logger);
 
-            if (hasAuthorSignature)
+            if (hasAuthorSignature || hasRepositorySignature)
             {
-                Assert.Contains("Signature type: Author", result.Output);
-            }
+                if (hasAuthorSignature)
+                {
+                    Assert.Contains("Signature type: Author", result.Output);
+                }
 
-            if (hasRepositorySignature)
+                if (hasRepositorySignature)
+                {
+                    Assert.Contains("Signature type: Repository", result.Output);
+                }
+
+                // These are the same assertions that the NuGet client does for signed packages
+                // in "NuGetVerifyCommandTest".
+                Assert.Contains($"Successfully verified package '{package.Id}.{package.NormalizedVersion}'.", result.Output);
+                Assert.Equal(0, result.ExitCode);
+            }
+            else
             {
-                Assert.Contains("Signature type: Repository", result.Output);
+                Assert.Contains($"NU3004: The package is not signed.", result.Output);
+                Assert.Equal(1, result.ExitCode);
             }
-
-            // These are the same assertions that the NuGet client does for signed packages
-            // in "NuGetVerifyCommandTest".
-            Assert.Contains($"Successfully verified package '{package.Id}.{package.NormalizedVersion}'.", result.Output);
-            Assert.Equal(0, result.ExitCode);
         }
 
         private void VerifyRestored(string projectDirectory, string id, string version)
