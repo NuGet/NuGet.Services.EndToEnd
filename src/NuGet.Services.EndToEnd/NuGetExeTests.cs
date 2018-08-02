@@ -260,7 +260,7 @@ namespace NuGet.Services.EndToEnd
             }
             else
             {
-                Assert.Contains($"NU3004: The package is not signed.", result.Errors);
+                Assert.Contains($"NU3004: The package is not signed.", result.Error);
                 Assert.Equal(1, result.ExitCode);
             }
         }
