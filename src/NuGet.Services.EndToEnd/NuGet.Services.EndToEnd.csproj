@@ -95,10 +95,7 @@
     <Content Include="Support\NuGetExe\nuget.4.1.0.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Support\NuGetExe\nuget.4.3.0-preview1-4044.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Support\NuGetExe\nuget.4.6.1.exe">
+    <Content Include="Support\NuGetExe\nuget.4.7.0.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

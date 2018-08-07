@@ -10,7 +10,7 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class NuGetExeClient
     {
-        private const string LatestVersion = "4.6.1";
+        private const string LatestVersion = "4.7.0";
 
         private readonly TestSettings _testSettings;
         private readonly string _version;
