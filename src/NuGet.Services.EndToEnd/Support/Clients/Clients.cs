@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using NuGet.Services.AzureManagement;
 
@@ -88,11 +89,13 @@ namespace NuGet.Services.EndToEnd.Support
                 nuGetExe);
         }
 
-        private static IAzureManagementAPIWrapper GetAzureManagementAPIWrapper(TestSettings testSettings)
+        private static IRetryingAzureManagementAPIWrapper GetAzureManagementAPIWrapper(TestSettings testSettings)
         {
             if (testSettings.AzureManagementAPIWrapperConfiguration != null)
             {
-                return new AzureManagementAPIWrapper(testSettings.AzureManagementAPIWrapperConfiguration);
+                return new RetryingAzureManagementAPIWrapper(
+                    new AzureManagementAPIWrapper(testSettings.AzureManagementAPIWrapperConfiguration),
+                    RetryUtility.DefaultSleepDuration);
             }
 
             return null;
