@@ -42,6 +42,8 @@
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
     <Compile Include="Support\Clients\ClientHelper.cs" />
+    <Compile Include="Support\Clients\IRetryingAzureManagementAPIWrapper.cs" />
+    <Compile Include="Support\Clients\RetryingAzureManagementAPIWrapper.cs" />
     <Compile Include="Support\Clients\SearchServiceProperties.cs" />
     <Compile Include="Support\Clients\V3IndexClient.cs" />
     <Compile Include="Support\CommonCollection.cs" />
@@ -56,7 +58,9 @@
     <Compile Include="Support\Configuration\E2ESecretConfigurationReader.cs" />
     <Compile Include="Support\Configuration\GalleryConfiguration.cs" />
     <Compile Include="Support\Configuration\SearchServiceConfiguration.cs" />
+    <Compile Include="Support\ExceptionExtensions.cs" />
     <Compile Include="Support\PackageCreationContext.cs" />
+    <Compile Include="Support\RetryUtility.cs" />
     <Compile Include="Support\SourceType.cs" />
     <Compile Include="Support\CommandRunner.cs" />
     <Compile Include="Support\CommandRunnerResult.cs" />

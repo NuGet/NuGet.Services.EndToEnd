@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
@@ -22,9 +23,9 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly V3IndexClient _v3IndexClient;
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
-        private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper;
+        private readonly IRetryingAzureManagementAPIWrapper _azureManagementAPIWrapper;
 
-        public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings, IAzureManagementAPIWrapper azureManagementAPIWrapper)
+        public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings, IRetryingAzureManagementAPIWrapper azureManagementAPIWrapper)
         {
             _httpClient = httpClient;
             _v3IndexClient = v3IndexClient;
@@ -194,6 +195,7 @@ namespace NuGet.Services.EndToEnd.Support
                                 serviceDetails.ResourceGroup,
                                 serviceDetails.Name,
                                 serviceDetails.Slot,
+                                logger,
                                 CancellationToken.None);
 
             var cloudService = AzureHelper.ParseCloudServiceProperties(result);
@@ -222,7 +224,7 @@ namespace NuGet.Services.EndToEnd.Support
             return "autocomplete?" + query.TrimStart('&');
         }
 
-        private async Task PollAsync(
+        private Task PollAsync(
             string id,
             string version,
             Func<V2SearchResponse, bool> isComplete,
@@ -231,31 +233,41 @@ namespace NuGet.Services.EndToEnd.Support
             string failureMessageFormat,
             ITestOutputHelper logger)
         {
-            var searchServices = await GetSearchServicesAsync(logger);
+            // We perform the retry at this level so that we can re-fetch the list of search service instances from
+            // Azure Management API. This list can change during scale-up or scale-down events.
+            return RetryUtility.ExecuteWithRetry(
+                async () =>
+                {
+                    var searchServices = await GetSearchServicesAsync(logger);
 
-            var v2SearchUrls = searchServices
-                .SelectMany(GetSearchUrlsForPolling)
-                .ToList();
+                    var v2SearchUrls = searchServices
+                        .SelectMany(GetSearchUrlsForPolling)
+                        .ToList();
 
-            Assert.True(v2SearchUrls.Count > 0, "At least one search base URL must be configured.");
+                    Assert.True(v2SearchUrls.Count > 0, "At least one search base URL must be configured.");
 
-            logger.WriteLine(
-                startingMessage +
-                Environment.NewLine +
-                string.Join(Environment.NewLine, v2SearchUrls.Select(u => $" - {u}")));
+                    logger.WriteLine(
+                        startingMessage +
+                        Environment.NewLine +
+                        string.Join(Environment.NewLine, v2SearchUrls.Select(u => $" - {u}")));
 
-            var tasks = v2SearchUrls
-                .Select(u => PollAsync(
-                    u,
-                    id,
-                    version,
-                    isComplete,
-                    successMessageFormat,
-                    failureMessageFormat,
-                    logger))
-                .ToList();
+                    var tasks = v2SearchUrls
+                        .Select(u => PollAsync(
+                            u,
+                            id,
+                            version,
+                            isComplete,
+                            successMessageFormat,
+                            failureMessageFormat,
+                            logger))
+                        .ToList();
 
-            await Task.WhenAll(tasks);
+                    await Task.WhenAll(tasks);
+                },
+                ex => ex.HasTypeOrInnerType<SocketException>()
+                   || ex.HasTypeOrInnerType<TaskCanceledException>(),
+                logger: logger);
+
         }
 
         private async Task PollAsync(

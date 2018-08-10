@@ -25,7 +25,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
-        private readonly IAzureManagementAPIWrapper _azureManagementAPIWrapper;
+        private readonly IRetryingAzureManagementAPIWrapper _azureManagementAPIWrapper;
 
         private Uri _galleryUrl = null;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
@@ -65,6 +65,7 @@ namespace NuGet.Services.EndToEnd.Support
                                     serviceDetails.ResourceGroup,
                                     serviceDetails.Name,
                                     serviceDetails.Slot,
+                                    logger,
                                     CancellationToken.None);
 
                     var cloudService = AzureHelper.ParseCloudServiceProperties(result);
@@ -82,7 +83,7 @@ namespace NuGet.Services.EndToEnd.Support
             return _galleryUrl;
         }
 
-        public GalleryClient(SimpleHttpClient httpClient, TestSettings testSettings, IAzureManagementAPIWrapper azureManagementAPIWrapper)
+        public GalleryClient(SimpleHttpClient httpClient, TestSettings testSettings, IRetryingAzureManagementAPIWrapper azureManagementAPIWrapper)
         {
             _httpClient = httpClient;
             _testSettings = testSettings;
