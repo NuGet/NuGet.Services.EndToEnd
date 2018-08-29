@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Versioning;
@@ -82,7 +83,7 @@ namespace NuGet.Services.EndToEnd.Support
                 logger: logger);
         }
 
-        private async Task PollAsync(
+        private Task PollAsync(
             string id,
             string version,
             bool semVer2,
@@ -92,27 +93,35 @@ namespace NuGet.Services.EndToEnd.Support
             string failureMessageFormat,
             ITestOutputHelper logger)
         {
-            var baseUrls = await (semVer2 ? _v3IndexClient.GetSemVer2RegistrationBaseUrlsAsync() : _v3IndexClient.GetRegistrationBaseUrlsAsync());
+            return RetryUtility.ExecuteWithRetry(
+                async () =>
+                {
+                    var baseUrls = await (semVer2 ? _v3IndexClient.GetSemVer2RegistrationBaseUrlsAsync() : _v3IndexClient.GetRegistrationBaseUrlsAsync());
 
-            Assert.True(baseUrls.Count > 0, "At least one registration base URL must be configured.");
+                    Assert.True(baseUrls.Count > 0, "At least one registration base URL must be configured.");
 
-            logger.WriteLine(
-                startingMessage +
-                Environment.NewLine +
-                string.Join(Environment.NewLine, baseUrls.Select(u => $" - {u}")));
+                    logger.WriteLine(
+                        startingMessage +
+                        Environment.NewLine +
+                        string.Join(Environment.NewLine, baseUrls.Select(u => $" - {u}")));
 
-            var tasks = baseUrls
-                .Select(baseUrl => PollAsync(
-                    baseUrl,
-                    id,
-                    version,
-                    isComplete,
-                    successMessageFormat,
-                    failureMessageFormat,
-                    logger))
-                .ToList();
+                    var tasks = baseUrls
+                        .Select(baseUrl => PollAsync(
+                            baseUrl,
+                            id,
+                            version,
+                            isComplete,
+                            successMessageFormat,
+                            failureMessageFormat,
+                            logger))
+                        .ToList();
 
-            await Task.WhenAll(tasks);
+                    await Task.WhenAll(tasks);
+                },
+                ex => ex.HasTypeOrInnerType<SocketException>()
+                   || ex.HasTypeOrInnerType<TaskCanceledException>(),
+                logger: logger);
+
         }
 
         private async Task PollAsync(
