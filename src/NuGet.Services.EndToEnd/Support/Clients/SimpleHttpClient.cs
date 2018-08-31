@@ -49,7 +49,7 @@ namespace NuGet.Services.EndToEnd.Support
                     return default(T);
                 }
 
-                response.EnsureSuccessStatusCode();
+                await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
 
                 using (var stream = await response.Content.ReadAsStreamAsync())
                 using (var streamReader = new StreamReader(stream))

@@ -59,6 +59,7 @@
     <Compile Include="Support\Configuration\GalleryConfiguration.cs" />
     <Compile Include="Support\Configuration\SearchServiceConfiguration.cs" />
     <Compile Include="Support\ExceptionExtensions.cs" />
+    <Compile Include="Support\HttpResponseMessageExtensions.cs" />
     <Compile Include="Support\PackageCreationContext.cs" />
     <Compile Include="Support\RetryUtility.cs" />
     <Compile Include="Support\SourceType.cs" />
