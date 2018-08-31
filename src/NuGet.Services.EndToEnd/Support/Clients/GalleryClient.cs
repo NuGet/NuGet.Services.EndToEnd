@@ -125,7 +125,7 @@ namespace NuGet.Services.EndToEnd.Support
 
                 using (var response = await httpClient.SendAsync(request))
                 {
-                    response.EnsureSuccessStatusCode();
+                    await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
                 }
             }
         }
@@ -186,7 +186,7 @@ namespace NuGet.Services.EndToEnd.Support
 
                 using (var response = await httpClient.SendAsync(request))
                 {
-                    response.EnsureSuccessStatusCode();
+                    await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
                 }
             }
         }

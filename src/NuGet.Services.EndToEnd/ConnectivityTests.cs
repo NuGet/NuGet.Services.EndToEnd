@@ -31,6 +31,7 @@ namespace NuGet.Services.EndToEnd
             using (var httpClient = new HttpClient())
             using (var response = await httpClient.GetAsync(galleryUrl))
             {
+                await response.EnsureSuccessStatusCodeOrLogAsync(galleryUrl.AbsoluteUri, _logger);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
@@ -41,6 +42,7 @@ namespace NuGet.Services.EndToEnd
             using (var httpClient = new HttpClient())
             using (var response = await httpClient.GetAsync(_testSettings.V3IndexUrl))
             {
+                await response.EnsureSuccessStatusCodeOrLogAsync(_testSettings.V3IndexUrl, _logger);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
@@ -56,6 +58,7 @@ namespace NuGet.Services.EndToEnd
                 using (var httpClient = new HttpClient())
                 using (var response = await httpClient.GetAsync(searchService.Uri))
                 {
+                    await response.EnsureSuccessStatusCodeOrLogAsync(searchService.Uri.AbsoluteUri, _logger);
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 }
             }

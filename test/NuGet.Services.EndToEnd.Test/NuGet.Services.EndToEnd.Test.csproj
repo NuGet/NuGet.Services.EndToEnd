@@ -42,6 +42,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.*.cs" />
     <Compile Include="Support\ExceptionExtensionsTests.cs" />
+    <Compile Include="Support\HttpResponseMessageExtensionsTests.cs" />
     <Compile Include="Support\PushedPackagesFixtureTests.cs" />
     <Compile Include="Support\RetryingAzureManagementAPIWrapperTests.cs" />
     <Compile Include="Support\RetryUtilityTests.cs" />
