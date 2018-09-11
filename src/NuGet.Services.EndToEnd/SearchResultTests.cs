@@ -28,8 +28,8 @@ namespace NuGet.Services.EndToEnd
         public async Task RegistrationValuesInResultMatchRequestSemVerLevel()
         {
             // Arrange
-            var allRegistrationAddresses = await _clients.V3Index.GetRegistrationBaseUrlsAsync();
-            var semVer2RegistrationAddresses = await _clients.V3Index.GetSemVer2RegistrationBaseUrlsAsync();
+            var allRegistrationAddresses = await _clients.V3Index.GetRegistrationBaseUrlsAsync(_logger);
+            var semVer2RegistrationAddresses = await _clients.V3Index.GetSemVer2RegistrationBaseUrlsAsync(_logger);
             var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
             
             var semVer2Package = await _pushedPackages.PrepareAsync(PackageType.SemVer2Prerel, _logger);

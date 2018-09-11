@@ -135,7 +135,7 @@ namespace NuGet.Services.EndToEnd.Support
 
             if (_azureManagementAPIWrapper == null)
             {
-                var searchBaseUrls = await _v3IndexClient.GetSearchBaseUrlsAsync();
+                var searchBaseUrls = await _v3IndexClient.GetSearchBaseUrlsAsync(logger);
 
                 logger.WriteLine($"Configured search service mode: use index.json search services and use hardcoded" +
                                  $" instance count({_testSettings.SearchServiceConfiguration.OverrideInstanceCount}).Services: { string.Join(", ", searchBaseUrls)}");
@@ -152,7 +152,7 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 if (_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices != null)
                 {
-                    var searchBaseUrls = await _v3IndexClient.GetSearchBaseUrlsAsync();
+                    var searchBaseUrls = await _v3IndexClient.GetSearchBaseUrlsAsync(logger);
 
                     logger.WriteLine($"Configured search service mode: use index.json search services and get service" +
                                      $" properties from Azure. Services: { string.Join(", ", searchBaseUrls)}");
@@ -289,7 +289,12 @@ namespace NuGet.Services.EndToEnd.Support
             var complete = false;
             do
             {
-                var response = await _httpClient.GetJsonAsync<V2SearchResponse>(url, logger: null);
+                var response = await _httpClient.GetJsonAsync<V2SearchResponse>(
+                    url,
+                    allowNotFound: false,
+                    logResponseBody: false,
+                    logger: logger);
+
                 complete = isComplete(response);
 
                 if (!complete && duration.Elapsed + TestData.V3SleepDuration < TestData.SearchWaitDuration)

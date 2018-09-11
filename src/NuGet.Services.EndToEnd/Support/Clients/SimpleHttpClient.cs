@@ -35,10 +35,15 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<T> GetJsonAsync<T>(string url, ITestOutputHelper logger)
         {
-            return await GetJsonAsync<T>(url, allowNotFound: false, logger: logger);
+            return await GetJsonAsync<T>(url, allowNotFound: false, logResponseBody: true, logger: logger);
         }
 
         public async Task<T> GetJsonAsync<T>(string url, bool allowNotFound, ITestOutputHelper logger)
+        {
+            return await GetJsonAsync<T>(url, allowNotFound, logResponseBody: true, logger: logger);
+        }
+
+        public async Task<T> GetJsonAsync<T>(string url, bool allowNotFound, bool logResponseBody, ITestOutputHelper logger)
         {
             using (var httpClientHander = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip })
             using (var httpClient = new HttpClient(httpClientHander))
@@ -55,7 +60,7 @@ namespace NuGet.Services.EndToEnd.Support
                 using (var streamReader = new StreamReader(stream))
                 {
                     var json = await streamReader.ReadToEndAsync();
-                    if (logger != null)
+                    if (logResponseBody)
                     {
                         // Make sure the JSON is a single line.
                         var parsedJson = JToken.Parse(json);

@@ -20,6 +20,21 @@ namespace NuGet.Services.EndToEnd.Support
             string requestUrl,
             ITestOutputHelper logger)
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (requestUrl == null)
+            {
+                throw new ArgumentNullException(nameof(requestUrl));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             if (!response.IsSuccessStatusCode)
             {
                 var responseString = await response.AsLoggableStringAsync(requestUrl);

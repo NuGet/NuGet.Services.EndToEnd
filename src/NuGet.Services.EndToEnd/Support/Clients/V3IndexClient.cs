@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Versioning;
+using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd.Support
 {
@@ -23,27 +24,27 @@ namespace NuGet.Services.EndToEnd.Support
             _testSettings = testSettings;
         }
 
-        public async Task<IReadOnlyList<string>> GetSearchBaseUrlsAsync()
+        public async Task<IReadOnlyList<string>> GetSearchBaseUrlsAsync(ITestOutputHelper logger)
         {
-            var v3Index = await GetV3IndexAsync();
+            var v3Index = await GetV3IndexAsync(logger);
             return GetResourceUrls(v3Index, t => t.Type.StartsWith("SearchGalleryQueryService/"));
         }
 
-        public async Task<IReadOnlyList<string>> GetFlatContainerBaseUrlsAsync()
+        public async Task<IReadOnlyList<string>> GetFlatContainerBaseUrlsAsync(ITestOutputHelper logger)
         {
-            var v3Index = await GetV3IndexAsync();
+            var v3Index = await GetV3IndexAsync(logger);
             return GetResourceUrls(v3Index, t => t.Type.StartsWith("PackageBaseAddress/"));
         }
 
-        public async Task<IReadOnlyList<string>> GetRegistrationBaseUrlsAsync()
+        public async Task<IReadOnlyList<string>> GetRegistrationBaseUrlsAsync(ITestOutputHelper logger)
         {
-            var v3Index = await GetV3IndexAsync();
+            var v3Index = await GetV3IndexAsync(logger);
             return GetResourceUrls(v3Index, t => t.Type.StartsWith("RegistrationsBaseUrl/"));
         }
 
-        public async Task<IReadOnlyList<string>> GetSemVer2RegistrationBaseUrlsAsync()
+        public async Task<IReadOnlyList<string>> GetSemVer2RegistrationBaseUrlsAsync(ITestOutputHelper logger)
         {
-            var v3Index = await GetV3IndexAsync();
+            var v3Index = await GetV3IndexAsync(logger);
             return GetResourceUrls(
                 v3Index,
                 t => t.Type == "RegistrationsBaseUrl/Versioned" &&
@@ -62,9 +63,13 @@ namespace NuGet.Services.EndToEnd.Support
                 .ToList();
         }
 
-        private async Task<V3Index> GetV3IndexAsync()
+        private async Task<V3Index> GetV3IndexAsync(ITestOutputHelper logger)
         {
-            return await _httpClient.GetJsonAsync<V3Index>(_testSettings.V3IndexUrl, logger: null);
+            return await _httpClient.GetJsonAsync<V3Index>(
+                _testSettings.V3IndexUrl,
+                allowNotFound: false,
+                logResponseBody: false,
+                logger: logger);
         }
 
         private class V3Index

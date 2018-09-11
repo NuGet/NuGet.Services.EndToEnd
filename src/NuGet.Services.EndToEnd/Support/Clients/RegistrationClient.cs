@@ -96,7 +96,7 @@ namespace NuGet.Services.EndToEnd.Support
             return RetryUtility.ExecuteWithRetry(
                 async () =>
                 {
-                    var baseUrls = await (semVer2 ? _v3IndexClient.GetSemVer2RegistrationBaseUrlsAsync() : _v3IndexClient.GetRegistrationBaseUrlsAsync());
+                    var baseUrls = await (semVer2 ? _v3IndexClient.GetSemVer2RegistrationBaseUrlsAsync(logger) : _v3IndexClient.GetRegistrationBaseUrlsAsync(logger));
 
                     Assert.True(baseUrls.Count > 0, "At least one registration base URL must be configured.");
 
@@ -143,7 +143,11 @@ namespace NuGet.Services.EndToEnd.Support
 
             do
             {
-                var root = await _httpClient.GetJsonAsync<RegistrationRoot>(url, allowNotFound: true, logger: null);
+                var root = await _httpClient.GetJsonAsync<RegistrationRoot>(
+                    url,
+                    allowNotFound: true,
+                    logResponseBody: false,
+                    logger: logger);
 
                 if (root != null)
                 {
@@ -154,7 +158,11 @@ namespace NuGet.Services.EndToEnd.Support
                     {
                         if (!page.Items.Any())
                         {
-                            page = await _httpClient.GetJsonAsync<RegistrationPage>(page.Id.AbsoluteUri, allowNotFound: true, logger: null);
+                            page = await _httpClient.GetJsonAsync<RegistrationPage>(
+                                page.Id.AbsoluteUri,
+                                allowNotFound: true,
+                                logResponseBody: false,
+                                logger: logger);
                         }
 
                         if (page != null)
