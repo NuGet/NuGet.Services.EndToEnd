@@ -39,7 +39,20 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 var responseString = await response.AsLoggableStringAsync(requestUrl);
                 logger.WriteLine(responseString);
-                response.EnsureSuccessStatusCode();
+
+                try
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+                catch (HttpRequestException ex)
+                {
+                    // Wrap the exception so that caller has access to the status code and reason phrase.
+                    throw new HttpRequestMessageException(
+                        ex.Message,
+                        response.StatusCode,
+                        response.ReasonPhrase,
+                        ex);
+                }
             }
         }
 

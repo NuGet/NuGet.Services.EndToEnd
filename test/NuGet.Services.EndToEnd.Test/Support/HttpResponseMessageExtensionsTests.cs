@@ -40,12 +40,14 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 _response.StatusCode = statusCode;
 
-                var ex = await Assert.ThrowsAsync<HttpRequestException>(
+                var ex = await Assert.ThrowsAsync<HttpRequestMessageException>(
                     () => _response.EnsureSuccessStatusCodeOrLogAsync(_requestUrl, _output));
 
                 Assert.Equal(
                     $"Response status code does not indicate success: {(int)statusCode} ({_response.ReasonPhrase}).",
                     ex.Message);
+                Assert.Equal(statusCode, ex.StatusCode);
+                Assert.Equal(_response.ReasonPhrase, ex.ReasonPhrase);
             }
         }
 

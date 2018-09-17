@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -93,6 +95,9 @@ namespace NuGet.Services.EndToEnd.Support
             string failureMessageFormat,
             ITestOutputHelper logger)
         {
+            // Retry for connection problem, timeout, or HTTP 5XX. We are okay with retrying on 5XX in this case because
+            // the origin server is blob storage. If they are having some internal server error, there's not much we can
+            // do.
             return RetryUtility.ExecuteWithRetry(
                 async () =>
                 {
@@ -119,7 +124,12 @@ namespace NuGet.Services.EndToEnd.Support
                     await Task.WhenAll(tasks);
                 },
                 ex => ex.HasTypeOrInnerType<SocketException>()
-                   || ex.HasTypeOrInnerType<TaskCanceledException>(),
+                   || ex.HasTypeOrInnerType<TaskCanceledException>()
+                   || (ex.HasTypeOrInnerType<HttpRequestMessageException>(out var hre)
+                       && (hre.StatusCode == HttpStatusCode.InternalServerError
+                           || hre.StatusCode == HttpStatusCode.BadGateway
+                           || hre.StatusCode == HttpStatusCode.ServiceUnavailable
+                           || hre.StatusCode == HttpStatusCode.GatewayTimeout)),
                 logger: logger);
 
         }

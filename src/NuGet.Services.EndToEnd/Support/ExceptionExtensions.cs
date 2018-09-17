@@ -7,19 +7,26 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public static class ExceptionExtensions
     {
-        public static bool HasTypeOrInnerType<T>(this Exception ex)
+        public static bool HasTypeOrInnerType<T>(this Exception ex) where T : Exception
+        {
+            return ex.HasTypeOrInnerType<T>(out var typedException);
+        }
+
+        public static bool HasTypeOrInnerType<T>(this Exception ex, out T typedException) where T : Exception
         {
             var current = ex;
             while (current != null)
             {
                 if (current is T)
                 {
+                    typedException = (T)current;
                     return true;
                 }
 
                 current = current.InnerException;
             }
 
+            typedException = null;
             return false;
         }
     }

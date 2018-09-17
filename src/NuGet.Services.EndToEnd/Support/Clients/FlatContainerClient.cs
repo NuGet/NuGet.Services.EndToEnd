@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -32,24 +34,40 @@ namespace NuGet.Services.EndToEnd.Support
         /// <param name="version">The package version.</param>
         /// <param name="logger">The logger.</param>
         /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
-        public async Task WaitForPackageAsync(string id, string version, ITestOutputHelper logger)
+        public Task WaitForPackageAsync(string id, string version, ITestOutputHelper logger)
         {
-            var baseUrls = await _v3IndexClient.GetFlatContainerBaseUrlsAsync(logger);
+            // Retry for connection problem, timeout, or HTTP 5XX. We are okay with retrying on 5XX in this case because
+            // the origin server is blob storage. If they are having some internal server error, there's not much we can
+            // do.
+            return RetryUtility.ExecuteWithRetry(
+                async () =>
+                {
+                    var baseUrls = await _v3IndexClient.GetFlatContainerBaseUrlsAsync(logger);
 
-            Assert.True(baseUrls.Count > 0, "At least one flat container base URL must be configured.");
+                    Assert.True(baseUrls.Count > 0, "At least one flat container base URL must be configured.");
 
-            logger.WriteLine(
-                $"Waiting for package {id} {version} to be available on flat container base URLs:" + Environment.NewLine +
-                string.Join(Environment.NewLine, baseUrls.Select(u => $" - {u}")));
+                    logger.WriteLine(
+                        $"Waiting for package {id} {version} to be available on flat container base URLs:" + Environment.NewLine +
+                        string.Join(Environment.NewLine, baseUrls.Select(u => $" - {u}")));
 
-            var tasks = baseUrls
-                .Select(u => WaitForPackageAsync(u, id, version, logger))
-                .ToList();
+                    var tasks = baseUrls
+                        .Select(u => PollAsync(u, id, version, logger))
+                        .ToList();
 
-            await Task.WhenAll(tasks);
+                    await Task.WhenAll(tasks);
+                },
+                ex => ex.HasTypeOrInnerType<SocketException>()
+                   || ex.HasTypeOrInnerType<TaskCanceledException>()
+                   || (ex.HasTypeOrInnerType<HttpRequestMessageException>(out var hre)
+                       && (hre.StatusCode == HttpStatusCode.InternalServerError
+                           || hre.StatusCode == HttpStatusCode.BadGateway
+                           || hre.StatusCode == HttpStatusCode.ServiceUnavailable
+                           || hre.StatusCode == HttpStatusCode.GatewayTimeout)),
+                logger: logger);
+
         }
 
-        private async Task WaitForPackageAsync(string baseUrl, string id, string version, ITestOutputHelper logger)
+        private async Task PollAsync(string baseUrl, string id, string version, ITestOutputHelper logger)
         {
             await Task.Yield();
 
