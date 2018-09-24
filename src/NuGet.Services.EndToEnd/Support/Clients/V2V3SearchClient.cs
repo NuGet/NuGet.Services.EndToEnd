@@ -172,8 +172,7 @@ namespace NuGet.Services.EndToEnd.Support
                         searchServices.Add(await GetSearchServiceFromAzureAsync(mappedService, logger));
                     }
                 }
-
-                if (_testSettings.SearchServiceConfiguration.SingleSearchService != null)
+                else
                 {
                     logger.WriteLine($"Configured search service mode: use single search service.");
                     searchServices.Add(await GetSearchServiceFromAzureAsync(_testSettings.SearchServiceConfiguration.SingleSearchService, logger));

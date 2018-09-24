@@ -30,6 +30,13 @@ namespace NuGet.Services.EndToEnd.Support
         private Uri _galleryUrl = null;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
+        public GalleryClient(SimpleHttpClient httpClient, TestSettings testSettings, IRetryingAzureManagementAPIWrapper azureManagementAPIWrapper)
+        {
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _testSettings = testSettings ?? throw new ArgumentNullException(nameof(testSettings));
+            _azureManagementAPIWrapper = azureManagementAPIWrapper;
+        }
+
         public async Task<Uri> GetGalleryUrlAsync(ITestOutputHelper logger)
         {
             if (_galleryUrl != null)
@@ -81,13 +88,6 @@ namespace NuGet.Services.EndToEnd.Support
             }
 
             return _galleryUrl;
-        }
-
-        public GalleryClient(SimpleHttpClient httpClient, TestSettings testSettings, IRetryingAzureManagementAPIWrapper azureManagementAPIWrapper)
-        {
-            _httpClient = httpClient;
-            _testSettings = testSettings;
-            _azureManagementAPIWrapper = azureManagementAPIWrapper;
         }
 
         public async Task<IList<string>> AutocompletePackageIdsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger)

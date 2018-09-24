@@ -9,8 +9,7 @@ namespace NuGet.Services.EndToEnd.Support
     {
         public GalleryTestTheoryAttribute()
         {
-            var settings = TestSettings.CreateAsync().Result;
-            if (settings.SkipGalleryTests)
+            if (TestSettings.Create().SkipGalleryTests)
             {
                 Skip = "Not running Gallery tests!";
             }

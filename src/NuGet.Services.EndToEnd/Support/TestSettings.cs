@@ -47,6 +47,11 @@ namespace NuGet.Services.EndToEnd.Support
 
         public string ApiKey { get; set; }
 
+        /// <summary>
+        /// Whether or not to skip end-to-end tests that hit gallery "read" endpoints, such as V2 or the autocomplete
+        /// endpoints. Note that this does not disable the usage of the push or unlist endpoints because these are
+        /// required for nearly all tests.
+        /// </summary>
         public bool SkipGalleryTests { get; set; }
 
         public static async Task<TestSettings> CreateAsync()
@@ -73,6 +78,11 @@ namespace NuGet.Services.EndToEnd.Support
             }
             
             return _testSettings;
+        }
+
+        public static TestSettings Create()
+        {
+            return CreateAsync().Result;
         }
 
         public static async Task<TestSettings> CreateLocalTestConfigurationAsync(string configurationName)

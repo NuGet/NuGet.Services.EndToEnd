@@ -345,11 +345,11 @@ namespace NuGet.Services.EndToEnd
                 },
             };
 
-            var sourceTypes = new[]
+            var sourceTypes = new List<SourceType> { SourceType.V3 };
+            if (!TestSettings.Create().SkipGalleryTests)
             {
-                SourceType.V2,
-                SourceType.V3,
-            };
+                sourceTypes.Add(SourceType.V2);
+            }
 
             var rows =
                 from pt in packageTypes
