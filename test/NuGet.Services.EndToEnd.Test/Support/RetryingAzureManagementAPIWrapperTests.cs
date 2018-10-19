@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -69,8 +71,9 @@ namespace NuGet.Services.EndToEnd.Support
                 Times.Once);
         }
 
-        [Fact]
-        public async Task RetriesWithWhenTransientExceptionTypeIsThrown()
+        [Theory]
+        [MemberData(nameof(TransientExceptions))]
+        public async Task RetriesWithWhenTransientExceptionTypeIsThrown(Exception exception)
         {
             _inner
                 .SetupSequence(x => x.GetCloudServicePropertiesAsync(
@@ -79,7 +82,7 @@ namespace NuGet.Services.EndToEnd.Support
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()))
-                .ThrowsAsync(new AzureManagementException("Some message."))
+                .ThrowsAsync(exception)
                 .ReturnsAsync(_properties);
 
             var actual = await _target.GetCloudServicePropertiesAsync(
@@ -99,6 +102,13 @@ namespace NuGet.Services.EndToEnd.Support
                     It.IsAny<CancellationToken>()),
                 Times.Exactly(2));
         }
+
+        public static IEnumerable<object[]> TransientExceptions => new[]
+        {
+            new object[] { new AzureManagementException("Some message.") },
+            new object[] { new TaskCanceledException("Timeout!") },
+            new object[] { new SocketException(10060) },
+        };
 
         [Fact]
         public async Task DoesNotRetryWhenOtherExceptionIsThrown()

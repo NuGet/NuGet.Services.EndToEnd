@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Services.AzureManagement;
@@ -35,7 +36,9 @@ namespace NuGet.Services.EndToEnd.Support
                     name,
                     slot,
                     token),
-                ex => ex is AzureManagementException,
+                ex => ex is AzureManagementException
+                   || ex.HasTypeOrInnerType<SocketException>()
+                   || ex.HasTypeOrInnerType<TaskCanceledException>(),
                 maxAttempts: RetryUtility.DefaultMaxAttempts,
                 sleepDuration: _sleepDuration,
                 logger: logger);
