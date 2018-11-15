@@ -45,6 +45,10 @@ $BuildErrors = @()
 Invoke-BuildStep 'Getting private build tools' { 
         Install-PrivateBuildTools 
 
+        if (-Not (Test-Path $PrivateRoot)) {
+            return
+        }
+
         # Copy over the configuration file from the private build tools.
         $SourcesDirectory = $env:Build_SourcesDirectory
         $configFileName = "$env:ConfigurationName.json"
