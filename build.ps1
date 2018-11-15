@@ -42,7 +42,20 @@ Trace-Log "Build #$BuildNumber started at $startTime"
 
 $BuildErrors = @()
     
-Invoke-BuildStep 'Getting private build tools' { Install-PrivateBuildTools } `
+Invoke-BuildStep 'Getting private build tools' { 
+        Install-PrivateBuildTools 
+
+        # Copy over the configuration file from the private build tools.
+        $SourcesDirectory = $env:Build_SourcesDirectory
+        $configFileName = "$env:ConfigurationName.json"
+        $sourceFile = "$SourcesDirectory\build\private\E2EConfig\$configFileName"
+        $destinationDirectory = "$SourcesDirectory\src\NuGet.Services.EndToEnd\ExternalConfig"
+        if (-not (Test-Path $destinationDirectory)) {
+            New-Item -Path $destinationDirectory -ItemType "directory"
+        }
+
+        Copy-Item -Path "$sourceFile" -Destination "$destinationDirectory\$configFileName"
+    } `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
