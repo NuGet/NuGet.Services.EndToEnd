@@ -103,7 +103,9 @@
     <Content Include="Support\NuGetExe\nuget.4.7.0.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Support\NuGetExe\nuget.4.9.1.exe" />
+    <Content Include="Support\NuGetExe\nuget.4.9.1.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
