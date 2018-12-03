@@ -124,6 +124,29 @@ namespace NuGet.Services.EndToEnd
                 hasRepositorySignature: _testSettings.IsRepositorySigningEnabled);
         }
 
+        [Theory]
+        [MemberData(nameof(PackageAndSourceTypes))]
+        public async Task Pre490NuGetExeCanVerifyRepositorySignedPackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
+        {
+            // Arrange - NuGet 4.9.0+ use a different version of the repository signing resource.
+            var nuGetExe = PrepareNuGetExe(sourceType, "4.7.0");
+            var package = await PreparePackageAsync(packageType, dependencies, semVer2);
+
+            // Act
+            var result = await nuGetExe.InstallAsync(
+                package.Id,
+                package.NormalizedVersion,
+                _outputDirectory,
+                _logger);
+
+            VerifyInstalled(package);
+            await VerifySignature(
+                nuGetExe,
+                package,
+                hasAuthorSignature: false,
+                hasRepositorySignature: _testSettings.IsRepositorySigningEnabled);
+        }
+
         [SignedPackageTestFact]
         public async Task LatestNuGetExeCanVerifyAuthorSignedPackage()
         {
