@@ -62,7 +62,7 @@ namespace NuGet.Services.EndToEnd.Support
             }
 
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>(), _logger),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger, false),
                 Times.Exactly(expectedPushes));
         }
 
@@ -77,7 +77,7 @@ namespace NuGet.Services.EndToEnd.Support
             // Assert
             Assert.Same(packageA, packageB);
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>(), _logger),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger, false),
                 Times.Never); // "never" because we reset the mock
         }
 
@@ -97,7 +97,7 @@ namespace NuGet.Services.EndToEnd.Support
             Assert.Equal("1.0.0", package.NormalizedVersion);
             Assert.Equal("1.0.0", package.FullVersion);
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>(), _logger),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger, false),
                 Times.Once);
         }
     }

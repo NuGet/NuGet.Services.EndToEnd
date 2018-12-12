@@ -21,7 +21,8 @@ namespace NuGet.Services.EndToEnd.Support
             V2V3SearchClient v2v3Search,
             FlatContainerClient flatContainer,
             RegistrationClient registration,
-            NuGetExeClient nuGetExe)
+            NuGetExeClient nuGetExe,
+            DotNetExeClient dotNetExe)
         {
             Gallery = gallery;
             V3Index = v3Index;
@@ -29,6 +30,7 @@ namespace NuGet.Services.EndToEnd.Support
             FlatContainer = flatContainer;
             Registration = registration;
             NuGetExe = nuGetExe;
+            DotNetExe = dotNetExe;
         }
 
         public IGalleryClient Gallery { get; }
@@ -37,6 +39,7 @@ namespace NuGet.Services.EndToEnd.Support
         public FlatContainerClient FlatContainer { get; }
         public RegistrationClient Registration { get; }
         public NuGetExeClient NuGetExe { get; }
+        public DotNetExeClient DotNetExe { get; }
 
         public static Clients Initialize(TestSettings testSettings)
         {
@@ -79,6 +82,7 @@ namespace NuGet.Services.EndToEnd.Support
             var flatContainer = new FlatContainerClient(httpClient, v3Index);
             var registration = new RegistrationClient(httpClient, v3Index);
             var nuGetExe = new NuGetExeClient(testSettings, gallery);
+            var dotNetExe = new DotNetExeClient(testSettings);
 
             return new Clients(
                 gallery,
@@ -86,7 +90,8 @@ namespace NuGet.Services.EndToEnd.Support
                 v2v3Search,
                 flatContainer,
                 registration,
-                nuGetExe);
+                nuGetExe,
+                dotNetExe);
         }
 
         private static IRetryingAzureManagementAPIWrapper GetAzureManagementAPIWrapper(TestSettings testSettings)

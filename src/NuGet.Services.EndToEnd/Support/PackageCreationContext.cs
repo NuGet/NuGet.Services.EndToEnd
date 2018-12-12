@@ -12,5 +12,6 @@ namespace NuGet.Services.EndToEnd.Support
         public string NormalizedVersion { get; set; }
         public string FullVersion { get; set; }
         public IEnumerable<PackageDependencyGroup> DependencyGroups { get; set; }
+        public bool IsSymbolsPackage { get; set; }
     }
 }

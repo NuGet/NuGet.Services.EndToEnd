@@ -12,7 +12,7 @@ namespace NuGet.Services.EndToEnd.Support
     public interface IGalleryClient
     {
         Task<Uri> GetGalleryUrlAsync(ITestOutputHelper logger);
-        Task PushAsync(Stream nupkgStream, ITestOutputHelper logger);
+        Task PushAsync(Stream nupkgStream, ITestOutputHelper logger, bool isSymbolsPackage);
         Task UnlistAsync(string id, string version, ITestOutputHelper logger);
         Task RelistAsync(string id, string version, ITestOutputHelper logger);
         Task<IList<string>> AutocompletePackageIdsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger);

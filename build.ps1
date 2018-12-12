@@ -66,6 +66,9 @@ Invoke-BuildStep 'Getting private build tools' {
 Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
     -ev +BuildErrors
 
+Invoke-BuildStep 'Installing DotNet.exe' { Install-DotnetCLI } `
+    -ev +BuildErrors
+
 Invoke-BuildStep 'Clearing package cache' { Clear-PackageCache } `
     -skip:(-not $CleanCache) `
     -ev +BuildErrors
