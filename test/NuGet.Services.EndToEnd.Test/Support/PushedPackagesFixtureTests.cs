@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -54,15 +53,23 @@ namespace NuGet.Services.EndToEnd.Support
             await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger);
 
             // Assert - The signed package will only be pushed if a path was provided.
-            var expectedPushes = Enum.GetNames(typeof(PackageType)).Count();
+            var expectedPackageTypes = Enum.GetNames(typeof(PackageType));
+            var expectedPushes = expectedPackageTypes.Count();
 
             if (string.IsNullOrEmpty(EnvironmentSettings.SignedPackagePath))
             {
                 expectedPushes -= 1;
             }
 
+            // Ignore symbols package push for now.
+            if (string.IsNullOrEmpty(EnvironmentSettings.DotnetCliDirectory)
+                || expectedPackageTypes.Contains("SymbolsPackage"))
+            {
+                expectedPushes -= 1;
+            }
+
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>(), _logger, false),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger, It.IsAny<bool>()),
                 Times.Exactly(expectedPushes));
         }
 
@@ -77,7 +84,7 @@ namespace NuGet.Services.EndToEnd.Support
             // Assert
             Assert.Same(packageA, packageB);
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>(), _logger, false),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger, It.IsAny<bool>()),
                 Times.Never); // "never" because we reset the mock
         }
 

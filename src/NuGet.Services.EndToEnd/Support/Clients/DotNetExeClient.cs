@@ -10,12 +10,8 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class DotNetExeClient
     {
-        private readonly TestSettings _testSettings;
-
-        public DotNetExeClient(TestSettings testSettings)
-        {
-            _testSettings = testSettings;
-        }
+        public DotNetExeClient()
+        { }
 
         public async Task<CommandRunnerResult> BuildProject(string projectPath, ITestOutputHelper logger)
         {

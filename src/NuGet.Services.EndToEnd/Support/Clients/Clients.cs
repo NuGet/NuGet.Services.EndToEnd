@@ -82,7 +82,7 @@ namespace NuGet.Services.EndToEnd.Support
             var flatContainer = new FlatContainerClient(httpClient, v3Index);
             var registration = new RegistrationClient(httpClient, v3Index);
             var nuGetExe = new NuGetExeClient(testSettings, gallery);
-            var dotNetExe = new DotNetExeClient(testSettings);
+            var dotNetExe = new DotNetExeClient();
 
             return new Clients(
                 gallery,
