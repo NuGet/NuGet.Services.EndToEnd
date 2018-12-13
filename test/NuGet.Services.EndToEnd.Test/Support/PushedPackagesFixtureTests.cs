@@ -61,11 +61,15 @@ namespace NuGet.Services.EndToEnd.Support
                 expectedPushes -= 1;
             }
 
-            // Ignore symbols package push for now.
-            if (string.IsNullOrEmpty(EnvironmentSettings.DotnetCliDirectory)
-                || expectedPackageTypes.Contains("SymbolsPackage"))
+            // If Dotnet env not available symbols package push cannot happen
+            if (string.IsNullOrEmpty(EnvironmentSettings.DotnetCliDirectory))
             {
                 expectedPushes -= 1;
+            }
+            else if (expectedPackageTypes.Contains("SymbolsPackage"))
+            {
+                // The SymbolsPackage type will invoke push twice for nupkg and snupkg each.
+                expectedPushes += 1;
             }
 
             _galleryClient.Verify(

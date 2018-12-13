@@ -8,12 +8,9 @@ using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd.Support
 {
-    public class DotNetExeClient
+    public static class DotNetExeClient
     {
-        public DotNetExeClient()
-        { }
-
-        public async Task<CommandRunnerResult> BuildProject(string projectPath, ITestOutputHelper logger)
+        public static async Task<CommandRunnerResult> BuildProject(string projectPath, ITestOutputHelper logger)
         {
             var arguments = new List<string>
             {
@@ -26,7 +23,7 @@ namespace NuGet.Services.EndToEnd.Support
             return await RunAsync(projectDirectory, arguments, logger);
         }
 
-        private async Task<CommandRunnerResult> RunAsync(string workingDirectory, List<string> arguments, ITestOutputHelper logger)
+        private static async Task<CommandRunnerResult> RunAsync(string workingDirectory, List<string> arguments, ITestOutputHelper logger)
         {
             var fileName = $"dotnet.exe";
             var filePath = Path.Combine(EnvironmentSettings.DotnetCliDirectory, fileName);

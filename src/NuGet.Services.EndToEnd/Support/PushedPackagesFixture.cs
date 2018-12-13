@@ -39,7 +39,7 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly object _packageIdsLock = new object();
         private readonly IDictionary<PackageType, string> _packageIds = new Dictionary<PackageType, string>();
         private IGalleryClient _galleryClient;
-        private DotNetExeClient _dotnetExeClient;
+
         private static readonly string SymbolsProjectTemplateFolder = Path.Combine(Environment.CurrentDirectory, "Support", "TestData", "E2E.TestPortableSymbols");
 
         public PushedPackagesFixture()
@@ -58,11 +58,6 @@ namespace NuGet.Services.EndToEnd.Support
             if (_galleryClient == null)
             {
                 _galleryClient = Clients.Gallery;
-            }
-
-            if (_dotnetExeClient == null)
-            {
-                _dotnetExeClient = Clients.DotNetExe;
             }
         }
 
@@ -325,7 +320,7 @@ namespace NuGet.Services.EndToEnd.Support
                 var projectPath = CopySymbolsProjectFromTemplate(id, version, testDirectory.FullPath);
 
                 // Build the symbols project with the DotNet.exe
-                var buildCommandResult = await _dotnetExeClient.BuildProject(projectPath, logger);
+                var buildCommandResult = await DotNetExeClient.BuildProject(projectPath, logger);
                 if (!string.IsNullOrEmpty(buildCommandResult.Error))
                 {
                     throw new Exception($"Error building symbols package! {buildCommandResult.Error}");
