@@ -47,6 +47,8 @@ namespace NuGet.Services.EndToEnd.Support
 
         public string ApiKey { get; set; }
 
+        public string SymbolServerDomain { get; set; }
+
         /// <summary>
         /// Whether or not to skip end-to-end tests that hit gallery "read" endpoints, such as V2 or the autocomplete
         /// endpoints. Note that this does not disable the usage of the push or unlist endpoints because these are

@@ -3,6 +3,7 @@
     "V3IndexUrl": "https://api.nugettest.org/v3/index.json",
     "TrustedHttpsCertificates": {},
     "ApiKey": "API_KEY",
+    "SymbolServerDomain": "symbols.nuget.org",
     "GalleryConfiguration": {
       "OverrideServiceUrl": "https://www.nuget.org"
     },

@@ -24,7 +24,7 @@ namespace NuGet.Services.EndToEnd.Support.Utilities
                 var pdbSignature = new BlobContentId(pdbReader.DebugMetadataHeader.Id).Guid;
                 var pdbFileName = Path.GetFileName(pdbFullPath).ToLowerInvariant();
                 var pdbAge = "FFFFFFFF";
-                indexingPath = $"{pdbFileName}\\{pdbSignature.ToString("N")}{pdbAge}\\{pdbFileName}";
+                indexingPath = $"{pdbFileName}/{pdbSignature.ToString("N")}{pdbAge}/{pdbFileName}";
             }
 
             return indexingPath;

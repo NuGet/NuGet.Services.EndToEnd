@@ -17,6 +17,8 @@ namespace NuGet.Services.EndToEnd.Support
         public static readonly TimeSpan RegistrationWaitDuration = TimeSpan.FromMinutes(20);
         public static readonly TimeSpan SearchWaitDuration = TimeSpan.FromMinutes(35);
         public static readonly TimeSpan V3SleepDuration = TimeSpan.FromSeconds(5);
+        public static readonly TimeSpan SymbolsWaitDuration = TimeSpan.FromMinutes(20);
+        public static readonly TimeSpan SymbolsSleepDuration = TimeSpan.FromSeconds(5);
 
         public static Stream BuildPackageStream(PackageCreationContext context)
         {

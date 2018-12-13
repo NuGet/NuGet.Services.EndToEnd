@@ -3,6 +3,8 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using NuGet.Services.EndToEnd.Support;
 using Xunit;
 using Xunit.Abstractions;
@@ -39,10 +41,27 @@ namespace NuGet.Services.EndToEnd
         }
 
         [Fact]
-        public void VerifySymbolsCanbePublished()
+        public async Task VerifySymbolsCanbePublishedAsync()
         {
             // Arrange
-            
+            var symbolsPackage = await _pushedPackages.PrepareAsync(PackageType.SymbolsPackage, _logger);
+
+            // Act & assert
+            AssertPackageIsSymbolsPackage(symbolsPackage);
+            await _clients.SymbolServerClient.VerifySymbolFilesAvailable(
+                symbolsPackage.Id,
+                symbolsPackage.NormalizedVersion,
+                symbolsPackage.Properties.IndexedFiles,
+                _logger);
+        }
+
+        public void AssertPackageIsSymbolsPackage(Package package)
+        {
+            // The package should have indexed files if its a symbols package
+            Assert.NotNull(package);
+            Assert.True(package.Properties.IsSymbolsPackage);
+            Assert.NotNull(package.Properties.IndexedFiles);
+            Assert.True(package.Properties.IndexedFiles.Count() > 0);
         }
     }
 }
