@@ -47,7 +47,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public string ApiKey { get; set; }
 
-        public string SymbolServerDomain { get; set; }
+        public string SymbolServerUrlTemplate { get; set; }
 
         /// <summary>
         /// Whether or not to skip end-to-end tests that hit gallery "read" endpoints, such as V2 or the autocomplete

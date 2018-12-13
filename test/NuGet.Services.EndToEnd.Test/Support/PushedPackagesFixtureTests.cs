@@ -68,6 +68,9 @@ namespace NuGet.Services.EndToEnd.Support
             }
             else if (expectedPackageTypes.Contains("SymbolsPackage"))
             {
+                var exists = File.Exists(Path.Combine(EnvironmentSettings.DotnetCliDirectory, "dotnet.exe"));
+                var previous = File.Exists(Path.Combine(Path.GetDirectoryName(EnvironmentSettings.DotnetCliDirectory), "dotnet.exe"));
+                _logger.WriteLine($"Something is wrong: {EnvironmentSettings.DotnetCliDirectory} contains dotnet.exe: {exists}");
                 // The SymbolsPackage type will invoke push twice for nupkg and snupkg each.
                 expectedPushes += 1;
             }

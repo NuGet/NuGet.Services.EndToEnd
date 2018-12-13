@@ -17,7 +17,6 @@ namespace NuGet.Services.EndToEnd.Support
     public class SymbolServerClient
     {
         private readonly TestSettings _testSettings;
-        private readonly string _symbolServerEndpointTemplate = "https://{0}/download/symbols/{1}";
         private static readonly string SymbolServerHeaderKey = "SymbolChecksum";
         private static readonly string SymbolServerHeaderValue = "1";
 
@@ -70,11 +69,7 @@ namespace NuGet.Services.EndToEnd.Support
             await Task.Yield();
 
             var complete = false;
-            var symbolFileEndpoint = new Uri(
-                string.Format(
-                    _symbolServerEndpointTemplate,
-                    _testSettings.SymbolServerDomain,
-                    indexedFileName));
+            var symbolFileEndpoint = new Uri(string.Format(_testSettings.SymbolServerUrlTemplate, indexedFileName));
 
             var duration = Stopwatch.StartNew();
             while (!complete && duration.Elapsed < TestData.SymbolsWaitDuration)
