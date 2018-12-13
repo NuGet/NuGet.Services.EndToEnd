@@ -15,7 +15,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public PackageProperties(bool isSymbolsPackage, HashSet<string> indexedFiles)
         {
-            IsSymbolsPackage = IsSymbolsPackage;
+            IsSymbolsPackage = isSymbolsPackage;
             IndexedFiles = indexedFiles;
         }
 

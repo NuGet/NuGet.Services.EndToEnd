@@ -80,8 +80,10 @@ namespace NuGet.Services.EndToEnd.Support
         public static Package Create(PackageCreationContext context, IEnumerable<string> files, PackageProperties properties)
         {
             var physicalPackageFilesList = files
-                .Select(x => GetMemoryStreamForFile(x))
-                .Select(x => new PhysicalPackageFile(x));
+                .Select(x => new { FileName = Path.GetFileName(x), Stream = GetMemoryStreamForFile(x) })
+                .Select(x => new PhysicalPackageFile(x.Stream) {
+                    TargetPath = x.FileName
+                });
 
             ReadOnlyCollection<byte> nupkgBytes;
             using (var nupkgStream = TestData.BuildPackageStreamForFiles(context, physicalPackageFilesList, properties.IsSymbolsPackage))

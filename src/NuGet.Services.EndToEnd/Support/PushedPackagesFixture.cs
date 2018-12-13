@@ -40,7 +40,7 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly IDictionary<PackageType, string> _packageIds = new Dictionary<PackageType, string>();
         private IGalleryClient _galleryClient;
         private DotNetExeClient _dotnetExeClient;
-        private static readonly string SymbolsProjectTemplateFolder = Path.Combine(Environment.CurrentDirectory, @"TestData\E2E.TestPortableSymbols");
+        private static readonly string SymbolsProjectTemplateFolder = Path.Combine(Environment.CurrentDirectory, "Support", "TestData", "E2E.TestPortableSymbols");
 
         public PushedPackagesFixture()
         {
@@ -322,10 +322,10 @@ namespace NuGet.Services.EndToEnd.Support
             using (var testDirectory = TestDirectory.Create())
             {
                 // Copy the symbols project from template, also set the ID, Version appropriately in the properties.
-                CopySymbolsProjectFromTemplate(id, version, testDirectory.FullPath);
+                var projectPath = CopySymbolsProjectFromTemplate(id, version, testDirectory.FullPath);
 
                 // Build the symbols project with the DotNet.exe
-                var buildCommandResult = await _dotnetExeClient.BuildProject(testDirectory.FullPath, logger);
+                var buildCommandResult = await _dotnetExeClient.BuildProject(projectPath, logger);
                 if (!string.IsNullOrEmpty(buildCommandResult.Error))
                 {
                     throw new Exception($"Error building symbols package! {buildCommandResult.Error}");
@@ -364,9 +364,10 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        private static void CopySymbolsProjectFromTemplate(string id, string version, string tempProjectFolder)
+        private static string CopySymbolsProjectFromTemplate(string id, string version, string tempProjectFolder)
         {
-            var sourceDirectoryFiles = Directory.GetFiles(SymbolsProjectTemplateFolder);
+            var sourceDirectoryFiles = Directory.GetFiles(SymbolsProjectTemplateFolder,"*.*", SearchOption.AllDirectories);
+            string projectPath = string.Empty;
             foreach (string sourceFile in sourceDirectoryFiles)
             {
                 var fileName = Path.GetFileName(sourceFile);
@@ -375,14 +376,21 @@ namespace NuGet.Services.EndToEnd.Support
                     var propertiesContent = File.ReadAllText(sourceFile);
                     var formattedContent = string.Format(propertiesContent, id, version);
                     var destinationFile = Path.Combine(tempProjectFolder, "Properties", fileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destinationFile));
                     File.WriteAllText(destinationFile, formattedContent);
                 }
                 else
                 {
                     var destinationFile = Path.Combine(tempProjectFolder, fileName);
                     File.Copy(sourceFile, destinationFile, true);
+                    if (Path.GetExtension(fileName) == ".csproj")
+                    {
+                        projectPath = destinationFile;
+                    }
                 }
             }
+
+            return projectPath;
         }
 
         private string GetPackageId(PackageType packageType)
