@@ -17,7 +17,7 @@ namespace NuGet.Services.EndToEnd.Support
             string normalizedVersion,
             string fullVersion,
             ReadOnlyCollection<byte> nupkgBytes) 
-            : this (id, normalizedVersion, fullVersion, nupkgBytes, new PackageProperties()) { }
+            : this (id, normalizedVersion, fullVersion, nupkgBytes, PackageProperties.Default()) { }
 
         private Package(
             string id,
@@ -82,7 +82,7 @@ namespace NuGet.Services.EndToEnd.Support
             var physicalPackageFilesList = files
                 .Select(x => new { FileName = Path.GetFileName(x), Stream = GetMemoryStreamForFile(x) })
                 .Select(x => new PhysicalPackageFile(x.Stream) {
-                    TargetPath = x.FileName
+                    TargetPath = $"lib/{x.FileName}"
                 });
 
             ReadOnlyCollection<byte> nupkgBytes;
