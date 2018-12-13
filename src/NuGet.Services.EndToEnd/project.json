@@ -6,19 +6,19 @@
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "Microsoft.Extensions.Primitives": "1.1.0",
     "Newtonsoft.Json": "9.0.1",
-    "NuGet.Frameworks": "4.3.0",
-    "NuGet.Packaging": "4.3.0",
-    "NuGet.Protocol": "4.3.0",
+    "NuGet.Frameworks": "4.9.2",
+    "NuGet.Packaging": "4.9.2",
+    "NuGet.Protocol": "4.9.2",
     "NuGet.Services.AzureManagement": "2.2.5",
     "NuGet.Services.Configuration": "2.2.4",
     "NuGet.Services.KeyVault": "2.2.4",
-    "NuGet.Versioning": "4.3.0",
+    "NuGet.Versioning": "4.9.2",
     "System.Reflection.Metadata": "1.7.0-preview.18571.3",
     "xunit": "2.2.0",
-    "xunit.runner.visualstudio": "2.2.0"
+    "xunit.runner.visualstudio": "2.3.1"
   },
   "frameworks": {
-    "net452": {}
+    "net46": {}
   },
   "runtimes": {
     "win": {}
