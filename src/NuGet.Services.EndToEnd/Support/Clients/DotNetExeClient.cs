@@ -43,7 +43,7 @@ namespace NuGet.Services.EndToEnd.Support
             string filePath;
             if (!TryGetDotNetExe(out filePath))
             {
-                throw new FileNotFoundException($"The ${filePath} not found. Make sure the ${ExeName} is installed correctly.");
+                throw new FileNotFoundException($"The {filePath} not found. Make sure the {ExeName} is installed correctly.");
             }
 
             var joinedArguments = string.Join(" ", arguments);
