@@ -61,18 +61,18 @@ namespace NuGet.Services.EndToEnd.Support
                 expectedPushes -= 1;
             }
 
-            // If Dotnet env not available symbols package push cannot happen
-            if (string.IsNullOrEmpty(EnvironmentSettings.DotnetCliDirectory))
+            if (expectedPackageTypes.Contains("SymbolsPackage"))
             {
-                expectedPushes -= 1;
-            }
-            else if (expectedPackageTypes.Contains("SymbolsPackage"))
-            {
-                var exists = File.Exists(Path.Combine(EnvironmentSettings.DotnetCliDirectory, "dotnet.exe"));
-                var previous = File.Exists(Path.Combine(Path.GetDirectoryName(EnvironmentSettings.DotnetCliDirectory), "dotnet.exe"));
-                _logger.WriteLine($"Something is wrong: {EnvironmentSettings.DotnetCliDirectory} contains dotnet.exe: {exists}");
-                // The SymbolsPackage type will invoke push twice for nupkg and snupkg each.
-                expectedPushes += 1;
+                if (!DotNetExeClient.TryGetDotNetExe(out string filepath))
+                {
+                    // If Dotnet env not available symbols package push cannot happen;
+                    expectedPushes -= 1;
+                }
+                else
+                {
+                    // symbols package does push twice(nupkg and snupkg) adjust counter appropriately
+                    expectedPushes += 1;
+                }
             }
 
             _galleryClient.Verify(

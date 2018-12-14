@@ -16,7 +16,7 @@ trap {
     exit 1
 }
 
-$CLIRoot= Join-Path $PSScriptRoot 'cli'
+$CLIRoot=$PSScriptRoot
 $env:DOTNET_INSTALL_DIR=$CLIRoot
 
 . "$PSScriptRoot\build\common.ps1"
@@ -35,7 +35,7 @@ else {
 }
 
 Trace-Log "Set signed package path to: '$($env:SignedPackagePath)'"
-Trace-Log "DotNet CLI directory: $($env:DOTNET_INSTALL_DIR)"
+Trace-Log "DotNet Installation directory: $($env:DOTNET_INSTALL_DIR)"
 
 Function Run-Tests {
     [CmdletBinding()]

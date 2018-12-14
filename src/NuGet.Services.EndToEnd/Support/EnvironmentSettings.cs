@@ -34,7 +34,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// <summary>
         /// The path to the signed package that should be used for tests.
         /// </summary>
-        public static string DotnetCliDirectory = GetEnvironmentVariable("DOTNET_INSTALL_DIR", required: false);
+        public static string DotnetInstallDirectory = GetEnvironmentVariable("DOTNET_INSTALL_DIR", required: false);
 
         private static string GetEnvironmentVariable(string key, bool required)
         {
