@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
@@ -37,7 +38,7 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly object _packagesLock = new object();
 
         // Mapping of the PackageType to the list of applicable packages that are pushed to gallery.
-        private readonly IDictionary<PackageType, List<Package>> _packages = new Dictionary<PackageType, List<Package>>();
+        private readonly IDictionary<PackageType, IReadOnlyList<Package>> _packages = new Dictionary<PackageType, IReadOnlyList<Package>>();
 
         private readonly object _packageIdsLock = new object();
         private readonly IDictionary<PackageType, string> _packageIds = new Dictionary<PackageType, string>();
@@ -87,7 +88,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// <param name="requestedPackageType">The package type being requested to be pushed.</param>
         /// <param name="logger">Test logger</param>
         /// <returns><see cref="Task"/> of lists of <see cref="Package"/> that are generated or cached which were pushed to gallery.</returns>
-        private async Task<List<Package>> PreparePackagesAsync(PackageType requestedPackageType, ITestOutputHelper logger)
+        private async Task<IReadOnlyList<Package>> PreparePackagesAsync(PackageType requestedPackageType, ITestOutputHelper logger)
         {
             var acquired = await _pushLock.WaitAsync(0);
             try
@@ -114,7 +115,7 @@ namespace NuGet.Services.EndToEnd.Support
                 {
                     foreach (var packageType in packageTypes)
                     {
-                        if (!_packages.TryGetValue(packageType, out List<Package> package))
+                        if (!_packages.TryGetValue(packageType, out IReadOnlyList<Package> package))
                         {
                             pushTasks.Add(packageType, UncachedPrepareAsync(requestedPackageType, packageType, logger));
                         }
@@ -138,11 +139,11 @@ namespace NuGet.Services.EndToEnd.Support
         /// <summary>
         /// Gets the list of cached packages for a given <see cref="PackageType"/>
         /// </summary>
-        private List<Package> GetCachedPackages(PackageType requestedPackageType, ITestOutputHelper logger)
+        private IReadOnlyList<Package> GetCachedPackages(PackageType requestedPackageType, ITestOutputHelper logger)
         {
             lock (_packagesLock)
             {
-                if (_packages.TryGetValue(requestedPackageType, out List<Package> package))
+                if (_packages.TryGetValue(requestedPackageType, out IReadOnlyList<Package> package))
                 {
                     logger.WriteLine($"Package of type {requestedPackageType} has already been pushed. Using {package}.");
                     return package;
@@ -342,10 +343,10 @@ namespace NuGet.Services.EndToEnd.Support
                 var projectPath = CopySymbolsProjectFromTemplate(id, version, testDirectory.FullPath);
 
                 // Build the symbols project with the DotNet
-                var buildCommandResult = await DotNetExeClient.BuildProject(projectPath, logger);
+                var buildCommandResult = await DotNetExeClient.BuildProjectAsync(projectPath, logger);
                 if (!string.IsNullOrEmpty(buildCommandResult.Error))
                 {
-                    throw new Exception($"Error building symbols package! Error: {buildCommandResult.Error} Output: {buildCommandResult.Output}");
+                    throw new ExternalException($"Error building symbols package! Error: {buildCommandResult.Error} Output: {buildCommandResult.Output}");
                 }
 
                 // Build nupkg and snupkg from appropriate files
@@ -354,7 +355,7 @@ namespace NuGet.Services.EndToEnd.Support
                 var pdbFiles = Directory.GetFiles(buildOutput, "*.pdb");
                 if (dllFiles.Count() == 0 || pdbFiles.Count() == 0)
                 {
-                    throw new Exception($"Symbols project build failed to create DLL or PDBs");
+                    throw new InvalidOperationException($"Symbols project build failed to create DLL or PDBs");
                 }
 
                 var nupkgPackage = Package.Create(new PackageCreationContext()

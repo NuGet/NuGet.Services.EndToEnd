@@ -11,12 +11,12 @@ namespace NuGet.Services.EndToEnd.Support.Utilities
     {
         public static string GetIndex(string pdbFullPath)
         {
-            var indexingPath = string.Empty;
             if (pdbFullPath == null)
             {
                 throw new ArgumentNullException(nameof(pdbFullPath));
             }
 
+            var indexingPath = string.Empty;
             using (var stream = File.OpenRead(pdbFullPath))
             using (var pdbReaderProvider = MetadataReaderProvider.FromPortablePdbStream(stream, MetadataStreamOptions.LeaveOpen))
             {

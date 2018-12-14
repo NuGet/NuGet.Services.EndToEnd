@@ -17,7 +17,7 @@ namespace NuGet.Services.EndToEnd.Support
             string normalizedVersion,
             string fullVersion,
             ReadOnlyCollection<byte> nupkgBytes) 
-            : this (id, normalizedVersion, fullVersion, nupkgBytes, PackageProperties.Default()) { }
+            : this (id, normalizedVersion, fullVersion, nupkgBytes, new PackageProperties()) { }
 
         private Package(
             string id,
@@ -74,7 +74,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public static Package Create(PackageCreationContext context, IEnumerable<string> files)
         {
-            return Create(context, files, PackageProperties.Default());
+            return Create(context, files, new PackageProperties());
         }
 
         public static Package Create(PackageCreationContext context, IEnumerable<string> files, PackageProperties properties)
@@ -141,8 +141,7 @@ namespace NuGet.Services.EndToEnd.Support
             var memoryStream = new MemoryStream();
             using (FileStream fileStream = File.OpenRead(filename))
             {
-                memoryStream.SetLength(fileStream.Length);
-                fileStream.Read(memoryStream.GetBuffer(), 0, (int)fileStream.Length);
+                fileStream.CopyTo(memoryStream);
             }
 
             memoryStream.Position = 0;

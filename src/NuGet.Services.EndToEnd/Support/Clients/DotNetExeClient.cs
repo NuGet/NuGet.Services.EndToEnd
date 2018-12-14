@@ -13,7 +13,7 @@ namespace NuGet.Services.EndToEnd.Support
     {
         public static readonly string ExeName = "dotnet.exe";
 
-        public static async Task<CommandRunnerResult> BuildProject(string projectPath, ITestOutputHelper logger)
+        public static async Task<CommandRunnerResult> BuildProjectAsync(string projectPath, ITestOutputHelper logger)
         {
             var arguments = new List<string>
             {

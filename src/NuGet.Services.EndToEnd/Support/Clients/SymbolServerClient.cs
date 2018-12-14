@@ -80,11 +80,12 @@ namespace NuGet.Services.EndToEnd.Support
                     {
                         complete = response.StatusCode == HttpStatusCode.OK;
 
-                        if (!complete && duration.Elapsed + TestData.SymbolsSleepDuration < TestData.SymbolsWaitDuration)
-                        {
-                            await Task.Delay(TestData.SymbolsSleepDuration);
-                        }
                     }
+                }
+
+                if (!complete && duration.Elapsed + TestData.SymbolsSleepDuration < TestData.SymbolsWaitDuration)
+                {
+                    await Task.Delay(TestData.SymbolsSleepDuration);
                 }
             }
 

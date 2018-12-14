@@ -1,6 +1,6 @@
 ﻿{
   "TestSettings": {
-    "V3IndexUrl": "https://api.nugettest.org/v3/index.json",
+    "V3IndexUrl": "https://api.nuget.org/v3/index.json",
     "TrustedHttpsCertificates": {},
     "ApiKey": "API_KEY",
     "SymbolServerUrlTemplate": "https://symbols.nuget.org/download/symbols/{0}",

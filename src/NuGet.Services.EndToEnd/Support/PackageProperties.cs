@@ -11,7 +11,10 @@ namespace NuGet.Services.EndToEnd.Support
 
         public HashSet<string> IndexedFiles { get; }
 
-        public PackageProperties() { }
+        public PackageProperties()
+        {
+            IndexedFiles = new HashSet<string>();
+        }
 
         public PackageProperties(bool isSymbolsPackage, HashSet<string> indexedFiles)
         {

@@ -22,16 +22,17 @@ namespace NuGet.Services.EndToEnd.Support
 
         public static Stream BuildPackageStream(PackageCreationContext context)
         {
-            var files = new List<PhysicalPackageFile>() {
-                new PhysicalPackageFile(new MemoryStream())
+            var files = new List<PhysicalPackageFile>()
                 {
-                    TargetPath = "tools/empty.txt"
-                },
-                new PhysicalPackageFile(new MemoryStream())
-                {
-                    TargetPath = $"lib/{TargetFramework.GetShortFolderName()}/_._"
-                }
-            };
+                    new PhysicalPackageFile(new MemoryStream())
+                    {
+                        TargetPath = "tools/empty.txt"
+                    },
+                    new PhysicalPackageFile(new MemoryStream())
+                    {
+                        TargetPath = $"lib/{TargetFramework.GetShortFolderName()}/_._"
+                    }
+                };
 
             return BuildPackageStreamForFiles(context, files, isSymbolsPackage: false);
         }
