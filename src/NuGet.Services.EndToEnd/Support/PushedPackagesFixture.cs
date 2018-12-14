@@ -323,7 +323,7 @@ namespace NuGet.Services.EndToEnd.Support
                 var buildCommandResult = await DotNetExeClient.BuildProject(projectPath, logger);
                 if (!string.IsNullOrEmpty(buildCommandResult.Error))
                 {
-                    throw new Exception($"Error building symbols package! {buildCommandResult.Error}");
+                    throw new Exception($"Error building symbols package! Error: {buildCommandResult.Error} Output: {buildCommandResult.Output}");
                 }
 
                 // Build nupkg and snupkg from appropriate files
