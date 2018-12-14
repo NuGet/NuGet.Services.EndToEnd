@@ -63,8 +63,8 @@ namespace NuGet.Services.EndToEnd.Support
         {
             ReadOnlyCollection<byte> nupkgBytes;
             using (var nupkgStream = TestData.BuildPackageStream(context))
+            using (var bufferStream = new MemoryStream())
             {
-                var bufferStream = new MemoryStream();
                 nupkgStream.CopyTo(bufferStream);
                 nupkgBytes = Array.AsReadOnly(bufferStream.ToArray());
             }
@@ -87,8 +87,8 @@ namespace NuGet.Services.EndToEnd.Support
 
             ReadOnlyCollection<byte> nupkgBytes;
             using (var nupkgStream = TestData.BuildPackageStreamForFiles(context, physicalPackageFilesList, properties.IsSymbolsPackage))
+            using(var bufferStream = new MemoryStream())
             {
-                var bufferStream = new MemoryStream();
                 nupkgStream.CopyTo(bufferStream);
                 nupkgBytes = Array.AsReadOnly(bufferStream.ToArray());
             }

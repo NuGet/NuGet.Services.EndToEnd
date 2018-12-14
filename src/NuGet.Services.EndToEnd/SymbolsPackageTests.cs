@@ -57,7 +57,7 @@ namespace NuGet.Services.EndToEnd
 
         public void AssertPackageIsSymbolsPackage(Package package)
         {
-            // The package should have indexed files if its a symbols package
+            // The package should have indexed files if it's a symbols package
             Assert.NotNull(package);
             Assert.True(package.Properties.IsSymbolsPackage);
             Assert.NotNull(package.Properties.IndexedFiles);

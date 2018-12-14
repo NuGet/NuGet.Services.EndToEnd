@@ -255,7 +255,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         /// <summary>
         /// Return the list of <see cref="PackageToPrepare"/> in the ordered form
-        /// for which we want to run all the tasks synchronously
+        /// for which we want to run all the tasks sequentially
         /// </summary>
         /// <returns>Ordered list of tasks to run for <see cref="PackageToPrepare"/></returns>
         private async Task<List<PackageToPrepare>> InitializePackagesAsync(PackageType packageType, ITestOutputHelper logger)
