@@ -1,16 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Services.EndToEnd.Support.Utilities;
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Services.EndToEnd.Support.Utilities;
+using NuGet.Versioning;
 using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd.Support
@@ -35,7 +35,10 @@ namespace NuGet.Services.EndToEnd.Support
 
         private readonly SemaphoreSlim _pushLock = new SemaphoreSlim(initialCount: 1);
         private readonly object _packagesLock = new object();
+
+        // Mapping of the PackageType to the list of applicable packages that are pushed to gallery.
         private readonly IDictionary<PackageType, List<Package>> _packages = new Dictionary<PackageType, List<Package>>();
+
         private readonly object _packageIdsLock = new object();
         private readonly IDictionary<PackageType, string> _packageIds = new Dictionary<PackageType, string>();
         private IGalleryClient _galleryClient;
@@ -68,15 +71,22 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<Package> PrepareAsync(PackageType requestedPackageType, ITestOutputHelper logger)
         {
-            var pushedPackage = GetCachedPackage(requestedPackageType, logger);
-            if (pushedPackage != null)
+            var pushedPackages = GetCachedPackages(requestedPackageType, logger);
+            if (pushedPackages != null)
             {
-                return pushedPackage.Last();
+                return pushedPackages.Last();
             }
 
             return (await PreparePackagesAsync(requestedPackageType, logger)).Last();
         }
 
+        /// <summary>
+        /// This method will generate and cache the list of packages, either for all <see cref="PackageType"/>s
+        /// or for the requested package type.
+        /// </summary>
+        /// <param name="requestedPackageType">The package type being requested to be pushed.</param>
+        /// <param name="logger">Test logger</param>
+        /// <returns><see cref="Task"/> of lists of <see cref="Package"/> that are generated or cached which were pushed to gallery.</returns>
         private async Task<List<Package>> PreparePackagesAsync(PackageType requestedPackageType, ITestOutputHelper logger)
         {
             var acquired = await _pushLock.WaitAsync(0);
@@ -90,7 +100,7 @@ namespace NuGet.Services.EndToEnd.Support
                 }
 
                 // Has the package already been pushed?
-                var pushedPackage = GetCachedPackage(requestedPackageType, logger);
+                var pushedPackage = GetCachedPackages(requestedPackageType, logger);
                 if (pushedPackage != null)
                 {
                     return pushedPackage;
@@ -113,7 +123,7 @@ namespace NuGet.Services.EndToEnd.Support
 
                 await Task.WhenAll(pushTasks.Values);
 
-                // Use the package that we just pushed.
+                // Use the packages that we just pushed.
                 return _packages[requestedPackageType];
             }
             finally
@@ -125,7 +135,10 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        private List<Package> GetCachedPackage(PackageType requestedPackageType, ITestOutputHelper logger)
+        /// <summary>
+        /// Gets the list of cached packages for a given <see cref="PackageType"/>
+        /// </summary>
+        private List<Package> GetCachedPackages(PackageType requestedPackageType, ITestOutputHelper logger)
         {
             lock (_packagesLock)
             {
@@ -139,11 +152,20 @@ namespace NuGet.Services.EndToEnd.Support
             return null;
         }
 
+        /// <summary>
+        /// This method will generate the list of applicable packages for a given <see cref="PackageType"/> and
+        /// push them squentially to the NuGet gallery. Note this method will maintain the order of the packages
+        /// in the list that were pushed to the gallery.
+        /// </summary>
+        /// <param name="requestedPackageType">The type being currently requested to be pushed to gallery.</param>
+        /// <param name="packageType">The type that is going to be pushed to gallery.</param>
+        /// <param name="logger">Test logger</param>
+        /// <returns><see cref="Task"/> of lists of <see cref="Package"/> that are generated and pushed to gallery.</returns>
         private async Task<List<Package>> UncachedPrepareAsync(PackageType requestedPackageType, PackageType packageType, ITestOutputHelper logger)
         {
             try
             {
-                var packagesToPrepare = await InitializePackageAsync(packageType, logger);
+                var packagesToPrepare = await InitializePackagesAsync(packageType, logger);
                 foreach (var packageToPrepare in packagesToPrepare)
                 {
                     logger.WriteLine($"Package of type {packageType} has not been pushed yet. Pushing {packageToPrepare}.");
@@ -231,11 +253,11 @@ namespace NuGet.Services.EndToEnd.Support
         }
 
         /// <summary>
-        /// Return the list in the ordered form for which we want to run the task
-        /// synchronously
+        /// Return the list of <see cref="PackageToPrepare"/> in the ordered form
+        /// for which we want to run all the tasks synchronously
         /// </summary>
         /// <returns>Ordered list of tasks to run for <see cref="PackageToPrepare"/></returns>
-        private async Task<List<PackageToPrepare>> InitializePackageAsync(PackageType packageType, ITestOutputHelper logger)
+        private async Task<List<PackageToPrepare>> InitializePackagesAsync(PackageType packageType, ITestOutputHelper logger)
         {
             var id = GetPackageId(packageType);
             PackageToPrepare packageToPrepare;
@@ -319,7 +341,7 @@ namespace NuGet.Services.EndToEnd.Support
                 // Copy the symbols project from template, also set the ID, Version appropriately in the properties.
                 var projectPath = CopySymbolsProjectFromTemplate(id, version, testDirectory.FullPath);
 
-                // Build the symbols project with the DotNet.exe
+                // Build the symbols project with the DotNet
                 var buildCommandResult = await DotNetExeClient.BuildProject(projectPath, logger);
                 if (!string.IsNullOrEmpty(buildCommandResult.Error))
                 {
