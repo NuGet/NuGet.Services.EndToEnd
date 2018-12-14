@@ -125,7 +125,10 @@ namespace NuGet.Services.EndToEnd.Support
                 await Task.WhenAll(pushTasks.Values);
 
                 // Use the packages that we just pushed.
-                return _packages[requestedPackageType];
+                lock (_packagesLock)
+                {
+                    return _packages[requestedPackageType];
+                }
             }
             finally
             {
