@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGet.Services.EndToEnd</RootNamespace>
     <AssemblyName>NuGet.Services.EndToEnd</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,8 +42,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
+    <Compile Include="Support\Clients\SymbolServerClient.cs" />
+    <Compile Include="Support\PackageProperties.cs" />
+    <Compile Include="Support\Utilities\PortableMetadataReader.cs" />
+    <Compile Include="SymbolsPackageTests.cs" />
     <Compile Include="Support\Clients\ClientHelper.cs" />
     <Compile Include="Support\Clients\IRetryingAzureManagementAPIWrapper.cs" />
+    <Compile Include="Support\Clients\DotNetExeClient.cs" />
     <Compile Include="Support\Clients\RetryingAzureManagementAPIWrapper.cs" />
     <Compile Include="Support\Clients\SearchServiceProperties.cs" />
     <Compile Include="Support\Clients\V3IndexClient.cs" />
@@ -94,7 +100,9 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +113,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Support\NuGetExe\nuget.4.9.1.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Support\TestData\E2E.TestPortableSymbols\E2E.TestPortableSymbols.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Support\TestData\E2E.TestPortableSymbols\TestMath.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Support\TestData\E2E.TestPortableSymbols\Properties\AssemblyInfo.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

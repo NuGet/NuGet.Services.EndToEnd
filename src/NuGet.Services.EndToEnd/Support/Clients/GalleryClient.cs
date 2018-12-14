@@ -108,10 +108,13 @@ namespace NuGet.Services.EndToEnd.Support
             return await _httpClient.GetJsonAsync<List<string>>(uri, logger);
         }
 
-        public async Task PushAsync(Stream nupkgStream, ITestOutputHelper logger)
+        public async Task PushAsync(Stream nupkgStream, ITestOutputHelper logger, bool isSymbolsPackage = false)
         {
             var galleryEndpoint = await GetGalleryUrlAsync(logger);
-            var url = $"{galleryEndpoint}/api/v2/package";
+            var url = isSymbolsPackage
+                ? $"{galleryEndpoint}/api/v2/symbolpackage"
+                : $"{galleryEndpoint}/api/v2/package";
+
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Put, url))
             {

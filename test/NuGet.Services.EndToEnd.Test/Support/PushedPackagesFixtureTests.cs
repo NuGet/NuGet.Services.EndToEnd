@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -53,16 +52,31 @@ namespace NuGet.Services.EndToEnd.Support
             // Act
             await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger);
 
-            // Assert - The signed package will only be pushed if a path was provided.
-            var expectedPushes = Enum.GetNames(typeof(PackageType)).Count();
+            var expectedPackageTypes = Enum.GetNames(typeof(PackageType));
+            var expectedPushes = expectedPackageTypes.Count();
 
+            // Assert - The signed package will only be pushed if a path was provided.
             if (string.IsNullOrEmpty(EnvironmentSettings.SignedPackagePath))
             {
                 expectedPushes -= 1;
             }
 
+            if (expectedPackageTypes.Contains("SymbolsPackage"))
+            {
+                if (!DotNetExeClient.TryGetDotNetExe(out string filepath))
+                {
+                    // If Dotnet env not available symbols package push cannot happen;
+                    expectedPushes -= 1;
+                }
+                else
+                {
+                    // symbols package does push twice(nupkg and snupkg) adjust counter appropriately
+                    expectedPushes += 1;
+                }
+            }
+
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>(), _logger),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger, It.IsAny<bool>()),
                 Times.Exactly(expectedPushes));
         }
 
@@ -77,7 +91,7 @@ namespace NuGet.Services.EndToEnd.Support
             // Assert
             Assert.Same(packageA, packageB);
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>(), _logger),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger, It.IsAny<bool>()),
                 Times.Never); // "never" because we reset the mock
         }
 
@@ -97,7 +111,7 @@ namespace NuGet.Services.EndToEnd.Support
             Assert.Equal("1.0.0", package.NormalizedVersion);
             Assert.Equal("1.0.0", package.FullVersion);
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>(), _logger),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger, false),
                 Times.Once);
         }
     }

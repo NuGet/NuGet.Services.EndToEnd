@@ -5,10 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Services.EndToEnd.Support.Utilities;
 using NuGet.Versioning;
 using Xunit.Abstractions;
 
@@ -34,10 +36,15 @@ namespace NuGet.Services.EndToEnd.Support
 
         private readonly SemaphoreSlim _pushLock = new SemaphoreSlim(initialCount: 1);
         private readonly object _packagesLock = new object();
-        private readonly IDictionary<PackageType, Package> _packages = new Dictionary<PackageType, Package>();
+
+        // Mapping of the PackageType to the list of applicable packages that are pushed to gallery.
+        private readonly IDictionary<PackageType, IReadOnlyList<Package>> _packages = new Dictionary<PackageType, IReadOnlyList<Package>>();
+
         private readonly object _packageIdsLock = new object();
         private readonly IDictionary<PackageType, string> _packageIds = new Dictionary<PackageType, string>();
         private IGalleryClient _galleryClient;
+
+        private static readonly string SymbolsProjectTemplateFolder = Path.Combine(Environment.CurrentDirectory, "Support", "TestData", "E2E.TestPortableSymbols");
 
         public PushedPackagesFixture()
         {
@@ -65,16 +72,23 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<Package> PrepareAsync(PackageType requestedPackageType, ITestOutputHelper logger)
         {
-            var pushedPackage = GetCachedPackage(requestedPackageType, logger);
-            if (pushedPackage != null)
+            var pushedPackages = GetCachedPackages(requestedPackageType, logger);
+            if (pushedPackages != null)
             {
-                return pushedPackage;
+                return pushedPackages.Last();
             }
 
-            return await PreparePackagesAsync(requestedPackageType, logger);
+            return (await PreparePackagesAsync(requestedPackageType, logger)).Last();
         }
 
-        private async Task<Package> PreparePackagesAsync(PackageType requestedPackageType, ITestOutputHelper logger)
+        /// <summary>
+        /// This method will generate and cache the list of packages, either for all <see cref="PackageType"/>s
+        /// or for the requested package type.
+        /// </summary>
+        /// <param name="requestedPackageType">The package type being requested to be pushed.</param>
+        /// <param name="logger">Test logger</param>
+        /// <returns><see cref="Task"/> of lists of <see cref="Package"/> that are generated or cached which were pushed to gallery.</returns>
+        private async Task<IReadOnlyList<Package>> PreparePackagesAsync(PackageType requestedPackageType, ITestOutputHelper logger)
         {
             var acquired = await _pushLock.WaitAsync(0);
             try
@@ -87,7 +101,7 @@ namespace NuGet.Services.EndToEnd.Support
                 }
 
                 // Has the package already been pushed?
-                var pushedPackage = GetCachedPackage(requestedPackageType, logger);
+                var pushedPackage = GetCachedPackages(requestedPackageType, logger);
                 if (pushedPackage != null)
                 {
                     return pushedPackage;
@@ -96,12 +110,12 @@ namespace NuGet.Services.EndToEnd.Support
                 var packageTypes = GetPackageTypes(requestedPackageType);
 
                 // Push all of the package types that have not been pushed yet.
-                var pushTasks = new Dictionary<PackageType, Task<Package>>();
+                var pushTasks = new Dictionary<PackageType, Task<List<Package>>>();
                 lock (_packagesLock)
                 {
                     foreach (var packageType in packageTypes)
                     {
-                        if (!_packages.TryGetValue(packageType, out Package package))
+                        if (!_packages.TryGetValue(packageType, out IReadOnlyList<Package> package))
                         {
                             pushTasks.Add(packageType, UncachedPrepareAsync(requestedPackageType, packageType, logger));
                         }
@@ -109,9 +123,12 @@ namespace NuGet.Services.EndToEnd.Support
                 }
 
                 await Task.WhenAll(pushTasks.Values);
-                
-                // Use the package that we just pushed.
-                return _packages[requestedPackageType];
+
+                // Use the packages that we just pushed.
+                lock (_packagesLock)
+                {
+                    return _packages[requestedPackageType];
+                }
             }
             finally
             {
@@ -122,11 +139,14 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        private Package GetCachedPackage(PackageType requestedPackageType, ITestOutputHelper logger)
+        /// <summary>
+        /// Gets the list of cached packages for a given <see cref="PackageType"/>
+        /// </summary>
+        private IReadOnlyList<Package> GetCachedPackages(PackageType requestedPackageType, ITestOutputHelper logger)
         {
             lock (_packagesLock)
             {
-                if (_packages.TryGetValue(requestedPackageType, out Package package))
+                if (_packages.TryGetValue(requestedPackageType, out IReadOnlyList<Package> package))
                 {
                     logger.WriteLine($"Package of type {requestedPackageType} has already been pushed. Using {package}.");
                     return package;
@@ -136,26 +156,59 @@ namespace NuGet.Services.EndToEnd.Support
             return null;
         }
 
-        private async Task<Package> UncachedPrepareAsync(PackageType requestedPackageType, PackageType packageType, ITestOutputHelper logger)
+        /// <summary>
+        /// This method will generate the list of applicable packages for a given <see cref="PackageType"/> and
+        /// push them squentially to the NuGet gallery. Note this method will maintain the order of the packages
+        /// in the list that were pushed to the gallery.
+        /// </summary>
+        /// <param name="requestedPackageType">The type being currently requested to be pushed to gallery.</param>
+        /// <param name="packageType">The type that is going to be pushed to gallery.</param>
+        /// <param name="logger">Test logger</param>
+        /// <returns><see cref="Task"/> of lists of <see cref="Package"/> that are generated and pushed to gallery.</returns>
+        private async Task<List<Package>> UncachedPrepareAsync(PackageType requestedPackageType, PackageType packageType, ITestOutputHelper logger)
         {
-            await Task.Yield();
-
-            var packageToPrepare = InitializePackage(packageType);
-            logger.WriteLine($"Package of type {packageType} has not been pushed yet. Pushing {packageToPrepare}.");
             try
             {
-                using (var nupkgStream = new MemoryStream(packageToPrepare.Package.NupkgBytes.ToArray()))
+                var packagesToPrepare = await InitializePackagesAsync(packageType, logger);
+                foreach (var packageToPrepare in packagesToPrepare)
                 {
-                    await _galleryClient.PushAsync(nupkgStream, logger);
-                }
-                logger.WriteLine($"Package {packageToPrepare} has been pushed.");
+                    logger.WriteLine($"Package of type {packageType} has not been pushed yet. Pushing {packageToPrepare}.");
+                    try
+                    {
+                        using (var nupkgStream = new MemoryStream(packageToPrepare.Package.NupkgBytes.ToArray()))
+                        {
+                            await _galleryClient.PushAsync(nupkgStream, logger, isSymbolsPackage: packageToPrepare.Package.Properties.IsSymbolsPackage);
+                        }
 
-                if (packageToPrepare.Unlist)
-                {
-                    logger.WriteLine($"Package of type {packageType} need to be unlisted. Unlisting {packageToPrepare}.");
-                    await _galleryClient.UnlistAsync(packageToPrepare.Package.Id, packageToPrepare.Package.NormalizedVersion, logger);
-                    logger.WriteLine($"Package {packageToPrepare} has been unlisted.");
+                        logger.WriteLine($"Package {packageToPrepare} has been pushed.");
+
+                        if (packageToPrepare.Unlist)
+                        {
+                            logger.WriteLine($"Package of type {packageType} need to be unlisted. Unlisting {packageToPrepare}.");
+                            await _galleryClient.UnlistAsync(packageToPrepare.Package.Id, packageToPrepare.Package.NormalizedVersion, logger);
+                            logger.WriteLine($"Package {packageToPrepare} has been unlisted.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.WriteLine($"The package {packageToPrepare} failed to be pushed.");
+                        throw ex;
+                    }
                 }
+
+                // Maintain the order of the `Package` from the list so that
+                // the last pushed package represents the apropriate package for
+                // the pushed package type.
+                var listOfPackagesToPush = packagesToPrepare
+                    .Select(x => x.Package)
+                    .ToList();
+
+                lock (_packagesLock)
+                {
+                    _packages[packageType] = listOfPackagesToPush;
+                }
+
+                return listOfPackagesToPush;
             }
             catch (Exception ex)
             {
@@ -166,18 +219,11 @@ namespace NuGet.Services.EndToEnd.Support
                 else
                 {
                     logger.WriteLine(
-                        $"The package {packageToPrepare} failed to be pushed. Since this package was not explicitly requested " +
+                        $"The package initialization failed. Since this package was not explicitly requested " +
                         $"by the running test, this failure will be ignored. Exception:{Environment.NewLine}{ex}");
                     return null;
                 }
             }
-            
-            lock (_packagesLock)
-            {
-                _packages[packageType] = packageToPrepare.Package;
-            }
-
-            return packageToPrepare.Package;
         }
 
         public void Dispose()
@@ -210,14 +256,20 @@ namespace NuGet.Services.EndToEnd.Support
                 .OrderBy(x => x);
         }
 
-        private PackageToPrepare InitializePackage(PackageType packageType)
+        /// <summary>
+        /// Return the list of <see cref="PackageToPrepare"/> in the ordered form
+        /// for which we want to run all the tasks sequentially
+        /// </summary>
+        /// <returns>Ordered list of tasks to run for <see cref="PackageToPrepare"/></returns>
+        private async Task<List<PackageToPrepare>> InitializePackagesAsync(PackageType packageType, ITestOutputHelper logger)
         {
             var id = GetPackageId(packageType);
-
+            PackageToPrepare packageToPrepare;
+            List<PackageToPrepare> packagesToPrepare = new List<PackageToPrepare>();
             switch (packageType)
             {
                 case PackageType.SemVer2DueToSemVer2Dep:
-                    return new PackageToPrepare(Package.Create(new PackageCreationContext
+                    packageToPrepare = new PackageToPrepare(Package.Create(new PackageCreationContext
                     {
                         Id = id,
                         NormalizedVersion = "1.0.0-beta",
@@ -234,40 +286,132 @@ namespace NuGet.Services.EndToEnd.Support
                                 })
                         }
                     }));
+                    break;
 
                 case PackageType.SemVer2StableMetadataUnlisted:
-                    return new PackageToPrepare(
+                    packageToPrepare = new PackageToPrepare(
                         Package.Create(id, "1.0.0", "1.0.0+metadata"),
                         unlist: true);
+                    break;
 
                 case PackageType.SemVer2StableMetadata:
-                    return new PackageToPrepare(Package.Create(id, "1.0.0", "1.0.0+metadata"));
+                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0", "1.0.0+metadata"));
+                    break;
 
                 case PackageType.SemVer2PrerelUnlisted:
-                    return new PackageToPrepare(
+                    packageToPrepare = new PackageToPrepare(
                         Package.Create(id, "1.0.0-alpha.1"),
                         unlist: true);
+                    break;
 
                 case PackageType.SemVer2Prerel:
-                    return new PackageToPrepare(Package.Create(id, SemVer2PrerelVersion));
+                    packageToPrepare = new PackageToPrepare(Package.Create(id, SemVer2PrerelVersion));
+                    break;
 
                 case PackageType.SemVer2PrerelRelisted:
-                    return new PackageToPrepare(Package.Create(id, "1.0.0-alpha.1"),
+                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0-alpha.1"),
                         unlist: true);
+                    break;
 
                 case PackageType.SemVer1StableUnlisted:
-                    return new PackageToPrepare(
+                    packageToPrepare = new PackageToPrepare(
                         Package.Create(id, "1.0.0"),
                         unlist: true);
+                    break;
 
                 case PackageType.Signed:
-                    return new PackageToPrepare(Package.SignedPackage());
+                    packageToPrepare = new PackageToPrepare(Package.SignedPackage());
+                    break;
+
+                case PackageType.SymbolsPackage:
+                    return await PrepareSymbolsPackageAsync(id, "1.0.0", logger);
 
                 case PackageType.SemVer1Stable:
                 case PackageType.FullValidation:
                 default:
-                    return new PackageToPrepare(Package.Create(id, "1.0.0"));
+                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0"));
+                    break;
+
             }
+
+            packagesToPrepare.Add(packageToPrepare);
+            return packagesToPrepare;
+        }
+
+        private async Task<List<PackageToPrepare>> PrepareSymbolsPackageAsync(string id, string version, ITestOutputHelper logger)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Copy the symbols project from template, also set the ID, Version appropriately in the properties.
+                var projectPath = CopySymbolsProjectFromTemplate(id, version, testDirectory.FullPath);
+
+                // Build the symbols project with the DotNet
+                var buildCommandResult = await DotNetExeClient.BuildProjectAsync(projectPath, logger);
+                if (!string.IsNullOrEmpty(buildCommandResult.Error))
+                {
+                    throw new ExternalException($"Error building symbols package! Error: {buildCommandResult.Error} Output: {buildCommandResult.Output}");
+                }
+
+                // Build nupkg and snupkg from appropriate files
+                var buildOutput = Path.Combine(testDirectory.FullPath, "bin", "Debug");
+                var dllFiles = Directory.GetFiles(buildOutput, "*.dll");
+                var pdbFiles = Directory.GetFiles(buildOutput, "*.pdb");
+                if (dllFiles.Count() == 0 || pdbFiles.Count() == 0)
+                {
+                    throw new InvalidOperationException($"Symbols project build failed to create DLL or PDBs");
+                }
+
+                var nupkgPackage = Package.Create(new PackageCreationContext()
+                {
+                    Id = id,
+                    NormalizedVersion = version,
+                    FullVersion = version
+                }, dllFiles);
+
+                var pdbIndexes = new HashSet<string>();
+                foreach (var file in pdbFiles)
+                {
+                    pdbIndexes.Add(PortableMetadataReader.GetIndex(file));
+                }
+
+                var snupkgPackage = Package.Create(new PackageCreationContext()
+                {
+                    Id = id,
+                    NormalizedVersion = version,
+                    FullVersion = version
+                }, pdbFiles, new PackageProperties(isSymbolsPackage: true, indexedFiles: pdbIndexes));
+
+                return new List<PackageToPrepare>() { new PackageToPrepare(nupkgPackage), new PackageToPrepare(snupkgPackage) };
+            }
+        }
+
+        private static string CopySymbolsProjectFromTemplate(string id, string version, string tempProjectFolder)
+        {
+            var sourceDirectoryFiles = Directory.GetFiles(SymbolsProjectTemplateFolder,"*.*", SearchOption.AllDirectories);
+            string projectPath = string.Empty;
+            foreach (string sourceFile in sourceDirectoryFiles)
+            {
+                var fileName = Path.GetFileName(sourceFile);
+                if (string.Equals(fileName, "AssemblyInfo.cs"))
+                {
+                    var propertiesContent = File.ReadAllText(sourceFile);
+                    var formattedContent = string.Format(propertiesContent, id, version);
+                    var destinationFile = Path.Combine(tempProjectFolder, "Properties", fileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destinationFile));
+                    File.WriteAllText(destinationFile, formattedContent);
+                }
+                else
+                {
+                    var destinationFile = Path.Combine(tempProjectFolder, fileName);
+                    File.Copy(sourceFile, destinationFile, true);
+                    if (Path.GetExtension(fileName) == ".csproj")
+                    {
+                        projectPath = destinationFile;
+                    }
+                }
+            }
+
+            return projectPath;
         }
 
         private string GetPackageId(PackageType packageType)
@@ -304,7 +448,7 @@ namespace NuGet.Services.EndToEnd.Support
                 Package = package;
                 Unlist = unlist;
             }
-            
+
             public Package Package { get; }
             public bool Unlist { get; }
 

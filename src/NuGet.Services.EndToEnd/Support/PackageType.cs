@@ -19,5 +19,6 @@ namespace NuGet.Services.EndToEnd.Support
         SemVer2StableMetadataUnlisted,
         FullValidation,
         Signed,
+        SymbolsPackage,
     }
 }
