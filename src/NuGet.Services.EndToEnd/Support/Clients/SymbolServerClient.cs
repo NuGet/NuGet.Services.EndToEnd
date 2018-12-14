@@ -74,7 +74,9 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 using (var httpClient = new HttpClient())
                 {
-                    // Add Checksum headers for fetching the pdbs from symbol server.
+                    // Add Checksum headers for fetching the pdbs from symbol server. This header is used
+                    // by the symbol server to validate the request(provided by supported clients) for 
+                    // portable PDBs.
                     httpClient.DefaultRequestHeaders.Add(SymbolServerHeaderKey, SymbolServerHeaderValue);
                     using (var response = await httpClient.GetAsync(symbolFileEndpoint))
                     {
