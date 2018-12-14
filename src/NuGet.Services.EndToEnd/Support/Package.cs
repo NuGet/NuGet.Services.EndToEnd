@@ -138,7 +138,6 @@ namespace NuGet.Services.EndToEnd.Support
 
         private static MemoryStream GetMemoryStreamForFile(string filename)
         {
-
             var memoryStream = new MemoryStream();
             using (FileStream fileStream = File.OpenRead(filename))
             {

@@ -43,8 +43,6 @@ namespace NuGet.Services.EndToEnd.Support
             string failureMessageFormat,
             ITestOutputHelper logger)
         {
-            // We perform the retry at this level so that we can re-fetch the list of search service instances from
-            // Azure Management API. This list can change during scale-up or scale-down events.
             return RetryUtility.ExecuteWithRetry(
                 async () =>
                 {

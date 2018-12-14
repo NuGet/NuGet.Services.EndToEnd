@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace NuGet.Services.EndToEnd
 {
     /// <summary>
-    /// Tests that integrate with nuget.exe, since this exercises our primary client code.
+    /// Tests that verify the symbols package related flows
     /// </summary>
     [Collection(nameof(PushedPackagesCollection))]
     public class SymbolsPackageTests : IClassFixture<TrustedHttpsCertificatesFixture>, IDisposable

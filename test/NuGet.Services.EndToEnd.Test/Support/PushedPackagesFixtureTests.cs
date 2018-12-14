@@ -52,10 +52,10 @@ namespace NuGet.Services.EndToEnd.Support
             // Act
             await _fixture.PrepareAsync(PackageType.SemVer1Stable, _logger);
 
-            // Assert - The signed package will only be pushed if a path was provided.
             var expectedPackageTypes = Enum.GetNames(typeof(PackageType));
             var expectedPushes = expectedPackageTypes.Count();
 
+            // Assert - The signed package will only be pushed if a path was provided.
             if (string.IsNullOrEmpty(EnvironmentSettings.SignedPackagePath))
             {
                 expectedPushes -= 1;
