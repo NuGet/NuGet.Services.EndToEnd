@@ -48,11 +48,19 @@ namespace NuGet.Services.EndToEnd.Support
 
             var joinedArguments = string.Join(" ", arguments);
 
+            // New installation of DOTNET invokes first time user experience which involves caching, decompressing packages etc.
+            // This prevents faster package build times, disable this behavior using environment variable
+            var environmentVariables = new Dictionary<string, string>
+            {
+                { "DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1" }
+            };
+
             return await CommandRunner.RunAsync(
                 filePath,
                 workingDirectory,
                 joinedArguments,
-                logger);
+                logger,
+                environmentVariables);
         }
     }
 }
