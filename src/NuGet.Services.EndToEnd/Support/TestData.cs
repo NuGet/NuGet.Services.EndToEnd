@@ -42,9 +42,9 @@ namespace NuGet.Services.EndToEnd.Support
                 packageBuilder.DependencyGroups.AddRange(context.DependencyGroups);
             }
 
-            if (context.LicenseMetadata != null)
+            if (context.Properties != null && context.Properties.LicenseMetadata != null)
             {
-                packageBuilder.LicenseMetadata = context.LicenseMetadata;
+                packageBuilder.LicenseMetadata = context.Properties.LicenseMetadata;
             }
 
             if (context.Properties.Type == PackageType.SymbolsPackage)

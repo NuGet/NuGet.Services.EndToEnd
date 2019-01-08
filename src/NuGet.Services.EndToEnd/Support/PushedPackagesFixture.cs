@@ -287,38 +287,38 @@ namespace NuGet.Services.EndToEnd.Support
                                         VersionRange.Parse(SemVer2PrerelVersion))
                                 })
                         },
-                        Properties = new PackageProperties(PackageType.SemVer2DueToSemVer2Dep)
+                        Properties = new PackageProperties(packageType)
                     }));
                     break;
 
                 case PackageType.SemVer2StableMetadataUnlisted:
                     packageToPrepare = new PackageToPrepare(
-                        Package.Create(id, "1.0.0", "1.0.0+metadata", PackageType.SemVer2StableMetadataUnlisted),
+                        Package.Create(packageType, id, "1.0.0", "1.0.0+metadata"),
                         unlist: true);
                     break;
 
                 case PackageType.SemVer2StableMetadata:
-                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0", "1.0.0+metadata", PackageType.SemVer2StableMetadata));
+                    packageToPrepare = new PackageToPrepare(Package.Create(packageType, id, "1.0.0", "1.0.0+metadata"));
                     break;
 
                 case PackageType.SemVer2PrerelUnlisted:
                     packageToPrepare = new PackageToPrepare(
-                        Package.Create(id, "1.0.0-alpha.1", PackageType.SemVer2PrerelUnlisted),
+                        Package.Create(packageType, id, "1.0.0-alpha.1"),
                         unlist: true);
                     break;
 
                 case PackageType.SemVer2Prerel:
-                    packageToPrepare = new PackageToPrepare(Package.Create(id, SemVer2PrerelVersion, PackageType.SemVer2Prerel));
+                    packageToPrepare = new PackageToPrepare(Package.Create(packageType, id, SemVer2PrerelVersion));
                     break;
 
                 case PackageType.SemVer2PrerelRelisted:
-                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0-alpha.1", PackageType.SemVer2PrerelRelisted),
+                    packageToPrepare = new PackageToPrepare(Package.Create(packageType, id, "1.0.0-alpha.1"),
                         unlist: true); 
                     break;
 
                 case PackageType.SemVer1StableUnlisted:
                     packageToPrepare = new PackageToPrepare(
-                        Package.Create(id, "1.0.0", PackageType.SemVer1StableUnlisted),
+                        Package.Create(packageType, id, "1.0.0"),
                         unlist: true);
                     break;
 
@@ -336,8 +336,7 @@ namespace NuGet.Services.EndToEnd.Support
                         Id = id,
                         NormalizedVersion = "1.0.0",
                         FullVersion = "1.0.0",
-                        LicenseMetadata = licenseMetadata,
-                        Properties = new PackageProperties(PackageType.LicenseExpression, licenseMetadata)
+                        Properties = new PackageProperties(packageType, licenseMetadata)
                     }));
                     break;
 
@@ -349,8 +348,7 @@ namespace NuGet.Services.EndToEnd.Support
                         Id = id,
                         NormalizedVersion = "1.0.0",
                         FullVersion = "1.0.0",
-                        LicenseMetadata = licenseMetadata,
-                        Properties = new PackageProperties(PackageType.LicenseFile, licenseMetadata),
+                        Properties = new PackageProperties(packageType, licenseMetadata),
                         Files = new List<PhysicalPackageFile>{
                         new PhysicalPackageFile(new MemoryStream(Encoding.UTF8.GetBytes("It's a license")))
                         {
@@ -360,15 +358,9 @@ namespace NuGet.Services.EndToEnd.Support
                     break;
 
                 case PackageType.SemVer1Stable:
-                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0", PackageType.SemVer1Stable));
-                    break;
-
                 case PackageType.FullValidation:
-                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0", PackageType.FullValidation));
-                    break;
-
                 default:
-                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0", PackageType.Default));
+                    packageToPrepare = new PackageToPrepare(Package.Create(packageType, id, "1.0.0"));
                     break;
             }
 

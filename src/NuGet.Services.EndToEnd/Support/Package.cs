@@ -44,12 +44,12 @@ namespace NuGet.Services.EndToEnd.Support
             return $"{Id} {FullVersion}";
         }
 
-        public static Package Create(string id, string normalizedVersion, PackageType packageType)
+        public static Package Create(PackageType packageType, string id, string normalizedVersion)
         {
-            return Create(id, normalizedVersion, normalizedVersion, packageType);
+            return Create(packageType, id, normalizedVersion, normalizedVersion);
         }
 
-        public static Package Create(string id, string normalizedVersion, string fullVersion, PackageType packageType)
+        public static Package Create(PackageType packageType, string id, string normalizedVersion, string fullVersion)
         {
             return Create(new PackageCreationContext
             {

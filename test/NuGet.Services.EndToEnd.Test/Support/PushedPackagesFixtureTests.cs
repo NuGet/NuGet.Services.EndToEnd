@@ -111,7 +111,7 @@ namespace NuGet.Services.EndToEnd.Support
             Assert.Equal("1.0.0", package.NormalizedVersion);
             Assert.Equal("1.0.0", package.FullVersion);
             _galleryClient.Verify(
-                x => x.PushAsync(It.IsAny<Stream>(), _logger, PackageType.SemVer1Stable),
+                x => x.PushAsync(It.IsAny<Stream>(), _logger, It.IsAny<PackageType>()),
                 Times.Once);
         }
     }
