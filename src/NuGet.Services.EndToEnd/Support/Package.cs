@@ -70,7 +70,11 @@ namespace NuGet.Services.EndToEnd.Support
                 nupkgBytes = Array.AsReadOnly(bufferStream.ToArray());
             }
 
-            return new Package(context.Id, context.NormalizedVersion, context.FullVersion, nupkgBytes, context.Properties == null ? new PackageProperties() : context.Properties);
+            return new Package(context.Id,
+                               context.NormalizedVersion,
+                               context.FullVersion,
+                               nupkgBytes,
+                               context.Properties == null ? new PackageProperties() : context.Properties);
         }
 
         public static Package SignedPackage()

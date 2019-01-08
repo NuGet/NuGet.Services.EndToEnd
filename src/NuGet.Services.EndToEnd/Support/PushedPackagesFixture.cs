@@ -392,11 +392,11 @@ namespace NuGet.Services.EndToEnd.Support
                 }
 
                 var dllPhysicalPackageFiles = dllFiles
-                .Select(x => new { FileName = Path.GetFileName(x), Stream = GetMemoryStreamForFile(x) })
-                .Select(x => new PhysicalPackageFile(x.Stream)
-                {
-                    TargetPath = $"lib/{x.FileName}"
-                });
+                    .Select(x => new { FileName = Path.GetFileName(x), Stream = GetMemoryStreamForFile(x) })
+                    .Select(x => new PhysicalPackageFile(x.Stream)
+                    {
+                        TargetPath = $"lib/{x.FileName}"
+                    });
 
                 var nupkgPackage = Package.Create(new PackageCreationContext()
                 {
@@ -414,11 +414,11 @@ namespace NuGet.Services.EndToEnd.Support
                 }
 
                 var pdbPhysicalPackageFiles = pdbFiles
-                .Select(x => new { FileName = Path.GetFileName(x), Stream = GetMemoryStreamForFile(x) })
-                .Select(x => new PhysicalPackageFile(x.Stream)
-                {
-                    TargetPath = $"lib/{x.FileName}"
-                });
+                    .Select(x => new { FileName = Path.GetFileName(x), Stream = GetMemoryStreamForFile(x) })
+                    .Select(x => new PhysicalPackageFile(x.Stream)
+                    {
+                        TargetPath = $"lib/{x.FileName}"
+                    });
 
                 var snupkgPackage = Package.Create(new PackageCreationContext()
                 {

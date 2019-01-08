@@ -112,9 +112,16 @@ namespace NuGet.Services.EndToEnd.Support
         {
             var galleryEndpoint = await GetGalleryUrlAsync(logger);
 
-            var url = packageType != PackageType.SymbolsPackage
-                ? $"{galleryEndpoint}/api/v2/package"
-                : $"{galleryEndpoint}/api/v2/symbolpackage";
+            string url;
+            switch (packageType)
+            {
+                case PackageType.SymbolsPackage:
+                    url = $"{galleryEndpoint}/api/v2/symbolpackage";
+                    break;
+                default:
+                    url = $"{galleryEndpoint}/api/v2/package";
+                    break;
+            }
 
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Put, url))
