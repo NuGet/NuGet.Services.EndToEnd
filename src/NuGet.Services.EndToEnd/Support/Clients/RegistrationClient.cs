@@ -131,7 +131,6 @@ namespace NuGet.Services.EndToEnd.Support
                            || hre.StatusCode == HttpStatusCode.ServiceUnavailable
                            || hre.StatusCode == HttpStatusCode.GatewayTimeout)),
                 logger: logger);
-
         }
 
         private async Task PollAsync(
@@ -233,6 +232,7 @@ namespace NuGet.Services.EndToEnd.Support
             public string Id { get; set; }
             public string Version { get; set; }
             public bool Listed { get; set; }
+            public string LicenseExpression { get; set; }
         }
     }
 }

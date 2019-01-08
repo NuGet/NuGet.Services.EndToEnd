@@ -16,7 +16,7 @@ namespace NuGet.Services.EndToEnd.Support
             string id,
             string normalizedVersion,
             string fullVersion,
-            ReadOnlyCollection<byte> nupkgBytes) 
+            ReadOnlyCollection<byte> nupkgBytes)
             : this (id, normalizedVersion, fullVersion, nupkgBytes, new PackageProperties()) { }
 
         private Package(
@@ -44,18 +44,19 @@ namespace NuGet.Services.EndToEnd.Support
             return $"{Id} {FullVersion}";
         }
 
-        public static Package Create(string id, string normalizedVersion)
+        public static Package Create(string id, string normalizedVersion, PackageType packageType)
         {
-            return Create(id, normalizedVersion, normalizedVersion);
+            return Create(id, normalizedVersion, normalizedVersion, packageType);
         }
 
-        public static Package Create(string id, string normalizedVersion, string fullVersion)
+        public static Package Create(string id, string normalizedVersion, string fullVersion, PackageType packageType)
         {
             return Create(new PackageCreationContext
             {
                 Id = id,
                 NormalizedVersion = normalizedVersion,
                 FullVersion = fullVersion,
+                Properties = new PackageProperties(packageType)
             });
         }
 
@@ -69,31 +70,7 @@ namespace NuGet.Services.EndToEnd.Support
                 nupkgBytes = Array.AsReadOnly(bufferStream.ToArray());
             }
 
-            return new Package(context.Id, context.NormalizedVersion, context.FullVersion, nupkgBytes);
-        }
-
-        public static Package Create(PackageCreationContext context, IEnumerable<string> files)
-        {
-            return Create(context, files, new PackageProperties());
-        }
-
-        public static Package Create(PackageCreationContext context, IEnumerable<string> files, PackageProperties properties)
-        {
-            var physicalPackageFilesList = files
-                .Select(x => new { FileName = Path.GetFileName(x), Stream = GetMemoryStreamForFile(x) })
-                .Select(x => new PhysicalPackageFile(x.Stream) {
-                    TargetPath = $"lib/{x.FileName}"
-                });
-
-            ReadOnlyCollection<byte> nupkgBytes;
-            using (var nupkgStream = TestData.BuildPackageStreamForFiles(context, physicalPackageFilesList, properties.IsSymbolsPackage))
-            using(var bufferStream = new MemoryStream())
-            {
-                nupkgStream.CopyTo(bufferStream);
-                nupkgBytes = Array.AsReadOnly(bufferStream.ToArray());
-            }
-
-            return new Package(context.Id, context.NormalizedVersion, context.FullVersion, nupkgBytes, properties);
+            return new Package(context.Id, context.NormalizedVersion, context.FullVersion, nupkgBytes, context.Properties == null ? new PackageProperties() : context.Properties);
         }
 
         public static Package SignedPackage()
@@ -133,20 +110,7 @@ namespace NuGet.Services.EndToEnd.Support
                 }
             }
 
-            return new Package(id, normalizedVersion, fullVersion, nupkgBytes);
+            return new Package(id, normalizedVersion, fullVersion, nupkgBytes, new PackageProperties(PackageType.Signed));
         }
-
-        private static MemoryStream GetMemoryStreamForFile(string filename)
-        {
-            var memoryStream = new MemoryStream();
-            using (FileStream fileStream = File.OpenRead(filename))
-            {
-                fileStream.CopyTo(memoryStream);
-            }
-
-            memoryStream.Position = 0;
-            return memoryStream;
-        }
-
     }
 }

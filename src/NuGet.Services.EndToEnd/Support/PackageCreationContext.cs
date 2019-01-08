@@ -11,6 +11,10 @@ namespace NuGet.Services.EndToEnd.Support
         public string Id { get; set; }
         public string NormalizedVersion { get; set; }
         public string FullVersion { get; set; }
+        public LicenseMetadata LicenseMetadata { get; set; }
         public IEnumerable<PackageDependencyGroup> DependencyGroups { get; set; }
+
+        public PackageProperties Properties { get; set; }
+        public IEnumerable<PhysicalPackageFile> Files { get; set; }
     }
 }

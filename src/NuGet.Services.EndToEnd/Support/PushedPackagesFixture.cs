@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
@@ -177,7 +178,7 @@ namespace NuGet.Services.EndToEnd.Support
                     {
                         using (var nupkgStream = new MemoryStream(packageToPrepare.Package.NupkgBytes.ToArray()))
                         {
-                            await _galleryClient.PushAsync(nupkgStream, logger, isSymbolsPackage: packageToPrepare.Package.Properties.IsSymbolsPackage);
+                            await _galleryClient.PushAsync(nupkgStream, logger, packageToPrepare.Package.Properties.Type);
                         }
 
                         logger.WriteLine($"Package {packageToPrepare} has been pushed.");
@@ -264,6 +265,7 @@ namespace NuGet.Services.EndToEnd.Support
         private async Task<List<PackageToPrepare>> InitializePackagesAsync(PackageType packageType, ITestOutputHelper logger)
         {
             var id = GetPackageId(packageType);
+            LicenseMetadata licenseMetadata;
             PackageToPrepare packageToPrepare;
             List<PackageToPrepare> packagesToPrepare = new List<PackageToPrepare>();
             switch (packageType)
@@ -284,38 +286,39 @@ namespace NuGet.Services.EndToEnd.Support
                                         GetPackageId(PackageType.SemVer2Prerel),
                                         VersionRange.Parse(SemVer2PrerelVersion))
                                 })
-                        }
+                        },
+                        Properties = new PackageProperties(PackageType.SemVer2DueToSemVer2Dep)
                     }));
                     break;
 
                 case PackageType.SemVer2StableMetadataUnlisted:
                     packageToPrepare = new PackageToPrepare(
-                        Package.Create(id, "1.0.0", "1.0.0+metadata"),
+                        Package.Create(id, "1.0.0", "1.0.0+metadata", PackageType.SemVer2StableMetadataUnlisted),
                         unlist: true);
                     break;
 
                 case PackageType.SemVer2StableMetadata:
-                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0", "1.0.0+metadata"));
+                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0", "1.0.0+metadata", PackageType.SemVer2StableMetadata));
                     break;
 
                 case PackageType.SemVer2PrerelUnlisted:
                     packageToPrepare = new PackageToPrepare(
-                        Package.Create(id, "1.0.0-alpha.1"),
+                        Package.Create(id, "1.0.0-alpha.1", PackageType.SemVer2PrerelUnlisted),
                         unlist: true);
                     break;
 
                 case PackageType.SemVer2Prerel:
-                    packageToPrepare = new PackageToPrepare(Package.Create(id, SemVer2PrerelVersion));
+                    packageToPrepare = new PackageToPrepare(Package.Create(id, SemVer2PrerelVersion, PackageType.SemVer2Prerel));
                     break;
 
                 case PackageType.SemVer2PrerelRelisted:
-                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0-alpha.1"),
-                        unlist: true);
+                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0-alpha.1", PackageType.SemVer2PrerelRelisted),
+                        unlist: true); 
                     break;
 
                 case PackageType.SemVer1StableUnlisted:
                     packageToPrepare = new PackageToPrepare(
-                        Package.Create(id, "1.0.0"),
+                        Package.Create(id, "1.0.0", PackageType.SemVer1StableUnlisted),
                         unlist: true);
                     break;
 
@@ -326,12 +329,47 @@ namespace NuGet.Services.EndToEnd.Support
                 case PackageType.SymbolsPackage:
                     return await PrepareSymbolsPackageAsync(id, "1.0.0", logger);
 
-                case PackageType.SemVer1Stable:
-                case PackageType.FullValidation:
-                default:
-                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0"));
+                case PackageType.LicenseExpression:
+                    licenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", null, null, LicenseMetadata.EmptyVersion);
+                    packageToPrepare = new PackageToPrepare(Package.Create(new PackageCreationContext
+                    {
+                        Id = id,
+                        NormalizedVersion = "1.0.0",
+                        FullVersion = "1.0.0",
+                        LicenseMetadata = licenseMetadata,
+                        Properties = new PackageProperties(PackageType.LicenseExpression, licenseMetadata)
+                    }));
                     break;
 
+                case PackageType.LicenseFile:
+                    var licenseFilePath = "license.txt";
+                    licenseMetadata = new LicenseMetadata(LicenseType.File, licenseFilePath, null, null, LicenseMetadata.EmptyVersion);
+                    packageToPrepare = new PackageToPrepare(Package.Create(new PackageCreationContext
+                    {
+                        Id = id,
+                        NormalizedVersion = "1.0.0",
+                        FullVersion = "1.0.0",
+                        LicenseMetadata = licenseMetadata,
+                        Properties = new PackageProperties(PackageType.LicenseFile, licenseMetadata),
+                        Files = new List<PhysicalPackageFile>{
+                        new PhysicalPackageFile(new MemoryStream(Encoding.UTF8.GetBytes("It's a license")))
+                        {
+                            TargetPath = licenseFilePath
+                        } }
+                    }));
+                    break;
+
+                case PackageType.SemVer1Stable:
+                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0", PackageType.SemVer1Stable));
+                    break;
+
+                case PackageType.FullValidation:
+                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0", PackageType.FullValidation));
+                    break;
+
+                default:
+                    packageToPrepare = new PackageToPrepare(Package.Create(id, "1.0.0", PackageType.Default));
+                    break;
             }
 
             packagesToPrepare.Add(packageToPrepare);
@@ -361,12 +399,21 @@ namespace NuGet.Services.EndToEnd.Support
                     throw new InvalidOperationException($"Symbols project build failed to create DLL or PDBs");
                 }
 
+                var dllPhysicalPackageFiles = dllFiles
+                .Select(x => new { FileName = Path.GetFileName(x), Stream = GetMemoryStreamForFile(x) })
+                .Select(x => new PhysicalPackageFile(x.Stream)
+                {
+                    TargetPath = $"lib/{x.FileName}"
+                });
+
                 var nupkgPackage = Package.Create(new PackageCreationContext()
                 {
                     Id = id,
                     NormalizedVersion = version,
-                    FullVersion = version
-                }, dllFiles);
+                    FullVersion = version,
+                    Files = dllPhysicalPackageFiles,
+                    Properties = new PackageProperties(PackageType.SymbolsPackage)
+                });
 
                 var pdbIndexes = new HashSet<string>();
                 foreach (var file in pdbFiles)
@@ -374,12 +421,21 @@ namespace NuGet.Services.EndToEnd.Support
                     pdbIndexes.Add(PortableMetadataReader.GetIndex(file));
                 }
 
+                var pdbPhysicalPackageFiles = pdbFiles
+                .Select(x => new { FileName = Path.GetFileName(x), Stream = GetMemoryStreamForFile(x) })
+                .Select(x => new PhysicalPackageFile(x.Stream)
+                {
+                    TargetPath = $"lib/{x.FileName}"
+                });
+
                 var snupkgPackage = Package.Create(new PackageCreationContext()
                 {
                     Id = id,
                     NormalizedVersion = version,
-                    FullVersion = version
-                }, pdbFiles, new PackageProperties(isSymbolsPackage: true, indexedFiles: pdbIndexes));
+                    FullVersion = version,
+                    Files = pdbPhysicalPackageFiles,
+                    Properties = new PackageProperties(PackageType.SymbolsPackage, indexedFiles: pdbIndexes)
+                });
 
                 return new List<PackageToPrepare>() { new PackageToPrepare(nupkgPackage), new PackageToPrepare(snupkgPackage) };
             }
@@ -435,6 +491,18 @@ namespace NuGet.Services.EndToEnd.Support
             var timestamp = DateTimeOffset.UtcNow.ToString("yyMMdd.HHmmss.fffffff");
             var id = $"E2E.{packageType.ToString()}.{timestamp}";
             return id;
+        }
+
+        private static MemoryStream GetMemoryStreamForFile(string filename)
+        {
+            var memoryStream = new MemoryStream();
+            using (FileStream fileStream = File.OpenRead(filename))
+            {
+                fileStream.CopyTo(memoryStream);
+            }
+
+            memoryStream.Position = 0;
+            return memoryStream;
         }
 
         private class PackageToPrepare
