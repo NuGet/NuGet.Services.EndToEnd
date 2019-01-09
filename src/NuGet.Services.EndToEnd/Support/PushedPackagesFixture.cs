@@ -342,18 +342,19 @@ namespace NuGet.Services.EndToEnd.Support
 
                 case PackageType.LicenseFile:
                     var licenseFilePath = "license.txt";
+                    var licenseFileContent = "It's a license";
                     licenseMetadata = new LicenseMetadata(LicenseType.File, licenseFilePath, null, null, LicenseMetadata.EmptyVersion);
                     packageToPrepare = new PackageToPrepare(Package.Create(new PackageCreationContext
                     {
                         Id = id,
                         NormalizedVersion = "1.0.0",
                         FullVersion = "1.0.0",
-                        Properties = new PackageProperties(packageType, licenseMetadata),
+                        Properties = new PackageProperties(packageType, licenseMetadata, licenseFileContent),
                         Files = new List<PhysicalPackageFile>{
-                        new PhysicalPackageFile(new MemoryStream(Encoding.UTF8.GetBytes("It's a license")))
-                        {
-                            TargetPath = licenseFilePath
-                        } }
+                            new PhysicalPackageFile(new MemoryStream(Encoding.UTF8.GetBytes(licenseFileContent)))
+                            {
+                                TargetPath = licenseFilePath
+                            } }
                     }));
                     break;
 

@@ -16,13 +16,6 @@ namespace NuGet.Services.EndToEnd.Support
             string id,
             string normalizedVersion,
             string fullVersion,
-            ReadOnlyCollection<byte> nupkgBytes)
-            : this (id, normalizedVersion, fullVersion, nupkgBytes, new PackageProperties()) { }
-
-        private Package(
-            string id,
-            string normalizedVersion,
-            string fullVersion,
             ReadOnlyCollection<byte> nupkgBytes,
             PackageProperties properties)
         {
@@ -74,7 +67,7 @@ namespace NuGet.Services.EndToEnd.Support
                                context.NormalizedVersion,
                                context.FullVersion,
                                nupkgBytes,
-                               context.Properties == null ? new PackageProperties() : context.Properties);
+                               context.Properties);
         }
 
         public static Package SignedPackage()

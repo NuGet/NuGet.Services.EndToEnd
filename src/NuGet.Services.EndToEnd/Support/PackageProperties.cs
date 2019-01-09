@@ -9,12 +9,9 @@ namespace NuGet.Services.EndToEnd.Support
     public class PackageProperties
     {
         public PackageType Type { get; }
-
         public HashSet<string> IndexedFiles { get; }
-
         public LicenseMetadata LicenseMetadata { get; }
-
-        public PackageProperties() { }
+        public string LicenseFileContent { get; }
 
         public PackageProperties(PackageType packageType)
         {
@@ -28,14 +25,13 @@ namespace NuGet.Services.EndToEnd.Support
         }
 
         public PackageProperties(PackageType packageType, LicenseMetadata licenseMetadata)
+            : this(packageType, licenseMetadata, null) { }
+
+        public PackageProperties(PackageType packageType, LicenseMetadata licenseMetadata, string licenseFileContent)
         {
             Type = packageType;
             LicenseMetadata = licenseMetadata;
-        }
-
-        public static PackageProperties Default()
-        {
-            return new PackageProperties();
+            LicenseFileContent = licenseFileContent;
         }
     }
 }

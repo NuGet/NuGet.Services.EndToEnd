@@ -75,5 +75,25 @@ namespace NuGet.Services.EndToEnd.Support
                 }
             }
         }
+
+        public async Task<string> GetFileAsync(string url, bool allowNotFound, bool logResponseBody, ITestOutputHelper logger)
+        {
+            using (var httpClientHander = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip })
+            using (var httpClient = new HttpClient(httpClientHander))
+            using (var response = await httpClient.GetAsync(url))
+            {
+                if (allowNotFound && response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return default(string);
+                }
+
+                await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (var streamReader = new StreamReader(stream))
+                {
+                    return await streamReader.ReadToEndAsync();
+                }
+            }
+        }
     }
 }

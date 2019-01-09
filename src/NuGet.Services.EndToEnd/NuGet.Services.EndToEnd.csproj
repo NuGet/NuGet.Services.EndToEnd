@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
+    <Compile Include="LicenseTests.cs" />
     <Compile Include="Support\Clients\SymbolServerClient.cs" />
     <Compile Include="Support\PackageProperties.cs" />
     <Compile Include="Support\Utilities\PortableMetadataReader.cs" />
