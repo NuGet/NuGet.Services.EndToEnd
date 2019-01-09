@@ -35,6 +35,7 @@ namespace NuGet.Services.EndToEnd
             // Act & Assert
             var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
             Assert.True(packageRegistrationList.All(x => x.CatalogEntry.LicenseExpression == package.Properties.LicenseMetadata.License));
+            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
         }
         
         /// <summary>
@@ -47,6 +48,7 @@ namespace NuGet.Services.EndToEnd
             var package = await _pushedPackages.PrepareAsync(PackageType.LicenseFile, _logger);
 
             // Act & Assert
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             var licenseFileList = await _clients.FlatContainer.TryAndGetFileContent(package.Id, package.NormalizedVersion, "license", _logger);
             Assert.True(licenseFileList.All(x => x == package.Properties.LicenseFileContent));
