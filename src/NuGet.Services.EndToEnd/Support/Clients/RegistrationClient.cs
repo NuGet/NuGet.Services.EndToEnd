@@ -236,6 +236,7 @@ namespace NuGet.Services.EndToEnd.Support
             public string Version { get; set; }
             public bool Listed { get; set; }
             public string LicenseExpression { get; set; }
+            public string LicenseUrl { get; set; }
         }
     }
 }

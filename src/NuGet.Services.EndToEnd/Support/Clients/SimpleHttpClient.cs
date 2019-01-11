@@ -45,7 +45,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<T> GetJsonAsync<T>(string url, bool allowNotFound, bool logResponseBody, ITestOutputHelper logger)
         {
-            var json = await GetFileStringContentAsync(url, allowNotFound, false, logger);
+            var json = await GetFileStringContentAsync(url, allowNotFound, logResponseBody: false, logger: logger);
             if (json == null)
             {
                 return default(T);

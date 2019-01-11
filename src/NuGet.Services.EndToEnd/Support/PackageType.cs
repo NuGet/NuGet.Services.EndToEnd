@@ -21,6 +21,6 @@ namespace NuGet.Services.EndToEnd.Support
         Signed,
         SymbolsPackage,
         LicenseExpression,
-        LicenseFile
+        LicenseFile,
     }
 }

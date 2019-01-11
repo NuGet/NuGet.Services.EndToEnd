@@ -5,6 +5,6 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public enum FlatContainerStringFileType
     {
-        License
+        License,
     }
 }
