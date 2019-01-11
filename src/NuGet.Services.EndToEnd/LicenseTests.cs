@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Services.EndToEnd.Support;
 using Xunit;
@@ -34,7 +33,7 @@ namespace NuGet.Services.EndToEnd
 
             // Act & Assert
             var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
-            Assert.True(packageRegistrationList.All(x => x.CatalogEntry.LicenseExpression == package.Properties.LicenseMetadata.License));
+            Assert.All(packageRegistrationList, x => Assert.Equal(package.Properties.LicenseMetadata.License, x.CatalogEntry.LicenseExpression));
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
         }
         
@@ -50,8 +49,8 @@ namespace NuGet.Services.EndToEnd
             // Act & Assert
             await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
-            var licenseFileList = await _clients.FlatContainer.TryAndGetFileContent(package.Id, package.NormalizedVersion, "license", _logger);
-            Assert.True(licenseFileList.All(x => x == package.Properties.LicenseFileContent));
+            var licenseFileList = await _clients.FlatContainer.TryAndGetFileStringContent(package.Id, package.NormalizedVersion, FlatContainerStringFileType.License, _logger);
+            Assert.All(licenseFileList, x => Assert.Equal(package.Properties.LicenseFileContent, x));
         }
     }
 }

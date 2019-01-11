@@ -64,9 +64,8 @@ namespace NuGet.Services.EndToEnd.Support
                            || hre.StatusCode == HttpStatusCode.ServiceUnavailable
                            || hre.StatusCode == HttpStatusCode.GatewayTimeout)),
                 logger: logger);
-
         }
-
+        
         /// <summary>
         /// Try and get the file content from the package location in the flat container.
         /// </summary>
@@ -75,7 +74,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// <param name="logger">The logger.</param>
         /// <param name="filePath">The file path.</param>
         /// <returns>Returns a task that contains the string format of file contents</returns>
-        public Task<string[]> TryAndGetFileContent(string id, string version, string filePath, ITestOutputHelper logger)
+        public Task<string[]> TryAndGetFileStringContent(string id, string version, FlatContainerStringFileType fileType, ITestOutputHelper logger)
         {
             return RetryUtility.ExecuteWithRetry(
                 async () =>
@@ -85,7 +84,7 @@ namespace NuGet.Services.EndToEnd.Support
                     Assert.True(baseUrls.Count > 0, "At least one flat container base URL must be configured.");
 
                     var tasks = baseUrls
-                        .Select(u => PollAsync(u, id, version, filePath, logger))
+                        .Select(u => TryAndGetFileStringContent(u, id, version, fileType, logger))
                         .ToList();
 
                     return await Task.WhenAll(tasks);
@@ -132,19 +131,29 @@ namespace NuGet.Services.EndToEnd.Support
             logger.WriteLine($"Package {id} {version} was found on {url} after waiting {duration.Elapsed}.");
         }
 
-        private async Task<string> PollAsync(string baseUrl, string id, string version, string filePath, ITestOutputHelper logger)
+        private async Task<string> TryAndGetFileStringContent(string baseUrl, string id, string version, FlatContainerStringFileType stringFileType, ITestOutputHelper logger)
         {
             await Task.Yield();
 
+            string filePath;
+            switch (stringFileType)
+            {
+                case FlatContainerStringFileType.License:
+                    filePath = "license";
+                    break;
+                default:
+                    throw new ArgumentNullException(nameof(stringFileType));
+            }
+
             var url = $"{baseUrl}/{id.ToLowerInvariant()}/{version}/{filePath}";
 
-            var fileContent = await _httpClient.GetFileAsync(
+            var fileContent = await _httpClient.GetFileStringContentAsync(
                      url,
                      allowNotFound: true,
-                     logResponseBody: false,
+                     logResponseBody: true,
                      logger: logger);
 
-            logger.WriteLine($"File {filePath} in Package {id} {version} was gotten on {url}.");
+            logger.WriteLine($"File {Enum.GetName(typeof(FlatContainerStringFileType), stringFileType)} in Package {id} {version} was gotten on {url}.");
 
             return fileContent;
         }

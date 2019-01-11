@@ -68,7 +68,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// <param name="semVer2">Whether or not the provided package is SemVer 2.0.0.</param>
         /// <param name="logger">The logger.</param>
         /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
-        public async Task<IEnumerable<RegistrationPackage>> WaitForPackageAsync(
+        public async Task<IReadOnlyList<RegistrationPackage>> WaitForPackageAsync(
             string id,
             string version,
             bool semVer2,
@@ -85,7 +85,7 @@ namespace NuGet.Services.EndToEnd.Support
                 logger: logger);
         }
 
-        private Task<IEnumerable<RegistrationPackage>> PollAsync(
+        private Task<IReadOnlyList<RegistrationPackage>> PollAsync(
             string id,
             string version,
             bool semVer2,
@@ -98,7 +98,7 @@ namespace NuGet.Services.EndToEnd.Support
             // Retry for connection problem, timeout, or HTTP 5XX. We are okay with retrying on 5XX in this case because
             // the origin server is blob storage. If they are having some internal server error, there's not much we can
             // do.
-            return RetryUtility.ExecuteWithRetry<IEnumerable<RegistrationPackage>>(
+            return RetryUtility.ExecuteWithRetry<IReadOnlyList<RegistrationPackage>>(
                 async () =>
                 {
                     var baseUrls = await (semVer2 ? _v3IndexClient.GetSemVer2RegistrationBaseUrlsAsync(logger) : _v3IndexClient.GetRegistrationBaseUrlsAsync(logger));
