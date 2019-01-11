@@ -20,5 +20,7 @@ namespace NuGet.Services.EndToEnd.Support
         FullValidation,
         Signed,
         SymbolsPackage,
+        LicenseExpression,
+        LicenseFile,
     }
 }

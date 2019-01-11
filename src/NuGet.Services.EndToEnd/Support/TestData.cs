@@ -22,44 +22,17 @@ namespace NuGet.Services.EndToEnd.Support
 
         public static Stream BuildPackageStream(PackageCreationContext context)
         {
-            var files = new List<PhysicalPackageFile>()
-                {
-                    new PhysicalPackageFile(new MemoryStream())
-                    {
-                        TargetPath = "tools/empty.txt"
-                    },
-                    new PhysicalPackageFile(new MemoryStream())
-                    {
-                        TargetPath = $"lib/{TargetFramework.GetShortFolderName()}/_._"
-                    }
-                };
-
-            return BuildPackageStreamForFiles(context, files, isSymbolsPackage: false);
-        }
-
-        public static Stream BuildPackageStreamForFiles(PackageCreationContext context, IEnumerable<PhysicalPackageFile> files, bool isSymbolsPackage)
-        {
-            var packageBuilder = GetPackageBuilder(context, files);
-
-            if (!isSymbolsPackage)
+            if (context.Files == null)
             {
-                packageBuilder.Authors.Add("EndToEndTests");
-            }
-            else
-            {
-                packageBuilder.PackageTypes.Add(new Packaging.Core.PackageType("SymbolsPackage", Packaging.Core.PackageType.EmptyVersion));
+                context.Files = GetDefaultFiles();
             }
 
-            return GetStreamFromBuilder(packageBuilder);
-        }
-
-        private static PackageBuilder GetPackageBuilder(PackageCreationContext context, IEnumerable<PhysicalPackageFile> files)
-        {
             var packageBuilder = new PackageBuilder();
             packageBuilder.Id = context.Id;
             packageBuilder.Version = NuGetVersion.Parse(context.FullVersion ?? context.NormalizedVersion);
             packageBuilder.Description = $"Description of {context.Id}";
-            foreach (PhysicalPackageFile file in files)
+
+            foreach (PhysicalPackageFile file in context.Files)
             {
                 packageBuilder.Files.Add(file);
             }
@@ -69,7 +42,36 @@ namespace NuGet.Services.EndToEnd.Support
                 packageBuilder.DependencyGroups.AddRange(context.DependencyGroups);
             }
 
-            return packageBuilder;
+            if (context.Properties != null && context.Properties.LicenseMetadata != null)
+            {
+                packageBuilder.LicenseMetadata = context.Properties.LicenseMetadata;
+            }
+
+            if (context.Properties.Type == PackageType.SymbolsPackage)
+            {
+                packageBuilder.PackageTypes.Add(new Packaging.Core.PackageType("SymbolsPackage", Packaging.Core.PackageType.EmptyVersion));
+            }
+            else
+            {
+                packageBuilder.Authors.Add("EndToEndTests");
+            }
+
+            return GetStreamFromBuilder(packageBuilder);
+        }
+
+        private static List<PhysicalPackageFile> GetDefaultFiles()
+        {
+            return new List<PhysicalPackageFile>()
+            {
+                new PhysicalPackageFile(new MemoryStream())
+                {
+                    TargetPath = "tools/empty.txt"
+                },
+                new PhysicalPackageFile(new MemoryStream())
+                {
+                    TargetPath = $"lib/{TargetFramework.GetShortFolderName()}/_._"
+                }
+            };
         }
 
         private static Stream GetStreamFromBuilder(PackageBuilder packageBuilder)

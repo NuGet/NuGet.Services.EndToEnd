@@ -45,33 +45,48 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<T> GetJsonAsync<T>(string url, bool allowNotFound, bool logResponseBody, ITestOutputHelper logger)
         {
+            var json = await GetFileStringContentAsync(url, allowNotFound, logResponseBody: false, logger: logger);
+            if (json == null)
+            {
+                return default(T);
+            }
+
+            if (logResponseBody)
+            {
+                // Make sure the JSON is a single line.
+                var parsedJson = JToken.Parse(json);
+                logger.WriteLine($" - URL: {url}{Environment.NewLine} - Response: {parsedJson.ToString(Formatting.None)}");
+            }
+
+            using (var stringReader = new StringReader(json))
+            using (var jsonReader = new JsonTextReader(stringReader))
+            {
+                return _serializer.Deserialize<T>(jsonReader);
+            }
+        }
+
+        public async Task<string> GetFileStringContentAsync(string url, bool allowNotFound, bool logResponseBody, ITestOutputHelper logger)
+        {
             using (var httpClientHander = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip })
             using (var httpClient = new HttpClient(httpClientHander))
             using (var response = await httpClient.GetAsync(url))
             {
                 if (allowNotFound && response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    return default(T);
+                    return null;
                 }
 
                 await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
-
                 using (var stream = await response.Content.ReadAsStreamAsync())
                 using (var streamReader = new StreamReader(stream))
                 {
-                    var json = await streamReader.ReadToEndAsync();
+                    var fileStringContent = await streamReader.ReadToEndAsync();
                     if (logResponseBody)
                     {
-                        // Make sure the JSON is a single line.
-                        var parsedJson = JToken.Parse(json);
-                        logger.WriteLine($" - URL: {url}{Environment.NewLine} - Response: {parsedJson.ToString(Formatting.None)}");
+                        logger.WriteLine($" - URL: {url}{Environment.NewLine} - Response: {fileStringContent}");
                     }
 
-                    using (var stringReader = new StringReader(json))
-                    using (var jsonReader = new JsonTextReader(stringReader))
-                    {
-                        return _serializer.Deserialize<T>(jsonReader);
-                    }
+                    return fileStringContent;
                 }
             }
         }

@@ -12,5 +12,8 @@ namespace NuGet.Services.EndToEnd.Support
         public string NormalizedVersion { get; set; }
         public string FullVersion { get; set; }
         public IEnumerable<PackageDependencyGroup> DependencyGroups { get; set; }
+
+        public PackageProperties Properties { get; set; }
+        public IEnumerable<PhysicalPackageFile> Files { get; set; }
     }
 }

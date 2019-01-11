@@ -1,30 +1,37 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Packaging;
 using System.Collections.Generic;
 
 namespace NuGet.Services.EndToEnd.Support
 {
     public class PackageProperties
     {
-        public bool IsSymbolsPackage { get; }
-
+        public PackageType Type { get; }
         public HashSet<string> IndexedFiles { get; }
+        public LicenseMetadata LicenseMetadata { get; }
+        public string LicenseFileContent { get; }
 
-        public PackageProperties()
+        public PackageProperties(PackageType packageType)
         {
-            IndexedFiles = new HashSet<string>();
+            Type = packageType;
         }
 
-        public PackageProperties(bool isSymbolsPackage, HashSet<string> indexedFiles)
+        public PackageProperties(PackageType packageType, HashSet<string> indexedFiles)
         {
-            IsSymbolsPackage = isSymbolsPackage;
+            Type = packageType;
             IndexedFiles = indexedFiles;
         }
 
-        public static PackageProperties Default()
+        public PackageProperties(PackageType packageType, LicenseMetadata licenseMetadata)
+            : this(packageType, licenseMetadata, null) { }
+
+        public PackageProperties(PackageType packageType, LicenseMetadata licenseMetadata, string licenseFileContent)
         {
-            return new PackageProperties();
+            Type = packageType;
+            LicenseMetadata = licenseMetadata;
+            LicenseFileContent = licenseFileContent;
         }
     }
 }

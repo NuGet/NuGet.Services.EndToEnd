@@ -64,7 +64,39 @@ namespace NuGet.Services.EndToEnd.Support
                            || hre.StatusCode == HttpStatusCode.ServiceUnavailable
                            || hre.StatusCode == HttpStatusCode.GatewayTimeout)),
                 logger: logger);
+        }
+        
+        /// <summary>
+        /// Try and get the file content from the package location in the flat container.
+        /// </summary>
+        /// <param name="id">The package ID.</param>
+        /// <param name="version">The package version.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="filePath">The file path.</param>
+        /// <returns>Returns a task that contains the string format of file contents</returns>
+        public Task<string[]> TryAndGetFileStringContent(string id, string version, FlatContainerStringFileType fileType, ITestOutputHelper logger)
+        {
+            return RetryUtility.ExecuteWithRetry(
+                async () =>
+                {
+                    var baseUrls = await _v3IndexClient.GetFlatContainerBaseUrlsAsync(logger);
 
+                    Assert.True(baseUrls.Count > 0, "At least one flat container base URL must be configured.");
+
+                    var tasks = baseUrls
+                        .Select(u => TryAndGetFileStringContent(u, id, version, fileType, logger))
+                        .ToList();
+
+                    return await Task.WhenAll(tasks);
+                },
+                ex => ex.HasTypeOrInnerType<SocketException>()
+                   || ex.HasTypeOrInnerType<TaskCanceledException>()
+                   || (ex.HasTypeOrInnerType<HttpRequestMessageException>(out var hre)
+                       && (hre.StatusCode == HttpStatusCode.InternalServerError
+                           || hre.StatusCode == HttpStatusCode.BadGateway
+                           || hre.StatusCode == HttpStatusCode.ServiceUnavailable
+                           || hre.StatusCode == HttpStatusCode.GatewayTimeout)),
+                logger: logger);
         }
 
         private async Task PollAsync(string baseUrl, string id, string version, ITestOutputHelper logger)
@@ -97,6 +129,33 @@ namespace NuGet.Services.EndToEnd.Support
 
             Assert.True(found, $"Package {id} {version} was not found on {url} after waiting {TestData.FlatContainerWaitDuration}.");
             logger.WriteLine($"Package {id} {version} was found on {url} after waiting {duration.Elapsed}.");
+        }
+
+        private async Task<string> TryAndGetFileStringContent(string baseUrl, string id, string version, FlatContainerStringFileType stringFileType, ITestOutputHelper logger)
+        {
+            await Task.Yield();
+
+            string filePath;
+            switch (stringFileType)
+            {
+                case FlatContainerStringFileType.License:
+                    filePath = "license";
+                    break;
+                default:
+                    throw new ArgumentNullException(nameof(stringFileType));
+            }
+
+            var url = $"{baseUrl}/{id.ToLowerInvariant()}/{version}/{filePath}";
+
+            var fileContent = await _httpClient.GetFileStringContentAsync(
+                     url,
+                     allowNotFound: true,
+                     logResponseBody: true,
+                     logger: logger);
+
+            logger.WriteLine($"File {Enum.GetName(typeof(FlatContainerStringFileType), stringFileType)} in Package {id} {version} was gotten on {url}.");
+
+            return fileContent;
         }
 
         private class FlatContainerIndexResponse

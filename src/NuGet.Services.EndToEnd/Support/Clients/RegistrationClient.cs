@@ -68,13 +68,13 @@ namespace NuGet.Services.EndToEnd.Support
         /// <param name="semVer2">Whether or not the provided package is SemVer 2.0.0.</param>
         /// <param name="logger">The logger.</param>
         /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
-        public async Task WaitForPackageAsync(
+        public async Task<IReadOnlyList<RegistrationPackage>> WaitForPackageAsync(
             string id,
             string version,
             bool semVer2,
             ITestOutputHelper logger)
         {
-            await PollAsync(
+            return await PollAsync(
                 id,
                 version,
                 semVer2,
@@ -85,7 +85,7 @@ namespace NuGet.Services.EndToEnd.Support
                 logger: logger);
         }
 
-        private Task PollAsync(
+        private Task<IReadOnlyList<RegistrationPackage>> PollAsync(
             string id,
             string version,
             bool semVer2,
@@ -98,7 +98,7 @@ namespace NuGet.Services.EndToEnd.Support
             // Retry for connection problem, timeout, or HTTP 5XX. We are okay with retrying on 5XX in this case because
             // the origin server is blob storage. If they are having some internal server error, there's not much we can
             // do.
-            return RetryUtility.ExecuteWithRetry(
+            return RetryUtility.ExecuteWithRetry<IReadOnlyList<RegistrationPackage>>(
                 async () =>
                 {
                     var baseUrls = await (semVer2 ? _v3IndexClient.GetSemVer2RegistrationBaseUrlsAsync(logger) : _v3IndexClient.GetRegistrationBaseUrlsAsync(logger));
@@ -121,7 +121,7 @@ namespace NuGet.Services.EndToEnd.Support
                             logger))
                         .ToList();
 
-                    await Task.WhenAll(tasks);
+                    return await Task.WhenAll(tasks);
                 },
                 ex => ex.HasTypeOrInnerType<SocketException>()
                    || ex.HasTypeOrInnerType<TaskCanceledException>()
@@ -131,10 +131,9 @@ namespace NuGet.Services.EndToEnd.Support
                            || hre.StatusCode == HttpStatusCode.ServiceUnavailable
                            || hre.StatusCode == HttpStatusCode.GatewayTimeout)),
                 logger: logger);
-
         }
 
-        private async Task PollAsync(
+        private async Task<RegistrationPackage> PollAsync(
             string baseUrl,
             string id,
             string version,
@@ -151,6 +150,7 @@ namespace NuGet.Services.EndToEnd.Support
             var duration = Stopwatch.StartNew();
             var complete = false;
 
+            RegistrationPackage package = null;
             do
             {
                 var root = await _httpClient.GetJsonAsync<RegistrationRoot>(
@@ -177,7 +177,7 @@ namespace NuGet.Services.EndToEnd.Support
 
                         if (page != null)
                         {
-                            var package = page.Items
+                            package = page.Items
                                 .SingleOrDefault(item => item.CatalogEntry.Id == id && item.CatalogEntry.Version == version);
 
                             if (package != null)
@@ -197,6 +197,8 @@ namespace NuGet.Services.EndToEnd.Support
 
             Assert.True(complete, string.Format(failureMessageFormat, url, duration.Elapsed));
             logger.WriteLine(string.Format(successMessageFormat, url, duration.Elapsed));
+
+            return package;
         }
 
         private class RegistrationRoot
@@ -223,16 +225,18 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        private class RegistrationPackage
+        public class RegistrationPackage
         {
             public CatalogEntry CatalogEntry { get; set; }
         }
 
-        private class CatalogEntry
+        public class CatalogEntry
         {
             public string Id { get; set; }
             public string Version { get; set; }
             public bool Listed { get; set; }
+            public string LicenseExpression { get; set; }
+            public string LicenseUrl { get; set; }
         }
     }
 }

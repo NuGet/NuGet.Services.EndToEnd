@@ -42,7 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
+    <Compile Include="LicenseTests.cs" />
     <Compile Include="Support\Clients\SymbolServerClient.cs" />
+    <Compile Include="Support\FlatContainerStringFileType.cs" />
     <Compile Include="Support\PackageProperties.cs" />
     <Compile Include="Support\Utilities\PortableMetadataReader.cs" />
     <Compile Include="SymbolsPackageTests.cs" />
