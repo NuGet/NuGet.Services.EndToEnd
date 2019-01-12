@@ -32,12 +32,12 @@ namespace NuGet.Services.EndToEnd
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.LicenseExpression, _logger);
             var galleryUrl = await _clients.Gallery.GetGalleryUrlAsync(_logger);
-            var expectedLicenseUrl = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}/license");
+            var expectedPath = $"/packages/{package.Id}/{package.NormalizedVersion}/license";
 
             // Act & Assert
             var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
             Assert.All(packageRegistrationList, x => Assert.Equal(package.Properties.LicenseMetadata.License, x.CatalogEntry.LicenseExpression));
-            Assert.All(packageRegistrationList, x => Assert.Equal(expectedLicenseUrl.AbsoluteUri, x.CatalogEntry.LicenseUrl));
+            Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath, new Uri(x.CatalogEntry.LicenseUrl).AbsolutePath));
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
         }
         
@@ -50,11 +50,11 @@ namespace NuGet.Services.EndToEnd
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.LicenseFile, _logger);
             var galleryUrl = await _clients.Gallery.GetGalleryUrlAsync(_logger);
-            var expectedLicenseUrl = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}/license");
+            var expectedPath = $"/packages/{package.Id}/{package.NormalizedVersion}/license";
 
             // Act & Assert
             var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
-            Assert.All(packageRegistrationList, x => Assert.Equal(expectedLicenseUrl.AbsoluteUri, x.CatalogEntry.LicenseUrl));
+            Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath, new Uri(x.CatalogEntry.LicenseUrl).AbsolutePath));
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             var licenseFileList = await _clients.FlatContainer.TryAndGetFileStringContent(package.Id, package.NormalizedVersion, FlatContainerStringFileType.License, _logger);
             Assert.All(licenseFileList, x => Assert.Equal(package.Properties.LicenseFileContent, x));
