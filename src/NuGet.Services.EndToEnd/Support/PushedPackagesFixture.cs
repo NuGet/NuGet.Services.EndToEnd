@@ -405,7 +405,7 @@ namespace NuGet.Services.EndToEnd.Support
                     NormalizedVersion = version,
                     FullVersion = version,
                     Files = dllPhysicalPackageFiles,
-                    Properties = new PackageProperties(PackageType.SymbolsPackage)
+                    Properties = new PackageProperties(PackageType.SemVer1Stable)
                 });
 
                 var pdbIndexes = new HashSet<string>();
