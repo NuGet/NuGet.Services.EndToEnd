@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using NuGet.Services.EndToEnd.Support;
 using Xunit;
 using Xunit.Abstractions;
@@ -40,7 +39,8 @@ namespace NuGet.Services.EndToEnd
             Assert.All(packageRegistrationList, x => Assert.Equal(package.Properties.LicenseMetadata.License, x.CatalogEntry.LicenseExpression));
             Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath, new Uri(x.CatalogEntry.LicenseUrl).AbsolutePath));
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
-            VerifyLicenseUrlForV2V3Search(package, expectedPath);
+
+            await VerifyLicenseUrlForV2V3Search(package, expectedPath);
         }
         
         /// <summary>
@@ -60,10 +60,28 @@ namespace NuGet.Services.EndToEnd
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             var licenseFileList = await _clients.FlatContainer.TryAndGetFileStringContent(package.Id, package.NormalizedVersion, FlatContainerStringFileType.License, _logger);
             Assert.All(licenseFileList, x => Assert.Equal(package.Properties.LicenseFileContent, x));
-            VerifyLicenseUrlForV2V3Search(package, expectedPath);
+
+            await VerifyLicenseUrlForV2V3Search(package, expectedPath);
         }
 
-        private async void VerifyLicenseUrlForV2V3Search(Package package, string expectedPath)
+        /// <summary>
+        /// Push a package with legacy license url to the gallery and wait for it to be available in V3.
+        /// </summary>
+        [Fact]
+        public async Task PushedPackageWithLicenseUrlIsAvailableInV3()
+        {
+            // Arrange
+            var package = await _pushedPackages.PrepareAsync(PackageType.LicenseUrl, _logger);
+
+            // Act & Assert
+            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
+            Assert.All(packageRegistrationList, x => Assert.Equal(package.Properties.LicenseUrl, new Uri(x.CatalogEntry.LicenseUrl)));
+            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
+
+            await VerifyLicenseUrlForV2V3Search(package, package.Properties.LicenseUrl.AbsoluteUri);
+        }
+
+        private async Task VerifyLicenseUrlForV2V3Search(Package package, string expectedPath)
         {
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
             var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
@@ -75,11 +93,11 @@ namespace NuGet.Services.EndToEnd
                     $"q=packageid:{package.Id}",
                     _logger);
 
-                Assert.True(results.Data.Count > 0);
-                for (var i = 0; i < results.Data.Count; i++)
-                {
-                    Assert.Equal(expectedPath, new Uri(results.Data[i].LicenseUrl).AbsolutePath);
-                }
+                Assert.True(results.Data.Count == 1);
+                Assert.Equal(expectedPath, new Uri(results.Data[0].LicenseUrl).AbsoluteUri);
+                Assert.Equal(package.NormalizedVersion, results.Data[0].Version);
+                Assert.True(results.Data[0].Versions.Count == 1);
+                Assert.Equal(package.NormalizedVersion, results.Data[0].Versions[0].Version);
             }
         }
     }

@@ -47,6 +47,11 @@ namespace NuGet.Services.EndToEnd.Support
                 packageBuilder.LicenseMetadata = context.Properties.LicenseMetadata;
             }
 
+            if (context.Properties != null && context.Properties.LicenseUrl != null)
+            {
+                packageBuilder.LicenseUrl = context.Properties.LicenseUrl;
+            }
+
             if (context.Properties.Type == PackageType.SymbolsPackage)
             {
                 packageBuilder.PackageTypes.Add(new Packaging.Core.PackageType("SymbolsPackage", Packaging.Core.PackageType.EmptyVersion));

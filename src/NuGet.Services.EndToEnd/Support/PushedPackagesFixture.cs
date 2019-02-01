@@ -358,6 +358,17 @@ namespace NuGet.Services.EndToEnd.Support
                     }));
                     break;
 
+                case PackageType.LicenseUrl:
+                    var licenseUrl = new Uri("https://testLicenseUrl");
+                    packageToPrepare = new PackageToPrepare(Package.Create(new PackageCreationContext
+                    {
+                        Id = id,
+                        NormalizedVersion = "1.0.0",
+                        FullVersion = "1.0.0",
+                        Properties = new PackageProperties(packageType, licenseUrl: licenseUrl)
+                    }));
+                    break;
+
                 case PackageType.SemVer1Stable:
                 case PackageType.FullValidation:
                 default:
