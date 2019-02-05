@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Packaging;
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.Services.EndToEnd.Support
@@ -12,6 +13,7 @@ namespace NuGet.Services.EndToEnd.Support
         public HashSet<string> IndexedFiles { get; }
         public LicenseMetadata LicenseMetadata { get; }
         public string LicenseFileContent { get; }
+        public Uri LicenseUrl { get; }
 
         public PackageProperties(PackageType packageType)
         {
@@ -22,6 +24,12 @@ namespace NuGet.Services.EndToEnd.Support
         {
             Type = packageType;
             IndexedFiles = indexedFiles;
+        }
+
+        public PackageProperties(PackageType packageType, Uri licenseUrl)
+        {
+            Type = packageType;
+            LicenseUrl = licenseUrl;
         }
 
         public PackageProperties(PackageType packageType, LicenseMetadata licenseMetadata)

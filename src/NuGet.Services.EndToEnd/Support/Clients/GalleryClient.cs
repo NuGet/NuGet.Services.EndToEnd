@@ -55,7 +55,7 @@ namespace NuGet.Services.EndToEnd.Support
 
                 if (_azureManagementAPIWrapper == null || _testSettings.GalleryConfiguration.ServiceDetails == null)
                 {
-                    _galleryUrl = new Uri(_testSettings.GalleryConfiguration.OverrideServiceUrl);
+                    _galleryUrl = new Uri(_testSettings.GalleryConfiguration.GalleryBaseUrl);
                     logger.WriteLine($"Configured gallery mode: use hardcoded URL {_galleryUrl}");
                 }
                 else
@@ -88,6 +88,11 @@ namespace NuGet.Services.EndToEnd.Support
             }
 
             return _galleryUrl;
+        }
+
+        public Uri GetGalleryBaseUrl(ITestOutputHelper logger)
+        {
+            return new Uri(_testSettings.GalleryConfiguration.GalleryBaseUrl);
         }
 
         public async Task<IList<string>> AutocompletePackageIdsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger)
