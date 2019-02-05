@@ -31,13 +31,13 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.LicenseExpression, _logger);
-            var galleryUrl = await _clients.Gallery.GetGalleryUrlAsync(_logger);
-            var expectedPath = $"/packages/{package.Id}/{package.NormalizedVersion}/license";
+            var galleryUrl = _clients.Gallery.GetGalleryBaseUrl(_logger);
+            var expectedPath = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}/license");
 
             // Act & Assert
             var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
             Assert.All(packageRegistrationList, x => Assert.Equal(package.Properties.LicenseMetadata.License, x.CatalogEntry.LicenseExpression));
-            Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath, new Uri(x.CatalogEntry.LicenseUrl).AbsolutePath));
+            Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath.AbsoluteUri, x.CatalogEntry.LicenseUrl));
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
 
             await VerifyLicenseUrlForV2V3Search(package, expectedPath);
@@ -51,12 +51,12 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.LicenseFile, _logger);
-            var galleryUrl = await _clients.Gallery.GetGalleryUrlAsync(_logger);
-            var expectedPath = $"/packages/{package.Id}/{package.NormalizedVersion}/license";
+            var galleryUrl = _clients.Gallery.GetGalleryBaseUrl(_logger);
+            var expectedPath = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}/license");
 
             // Act & Assert
             var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
-            Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath, new Uri(x.CatalogEntry.LicenseUrl).AbsolutePath));
+            Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath.AbsoluteUri, x.CatalogEntry.LicenseUrl));
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             var licenseFileList = await _clients.FlatContainer.TryAndGetFileStringContent(package.Id, package.NormalizedVersion, FlatContainerStringFileType.License, _logger);
             Assert.All(licenseFileList, x => Assert.Equal(package.Properties.LicenseFileContent, x));
@@ -75,13 +75,13 @@ namespace NuGet.Services.EndToEnd
 
             // Act & Assert
             var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
-            Assert.All(packageRegistrationList, x => Assert.Equal(package.Properties.LicenseUrl, new Uri(x.CatalogEntry.LicenseUrl)));
+            Assert.All(packageRegistrationList, x => Assert.Equal(package.Properties.LicenseUrl.AbsoluteUri, x.CatalogEntry.LicenseUrl));
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
 
-            await VerifyLicenseUrlForV2V3Search(package, package.Properties.LicenseUrl.AbsoluteUri);
+            await VerifyLicenseUrlForV2V3Search(package, package.Properties.LicenseUrl);
         }
 
-        private async Task VerifyLicenseUrlForV2V3Search(Package package, string expectedPath)
+        private async Task VerifyLicenseUrlForV2V3Search(Package package, Uri expectedPath)
         {
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
             var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
@@ -94,7 +94,7 @@ namespace NuGet.Services.EndToEnd
                     _logger);
 
                 Assert.True(results.Data.Count == 1);
-                Assert.Equal(expectedPath, new Uri(results.Data[0].LicenseUrl).AbsoluteUri);
+                Assert.Equal(expectedPath.AbsoluteUri, results.Data[0].LicenseUrl);
                 Assert.Equal(package.NormalizedVersion, results.Data[0].Version);
                 Assert.True(results.Data[0].Versions.Count == 1);
                 Assert.Equal(package.NormalizedVersion, results.Data[0].Versions[0].Version);

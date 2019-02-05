@@ -10,7 +10,7 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class GalleryConfiguration
     {
-        public string OverrideServiceUrl { get; set; }
+        public string GalleryBaseUrl { get; set; }
 
         public AzureCloudServiceDetails ServiceDetails { get; set; }
     }
