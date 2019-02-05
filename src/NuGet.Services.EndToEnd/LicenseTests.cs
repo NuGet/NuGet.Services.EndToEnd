@@ -93,10 +93,10 @@ namespace NuGet.Services.EndToEnd
                     $"q=packageid:{package.Id}",
                     _logger);
 
-                Assert.True(results.Data.Count == 1);
+                Assert.Single(results.Data);
                 Assert.Equal(expectedPath.AbsoluteUri, results.Data[0].LicenseUrl);
                 Assert.Equal(package.NormalizedVersion, results.Data[0].Version);
-                Assert.True(results.Data[0].Versions.Count == 1);
+                Assert.Single(results.Data[0].Versions);
                 Assert.Equal(package.NormalizedVersion, results.Data[0].Versions[0].Version);
             }
         }

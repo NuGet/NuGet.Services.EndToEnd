@@ -92,9 +92,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public Uri GetGalleryBaseUrl(ITestOutputHelper logger)
         {
-            var galleryBaseUrl = _testSettings.GalleryConfiguration.GalleryBaseUrl;
-            logger.WriteLine($"Gallery Base URL to use: {galleryBaseUrl}");
-            return new Uri(galleryBaseUrl);
+            return new Uri(_testSettings.GalleryConfiguration.GalleryBaseUrl);
         }
 
         public async Task<IList<string>> AutocompletePackageIdsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger)
