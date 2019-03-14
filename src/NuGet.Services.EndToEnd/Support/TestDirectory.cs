@@ -22,8 +22,8 @@ namespace NuGet.Services.EndToEnd.Support
 
         public static TestDirectory Create()
         {
-            var baseDirectoryPath = Path.Combine(Path.GetTempPath(), "NuGetTestFolder");
-            var subdirectoryName = Guid.NewGuid().ToString();
+            var baseDirectoryPath = Path.Combine(Path.GetTempPath(), "E2E");
+            var subdirectoryName = DateTimeOffset.UtcNow.Ticks.ToString();
             var fullPath = Path.Combine(baseDirectoryPath, subdirectoryName);
 
             Directory.CreateDirectory(fullPath);
