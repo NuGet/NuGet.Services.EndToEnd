@@ -160,7 +160,8 @@ namespace NuGet.Services.EndToEnd.Support
                     foreach (var url in searchBaseUrls)
                     {
                         // Clean the URL
-                        var host = new Uri(url).Host;
+                        var uri = new Uri(url);
+                        var host = uri.Host;
 
                         if (!_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices.ContainsKey(host))
                         {
@@ -169,7 +170,18 @@ namespace NuGet.Services.EndToEnd.Support
 
                         var mappedService = _testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices[host];
 
-                        searchServices.Add(await GetSearchServiceFromAzureAsync(mappedService, logger));
+                        var searchServiceProperties = await GetSearchServiceFromAzureAsync(mappedService, logger);
+
+                        if (_testSettings.SearchServiceConfiguration.UseOfficialDns)
+                        {
+                            searchServices.Add(new SearchServiceProperties(
+                                ClientHelper.ConvertToHttpsAndClean(uri),
+                                searchServiceProperties.InstanceCount));
+                        }
+                        else
+                        {
+                            searchServices.Add(searchServiceProperties);
+                        }
                     }
                 }
                 else
