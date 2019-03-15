@@ -3,7 +3,9 @@
 
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Xunit;
 
 [assembly: AssemblyTitle("NuGet.Services.EndToEnd.Test")]
 [assembly: ComVisible(false)]
 [assembly: Guid("b69317be-fa10-4458-a083-d9cecdabd61d")]
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
