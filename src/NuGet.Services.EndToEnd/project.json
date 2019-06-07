@@ -9,7 +9,7 @@
     "NuGet.Frameworks": "4.9.2",
     "NuGet.Packaging": "4.9.2",
     "NuGet.Protocol": "4.9.2",
-    "NuGet.Services.AzureManagement": "2.2.5",
+    "NuGet.Services.AzureManagement": "2.47.0",
     "NuGet.Services.Configuration": "2.2.4",
     "NuGet.Services.KeyVault": "2.2.4",
     "NuGet.Versioning": "4.9.2",
