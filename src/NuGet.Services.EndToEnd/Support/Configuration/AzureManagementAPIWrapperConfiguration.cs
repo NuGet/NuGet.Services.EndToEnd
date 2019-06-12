@@ -10,7 +10,5 @@ namespace NuGet.Services.EndToEnd
         public string ClientId { get; set; }
 
         public string ClientSecret { get; set; }
-
-        public string AadTenant { get; set; }
     }
 }
