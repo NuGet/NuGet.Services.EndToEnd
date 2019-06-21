@@ -156,6 +156,28 @@ namespace NuGet.Services.EndToEnd.Support
             await SendToPackageAsync(HttpMethod.Delete, id, version, logger);
         }
 
+        public async Task SearchPackageODataV2FromDBAsync(string id, ITestOutputHelper logger)
+        {
+            var galleryEndpoint = await GetGalleryUrlAsync(logger);
+            var url = $"{galleryEndpoint}/api/v2/Packages()?$filter=tolower(Id) eq '{id.ToLower()}'&$orderby=Id";
+            using (var httpClient = new HttpClient())
+            using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+            {
+                request.Headers.Add(ApiKeyHeader, _testSettings.ApiKey);
+
+                using (var response = await httpClient.SendAsync(request))
+                {
+                    await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
+                    var responseContent = response.Content != null ? await response.Content.ReadAsStringAsync() : string.Empty; 
+                    logger.WriteLine($"The response to the request {url} is {responseContent}");
+                    if(!responseContent.Contains(id))
+                    {
+                        throw new Exception("The expected package id was not found in db.");
+                    }
+                }
+            }
+        }
+
         private static string AppendAutocompletePackageIdsQueryString(string uri, string id, bool? includePrerelease, string semVerLevel = null)
         {
             var queryParameters = new Dictionary<string, string>()
