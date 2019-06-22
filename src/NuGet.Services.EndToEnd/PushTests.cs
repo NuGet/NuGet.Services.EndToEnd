@@ -39,7 +39,7 @@ namespace NuGet.Services.EndToEnd
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, logger: _logger);
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
-            await _clients.Gallery.SearchPackageODataV2FromDBAsync(package.Id, _logger);
+            await _clients.Gallery.SearchPackageODataV2FromDBAsync(package.Id, semVer2, _logger);
         }
 
         [SignedPackageTestFact]

@@ -156,10 +156,12 @@ namespace NuGet.Services.EndToEnd.Support
             await SendToPackageAsync(HttpMethod.Delete, id, version, logger);
         }
 
-        public async Task SearchPackageODataV2FromDBAsync(string id, ITestOutputHelper logger)
+        public async Task SearchPackageODataV2FromDBAsync(string id, bool semver2, ITestOutputHelper logger)
         {
             var galleryEndpoint = await GetGalleryUrlAsync(logger);
-            var url = $"{galleryEndpoint}/api/v2/Packages()?$filter=tolower(Id) eq '{id.ToLower()}'&$orderby=Id";
+            var url = semver2 
+                ? $"{galleryEndpoint}/api/v2/Packages()?$filter=tolower(Id) eq '{id.ToLower()}'&$orderby=Id&semVerLevel=2.0.0"
+                : $"{galleryEndpoint}/api/v2/Packages()?$filter=tolower(Id) eq '{id.ToLower()}'&$orderby=Id";
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Get, url))
             {
