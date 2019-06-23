@@ -73,12 +73,11 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         private static Clients InitializeInternal(TestSettings testSettings)
         {
-            var azureManagementAPI = GetAzureManagementAPIWrapper(testSettings);
-            
+
             var httpClient = new SimpleHttpClient();
-            var gallery = new GalleryClient(httpClient, testSettings, azureManagementAPI);
+            var gallery = new GalleryClient(httpClient, testSettings, GetAzureManagementAPIWrapperForGallery(testSettings));
             var v3Index = new V3IndexClient(httpClient, testSettings);
-            var v2v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings, azureManagementAPI);
+            var v2v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings, GetAzureManagementAPIWrapperForSearchService(testSettings));
             var flatContainer = new FlatContainerClient(httpClient, v3Index);
             var registration = new RegistrationClient(httpClient, v3Index);
             var nuGetExe = new NuGetExeClient(testSettings, gallery);
@@ -94,8 +93,34 @@ namespace NuGet.Services.EndToEnd.Support
                 symbolServerClient);
         }
 
-        private static IRetryingAzureManagementAPIWrapper GetAzureManagementAPIWrapper(TestSettings testSettings)
+        private static IRetryingAzureManagementAPIWrapper GetAzureManagementAPIWrapperForGallery(TestSettings testSettings)
         {
+            if (testSettings.GalleryConfiguration.AzureManagementAPIWrapperConfiguration != null)
+            {
+                return new RetryingAzureManagementAPIWrapper(
+                    new AzureManagementAPIWrapper(testSettings.GalleryConfiguration.AzureManagementAPIWrapperConfiguration),
+                    RetryUtility.DefaultSleepDuration);
+            }
+
+            if (testSettings.AzureManagementAPIWrapperConfiguration != null)
+            {
+                return new RetryingAzureManagementAPIWrapper(
+                    new AzureManagementAPIWrapper(testSettings.AzureManagementAPIWrapperConfiguration),
+                    RetryUtility.DefaultSleepDuration);
+            }
+
+            return null;
+        }
+
+        private static IRetryingAzureManagementAPIWrapper GetAzureManagementAPIWrapperForSearchService(TestSettings testSettings)
+        {
+            if (testSettings.SearchServiceConfiguration.AzureManagementAPIWrapperConfiguration != null)
+            {
+                return new RetryingAzureManagementAPIWrapper(
+                    new AzureManagementAPIWrapper(testSettings.SearchServiceConfiguration.AzureManagementAPIWrapperConfiguration),
+                    RetryUtility.DefaultSleepDuration);
+            }
+
             if (testSettings.AzureManagementAPIWrapperConfiguration != null)
             {
                 return new RetryingAzureManagementAPIWrapper(
