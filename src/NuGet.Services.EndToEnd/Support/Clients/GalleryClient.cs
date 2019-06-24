@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using NuGet.Services.AzureManagement;
 using NuGet.Versioning;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd.Support
@@ -156,26 +157,19 @@ namespace NuGet.Services.EndToEnd.Support
             await SendToPackageAsync(HttpMethod.Delete, id, version, logger);
         }
 
-        public async Task SearchPackageODataV2FromDBAsync(string id, bool semver2, ITestOutputHelper logger)
+        public async Task SearchPackageODataV2FromDBAsync(string id, string normalizedVersion, ITestOutputHelper logger)
         {
             var galleryEndpoint = await GetGalleryUrlAsync(logger);
-            var url = semver2 
-                ? $"{galleryEndpoint}/api/v2/Packages()?$filter=tolower(Id) eq '{id.ToLower()}'&$orderby=Id&semVerLevel=2.0.0"
-                : $"{galleryEndpoint}/api/v2/Packages()?$filter=tolower(Id) eq '{id.ToLower()}'&$orderby=Id";
+            var url = $"{galleryEndpoint}/api/v2/Packages()?$filter=tolower(Id) eq '{id.ToLower()}' and NormalizedVersion eq '{normalizedVersion}' and 1 eq 1";
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Get, url))
             {
-                request.Headers.Add(ApiKeyHeader, _testSettings.ApiKey);
-
                 using (var response = await httpClient.SendAsync(request))
                 {
                     await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
-                    var responseContent = response.Content != null ? await response.Content.ReadAsStringAsync() : string.Empty; 
+                    var responseContent = await response.Content.ReadAsStringAsync(); 
                     logger.WriteLine($"The response to the request {url} is {responseContent}");
-                    if(!responseContent.Contains(id))
-                    {
-                        throw new Exception("The expected package id was not found in db.");
-                    }
+                    Assert.Contains(id, responseContent);
                 }
             }
         }

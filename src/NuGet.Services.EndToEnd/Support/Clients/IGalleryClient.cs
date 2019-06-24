@@ -18,6 +18,6 @@ namespace NuGet.Services.EndToEnd.Support
         Task RelistAsync(string id, string version, ITestOutputHelper logger);
         Task<IList<string>> AutocompletePackageIdsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger);
         Task<IList<string>> AutocompletePackageVersionsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger);
-        Task SearchPackageODataV2FromDBAsync(string id, bool semver2, ITestOutputHelper logger);
+        Task SearchPackageODataV2FromDBAsync(string id, string version, ITestOutputHelper logger);
     }
 }

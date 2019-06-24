@@ -39,7 +39,6 @@ namespace NuGet.Services.EndToEnd
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, logger: _logger);
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
-            await _clients.Gallery.SearchPackageODataV2FromDBAsync(package.Id, semVer2, _logger);
         }
 
         [SignedPackageTestFact]
@@ -91,6 +90,21 @@ namespace NuGet.Services.EndToEnd
                 Assert.Equal(1, shouldNotBeEmptyV3.Data.Count);
                 Assert.Equal(1, shouldNotBeEmptyAutocomplete.Data.Count);
             }
+        }
+
+        /// <summary>
+        /// Push a package to the gallery and search in OData with non-hijacked query.
+        /// </summary>
+        [Theory]
+        [InlineData(PackageType.SemVer1Stable, false)]
+        public async Task NewlyPushedIsODataSearchableInDB(PackageType packageType, bool semVer2)
+        {
+            // Arrange
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+
+            // Act & Assert
+            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
+            await _clients.Gallery.SearchPackageODataV2FromDBAsync(package.Id, package.NormalizedVersion, _logger);
         }
     }
 }
