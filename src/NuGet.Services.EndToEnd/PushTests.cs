@@ -96,8 +96,8 @@ namespace NuGet.Services.EndToEnd
         /// Push a package to the gallery and search in OData with non-hijacked query.
         /// </summary>
         [Theory]
-        [InlineData(PackageType.SemVer1Stable, false)]
-        public async Task NewlyPushedIsODataSearchableInDB(PackageType packageType, bool semVer2)
+        [InlineData(PackageType.SemVer1Stable)]
+        public async Task NewlyPushedIsODataSearchableInDB(PackageType packageType)
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);

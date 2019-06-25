@@ -160,17 +160,21 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task SearchPackageODataV2FromDBAsync(string id, string normalizedVersion, ITestOutputHelper logger)
         {
             var galleryEndpoint = await GetGalleryUrlAsync(logger);
-            var url = $"{galleryEndpoint}/api/v2/Packages()?$filter=tolower(Id) eq '{id.ToLower()}' and NormalizedVersion eq '{normalizedVersion}' and 1 eq 1";
+            // Add 1 eq 1 that will block the search hijack and will execute the query against the database.
+            var urlRootAndPath = $"{galleryEndpoint}/api/v2/Packages()";
+            var queryParameters = new Dictionary<string, string>()
+            {
+                { "$filter", $"Id eq '{id}' and NormalizedVersion eq '{normalizedVersion}' and 1 eq 1" }
+            };
+            var url = QueryHelpers.AddQueryString(urlRootAndPath, queryParameters);
+
             using (var httpClient = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+            using (var response = await httpClient.SendAsync(request))
             {
-                using (var response = await httpClient.SendAsync(request))
-                {
-                    await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
-                    var responseContent = await response.Content.ReadAsStringAsync(); 
-                    logger.WriteLine($"The response to the request {url} is {responseContent}");
-                    Assert.Contains(id, responseContent);
-                }
+                await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Assert.Contains(id, responseContent);
             }
         }
 
