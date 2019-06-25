@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using NuGet.Services.AzureManagement;
 using NuGet.Versioning;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace NuGet.Services.EndToEnd.Support
@@ -154,6 +155,27 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task UnlistAsync(string id, string version, ITestOutputHelper logger)
         {
             await SendToPackageAsync(HttpMethod.Delete, id, version, logger);
+        }
+
+        public async Task SearchPackageODataV2FromDBAsync(string id, string normalizedVersion, ITestOutputHelper logger)
+        {
+            var galleryEndpoint = await GetGalleryUrlAsync(logger);
+            // Add 1 eq 1 that will block the search hijack and will execute the query against the database.
+            var urlRootAndPath = $"{galleryEndpoint}/api/v2/Packages()";
+            var queryParameters = new Dictionary<string, string>()
+            {
+                { "$filter", $"Id eq '{id}' and NormalizedVersion eq '{normalizedVersion}' and 1 eq 1" }
+            };
+            var url = QueryHelpers.AddQueryString(urlRootAndPath, queryParameters);
+
+            using (var httpClient = new HttpClient())
+            using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+            using (var response = await httpClient.SendAsync(request))
+            {
+                await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Assert.Contains(id, responseContent);
+            }
         }
 
         private static string AppendAutocompletePackageIdsQueryString(string uri, string id, bool? includePrerelease, string semVerLevel = null)

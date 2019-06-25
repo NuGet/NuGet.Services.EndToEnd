@@ -91,5 +91,20 @@ namespace NuGet.Services.EndToEnd
                 Assert.Equal(1, shouldNotBeEmptyAutocomplete.Data.Count);
             }
         }
+
+        /// <summary>
+        /// Push a package to the gallery and search in OData with non-hijacked query.
+        /// </summary>
+        [Theory]
+        [InlineData(PackageType.SemVer1Stable)]
+        public async Task NewlyPushedIsODataSearchableInDB(PackageType packageType)
+        {
+            // Arrange
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+
+            // Act & Assert
+            await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
+            await _clients.Gallery.SearchPackageODataV2FromDBAsync(package.Id, package.NormalizedVersion, _logger);
+        }
     }
 }
