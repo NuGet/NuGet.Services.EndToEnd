@@ -21,5 +21,7 @@ namespace NuGet.Services.EndToEnd.Support
         public bool UseOfficialDns { get; set; }
 
         public AzureCloudServiceDetails SingleSearchService { get; set; }
+
+        public AzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; set; }
     }
 }
