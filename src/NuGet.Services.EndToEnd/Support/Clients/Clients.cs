@@ -73,7 +73,6 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         private static Clients InitializeInternal(TestSettings testSettings)
         {
-
             var httpClient = new SimpleHttpClient();
             var gallery = new GalleryClient(httpClient, testSettings, GetAzureManagementAPIWrapperForGallery(testSettings));
             var v3Index = new V3IndexClient(httpClient, testSettings);
