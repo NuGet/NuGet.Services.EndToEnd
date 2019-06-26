@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NuGet.Services.EndToEnd.Support
 {
     /// <summary>
-    /// There are 4 modes for search service configuration:
+    /// There are 3 modes for search service configuration:
     /// 1. SingleSearchService - if not null, only the configured search service will be used.
     /// 2. IndexJsonMappedSearchServices - if not null, we will use all search service instances configured in index.json for testing. This property will provide mapping between index.json
     /// entry and Azure service.
