@@ -3,11 +3,14 @@
 
 namespace NuGet.Services.EndToEnd.Support
 {
-    public class AzureCloudServiceDetails
+    public class AzureCloudServiceOrSearchDetails
     {
         public string Subscription { get; set; }
         public string ResourceGroup { get; set; }
         public string Name { get; set; }
         public string Slot { get; set; }
+        public bool UseAzureSearchService { get; set; }
+        public string AzureSearchProductionUrl { get; set; }
+        public string AzureSearchStagingUrl { get; set; }
     }
 }

@@ -194,24 +194,36 @@ namespace NuGet.Services.EndToEnd.Support
             return searchServices;
         }
 
-        private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(AzureCloudServiceDetails serviceDetails, ITestOutputHelper logger)
+        private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(AzureCloudServiceOrSearchDetails serviceDetails, ITestOutputHelper logger)
         {
-            logger.WriteLine($"Extracting search service properties from Azure. " +
-                   $"Subscription: {serviceDetails.Subscription}, " +
-                   $"Resource group: {serviceDetails.ResourceGroup}, " +
-                   $"Service name: {serviceDetails.Name}");
+            if (serviceDetails.UseAzureSearchService)
+            {
+                var serviceUrl = "staging".Equals(serviceDetails.Slot ?? "", StringComparison.OrdinalIgnoreCase)
+                    ? serviceDetails.AzureSearchStagingUrl
+                    : serviceDetails.AzureSearchProductionUrl;
+                logger.WriteLine($"Using Azure search service for {serviceDetails.Slot} with URL: {serviceUrl}");
 
-            string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
-                                serviceDetails.Subscription,
-                                serviceDetails.ResourceGroup,
-                                serviceDetails.Name,
-                                serviceDetails.Slot,
-                                logger,
-                                CancellationToken.None);
+                return new SearchServiceProperties(ClientHelper.ConvertToHttpsAndClean(new Uri(serviceUrl)), instanceCount: 1);
+            }
+            else
+            {
+                logger.WriteLine($"Extracting search service properties from Azure. " +
+                    $"Subscription: {serviceDetails.Subscription}, " +
+                    $"Resource group: {serviceDetails.ResourceGroup}, " +
+                    $"Service name: {serviceDetails.Name}");
 
-            var cloudService = AzureHelper.ParseCloudServiceProperties(result);
+                string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
+                    serviceDetails.Subscription,
+                    serviceDetails.ResourceGroup,
+                    serviceDetails.Name,
+                    serviceDetails.Slot,
+                    logger,
+                    CancellationToken.None);
 
-            return new SearchServiceProperties(ClientHelper.ConvertToHttpsAndClean(cloudService.Uri), cloudService.InstanceCount);
+                var cloudService = AzureHelper.ParseCloudServiceProperties(result);
+
+                return new SearchServiceProperties(ClientHelper.ConvertToHttpsAndClean(cloudService.Uri), cloudService.InstanceCount);
+            }
         }
 
         private static string BuildAutocompleteQueryString(
