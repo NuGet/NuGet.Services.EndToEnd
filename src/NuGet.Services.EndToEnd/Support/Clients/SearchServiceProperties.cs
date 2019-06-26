@@ -10,13 +10,15 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class SearchServiceProperties
     {
-        public SearchServiceProperties(Uri uri, int instanceCount)
+        public SearchServiceProperties(Uri uri, int instanceCount, bool isAzureSearch = false)
         {
             Uri = uri;
             InstanceCount = instanceCount;
+            IsAzureSearch = isAzureSearch;
         }
 
         public Uri Uri { get; }
         public int InstanceCount { get; }
+        public bool IsAzureSearch { get; }
     }
 }

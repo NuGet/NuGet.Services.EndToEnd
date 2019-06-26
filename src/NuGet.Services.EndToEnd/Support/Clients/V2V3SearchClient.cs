@@ -115,17 +115,30 @@ namespace NuGet.Services.EndToEnd.Support
 
         private IEnumerable<string> GetSearchUrlsForPolling(SearchServiceProperties searchServices)
         {
-            for (var instanceIndex = 0; instanceIndex < searchServices.InstanceCount; instanceIndex++)
+            if (searchServices.IsAzureSearch)
             {
-                var port = MinPort + instanceIndex;
                 var uriBuilder = new UriBuilder(searchServices.Uri)
                 {
                     Scheme = "https",
-                    Port = port,
                     Path = "/search/query"
                 };
 
                 yield return uriBuilder.Uri.ToString();
+            }
+            else
+            {
+                for (var instanceIndex = 0; instanceIndex < searchServices.InstanceCount; instanceIndex++)
+                {
+                    var port = MinPort + instanceIndex;
+                    var uriBuilder = new UriBuilder(searchServices.Uri)
+                    {
+                        Scheme = "https",
+                        Port = port,
+                        Path = "/search/query"
+                    };
+
+                    yield return uriBuilder.Uri.ToString();
+                }
             }
         }
 
@@ -203,7 +216,10 @@ namespace NuGet.Services.EndToEnd.Support
                     : serviceDetails.AzureSearchProductionUrl;
                 logger.WriteLine($"Using Azure search service for {serviceDetails.Slot} with URL: {serviceUrl}");
 
-                return new SearchServiceProperties(ClientHelper.ConvertToHttpsAndClean(new Uri(serviceUrl)), instanceCount: 1);
+                return new SearchServiceProperties(
+                    ClientHelper.ConvertToHttpsAndClean(new Uri(serviceUrl)),
+                    instanceCount: 1,
+                    isAzureSearch: true);
             }
             else
             {
