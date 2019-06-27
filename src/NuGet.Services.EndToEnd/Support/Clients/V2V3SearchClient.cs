@@ -115,17 +115,30 @@ namespace NuGet.Services.EndToEnd.Support
 
         private IEnumerable<string> GetSearchUrlsForPolling(SearchServiceProperties searchServices)
         {
-            for (var instanceIndex = 0; instanceIndex < searchServices.InstanceCount; instanceIndex++)
+            if (!searchServices.InstanceCount.HasValue)
             {
-                var port = MinPort + instanceIndex;
                 var uriBuilder = new UriBuilder(searchServices.Uri)
                 {
                     Scheme = "https",
-                    Port = port,
                     Path = "/search/query"
                 };
 
                 yield return uriBuilder.Uri.ToString();
+            }
+            else
+            {
+                for (var instanceIndex = 0; instanceIndex < searchServices.InstanceCount.Value; instanceIndex++)
+                {
+                    var port = MinPort + instanceIndex;
+                    var uriBuilder = new UriBuilder(searchServices.Uri)
+                    {
+                        Scheme = "https",
+                        Port = port,
+                        Path = "/search/query"
+                    };
+
+                    yield return uriBuilder.Uri.ToString();
+                }
             }
         }
 
@@ -194,24 +207,38 @@ namespace NuGet.Services.EndToEnd.Support
             return searchServices;
         }
 
-        private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(AzureCloudServiceDetails serviceDetails, ITestOutputHelper logger)
+        private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(ServiceDetails serviceDetails, ITestOutputHelper logger)
         {
-            logger.WriteLine($"Extracting search service properties from Azure. " +
-                   $"Subscription: {serviceDetails.Subscription}, " +
-                   $"Resource group: {serviceDetails.ResourceGroup}, " +
-                   $"Service name: {serviceDetails.Name}");
+            if (serviceDetails.UseConfiguredUrls)
+            {
+                var serviceUrl = "staging".Equals(serviceDetails.Slot ?? "", StringComparison.OrdinalIgnoreCase)
+                    ? serviceDetails.StagingUrl
+                    : serviceDetails.ProductionUrl;
+                logger.WriteLine($"Using search service for {serviceDetails.Slot} with URL: {serviceUrl}");
 
-            string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
-                                serviceDetails.Subscription,
-                                serviceDetails.ResourceGroup,
-                                serviceDetails.Name,
-                                serviceDetails.Slot,
-                                logger,
-                                CancellationToken.None);
+                return new SearchServiceProperties(
+                    ClientHelper.ConvertToHttpsAndClean(new Uri(serviceUrl)),
+                    instanceCount: null);
+            }
+            else
+            {
+                logger.WriteLine($"Extracting search service properties from Azure. " +
+                    $"Subscription: {serviceDetails.Subscription}, " +
+                    $"Resource group: {serviceDetails.ResourceGroup}, " +
+                    $"Service name: {serviceDetails.Name}");
 
-            var cloudService = AzureHelper.ParseCloudServiceProperties(result);
+                string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
+                    serviceDetails.Subscription,
+                    serviceDetails.ResourceGroup,
+                    serviceDetails.Name,
+                    serviceDetails.Slot,
+                    logger,
+                    CancellationToken.None);
 
-            return new SearchServiceProperties(ClientHelper.ConvertToHttpsAndClean(cloudService.Uri), cloudService.InstanceCount);
+                var cloudService = AzureHelper.ParseCloudServiceProperties(result);
+
+                return new SearchServiceProperties(ClientHelper.ConvertToHttpsAndClean(cloudService.Uri), cloudService.InstanceCount);
+            }
         }
 
         private static string BuildAutocompleteQueryString(

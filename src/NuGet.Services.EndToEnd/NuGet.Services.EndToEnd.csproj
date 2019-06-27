@@ -56,7 +56,7 @@
     <Compile Include="Support\Clients\V3IndexClient.cs" />
     <Compile Include="Support\CommonCollection.cs" />
     <Compile Include="Support\CommonFixture.cs" />
-    <Compile Include="Support\Configuration\AzureCloudServiceDetails.cs" />
+    <Compile Include="Support\Configuration\ServiceDetails.cs" />
     <Compile Include="Support\Configuration\AzureManagementAPIWrapperConfiguration.cs" />
     <Compile Include="ConnectivityTests.cs" />
     <Compile Include="NuGetExeTests.cs" />
