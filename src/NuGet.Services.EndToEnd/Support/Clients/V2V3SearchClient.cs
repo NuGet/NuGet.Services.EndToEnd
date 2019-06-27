@@ -115,7 +115,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         private IEnumerable<string> GetSearchUrlsForPolling(SearchServiceProperties searchServices)
         {
-            if (searchServices.IsAzureSearch)
+            if (!searchServices.InstanceCount.HasValue)
             {
                 var uriBuilder = new UriBuilder(searchServices.Uri)
                 {
@@ -127,7 +127,7 @@ namespace NuGet.Services.EndToEnd.Support
             }
             else
             {
-                for (var instanceIndex = 0; instanceIndex < searchServices.InstanceCount; instanceIndex++)
+                for (var instanceIndex = 0; instanceIndex < searchServices.InstanceCount.Value; instanceIndex++)
                 {
                     var port = MinPort + instanceIndex;
                     var uriBuilder = new UriBuilder(searchServices.Uri)
@@ -209,17 +209,16 @@ namespace NuGet.Services.EndToEnd.Support
 
         private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(AzureCloudServiceOrSearchDetails serviceDetails, ITestOutputHelper logger)
         {
-            if (serviceDetails.UseAzureSearchService)
+            if (serviceDetails.UseConfiguredUrls)
             {
                 var serviceUrl = "staging".Equals(serviceDetails.Slot ?? "", StringComparison.OrdinalIgnoreCase)
-                    ? serviceDetails.AzureSearchStagingUrl
-                    : serviceDetails.AzureSearchProductionUrl;
-                logger.WriteLine($"Using Azure search service for {serviceDetails.Slot} with URL: {serviceUrl}");
+                    ? serviceDetails.StagingUrl
+                    : serviceDetails.ProductionUrl;
+                logger.WriteLine($"Using search service for {serviceDetails.Slot} with URL: {serviceUrl}");
 
                 return new SearchServiceProperties(
                     ClientHelper.ConvertToHttpsAndClean(new Uri(serviceUrl)),
-                    instanceCount: 1,
-                    isAzureSearch: true);
+                    instanceCount: null);
             }
             else
             {

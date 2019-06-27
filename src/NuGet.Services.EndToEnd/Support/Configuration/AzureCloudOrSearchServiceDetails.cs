@@ -3,14 +3,15 @@
 
 namespace NuGet.Services.EndToEnd.Support
 {
+    // TODO: Get rid of the old configs used for cloud service https://github.com/NuGet/Engineering/issues/2534 
     public class AzureCloudServiceOrSearchDetails
     {
         public string Subscription { get; set; }
         public string ResourceGroup { get; set; }
         public string Name { get; set; }
         public string Slot { get; set; }
-        public bool UseAzureSearchService { get; set; }
-        public string AzureSearchProductionUrl { get; set; }
-        public string AzureSearchStagingUrl { get; set; }
+        public bool UseConfiguredUrls { get; set; }
+        public string ProductionUrl { get; set; }
+        public string StagingUrl { get; set; }
     }
 }
