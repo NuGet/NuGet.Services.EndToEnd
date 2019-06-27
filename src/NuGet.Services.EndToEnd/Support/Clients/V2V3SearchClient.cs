@@ -207,7 +207,7 @@ namespace NuGet.Services.EndToEnd.Support
             return searchServices;
         }
 
-        private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(AzureCloudServiceOrSearchDetails serviceDetails, ITestOutputHelper logger)
+        private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(ServiceDetails serviceDetails, ITestOutputHelper logger)
         {
             if (serviceDetails.UseConfiguredUrls)
             {

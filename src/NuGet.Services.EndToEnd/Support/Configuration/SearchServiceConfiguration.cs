@@ -16,11 +16,11 @@ namespace NuGet.Services.EndToEnd.Support
     {
         public int OverrideInstanceCount { get; set; }
 
-        public Dictionary<string, AzureCloudServiceOrSearchDetails> IndexJsonMappedSearchServices { get; set; }
+        public Dictionary<string, ServiceDetails> IndexJsonMappedSearchServices { get; set; }
 
         public bool UseOfficialDns { get; set; }
 
-        public AzureCloudServiceOrSearchDetails SingleSearchService { get; set; }
+        public ServiceDetails SingleSearchService { get; set; }
 
         public AzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; set; }
     }

@@ -4,7 +4,7 @@
 namespace NuGet.Services.EndToEnd.Support
 {
     // TODO: Get rid of the old configs used for cloud service https://github.com/NuGet/Engineering/issues/2534 
-    public class AzureCloudServiceOrSearchDetails
+    public class ServiceDetails
     {
         public string Subscription { get; set; }
         public string ResourceGroup { get; set; }

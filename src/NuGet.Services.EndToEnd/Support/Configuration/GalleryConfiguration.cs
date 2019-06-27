@@ -12,7 +12,7 @@ namespace NuGet.Services.EndToEnd.Support
     {
         public string GalleryBaseUrl { get; set; }
 
-        public AzureCloudServiceOrSearchDetails ServiceDetails { get; set; }
+        public ServiceDetails ServiceDetails { get; set; }
 
         public AzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; set; }
     }
