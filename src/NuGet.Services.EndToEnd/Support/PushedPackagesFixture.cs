@@ -149,7 +149,7 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 if (_packages.TryGetValue(requestedPackageType, out IReadOnlyList<Package> package))
                 {
-                    logger.WriteLine($"Package of type {requestedPackageType} has already been pushed. Using {package}.");
+                    logger.WriteLine($"Package of type {requestedPackageType} has already been pushed. Using {string.Join(", ", package)}.");
                     return package;
                 }
             }

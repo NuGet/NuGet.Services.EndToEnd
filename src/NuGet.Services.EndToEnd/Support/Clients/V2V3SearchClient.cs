@@ -25,6 +25,9 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly TestSettings _testSettings;
         private readonly IRetryingAzureManagementAPIWrapper _azureManagementAPIWrapper;
 
+        private readonly SemaphoreSlim _pollCacheLock = new SemaphoreSlim(1);
+        private readonly Dictionary<string, V2SearchResponse> _pollCache = new Dictionary<string, V2SearchResponse>();
+
         public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings, IRetryingAzureManagementAPIWrapper azureManagementAPIWrapper)
         {
             _httpClient = httpClient;
@@ -323,11 +326,52 @@ namespace NuGet.Services.EndToEnd.Support
             url = QueryHelpers.AddQueryString(url, "ignoreFilter", "true");
             url = QueryHelpers.AddQueryString(url, "semVerLevel", "2.0.0");
 
-            var duration = Stopwatch.StartNew();
+            // Determine if there is a cached response and if it is considered complete.
+            V2SearchResponse response;
             var complete = false;
-            do
+            var cached = false;
+            await _pollCacheLock.WaitAsync();
+            try
             {
-                var response = await _httpClient.GetJsonAsync<V2SearchResponse>(
+                if (_pollCache.TryGetValue(url, out response))
+                {
+                    complete = isComplete(response);
+                    cached = complete;
+
+                    // If the cached response is not considered complete, remove it from the cache.
+                    if (!complete)
+                    {
+                        logger.WriteLine($"The cached response for {id} {version} is no longer valid.");
+                        _pollCache.Remove(url);
+                    }
+                    else
+                    {
+                        logger.WriteLine($"The cached response for {id} {version} will be used.");
+                    }
+                }
+            }
+            finally
+            {
+                _pollCacheLock.Release();
+            }
+
+            var additionalPolling = _testSettings.SearchServiceConfiguration.AdditionalPollingDuration;
+            var duration = Stopwatch.StartNew();
+            var sinceFirstComplete = new Stopwatch();
+            var attempts = 0;
+            while (!cached                                                 // Keep polling if the response was not cached.
+                   && duration.Elapsed < TestData.SearchWaitDuration       // Keep polling if duration is less than the max.
+                   && (!complete                                           // Keep polling if we are not yet complete...
+                       || sinceFirstComplete.Elapsed < additionalPolling)) // ... or if we haven't polled for the additional duration.
+            {
+                if (attempts > 0)
+                {
+                    await Task.Delay(TestData.V3SleepDuration);
+                }
+
+                attempts++;
+
+                response = await _httpClient.GetJsonAsync<V2SearchResponse>(
                     url,
                     allowNotFound: false,
                     logResponseBody: false,
@@ -335,25 +379,50 @@ namespace NuGet.Services.EndToEnd.Support
 
                 complete = isComplete(response);
 
-                if (!complete && duration.Elapsed + TestData.V3SleepDuration < TestData.SearchWaitDuration)
+                if (complete)
                 {
-                    await Task.Delay(TestData.V3SleepDuration);
+                    if (additionalPolling > TimeSpan.Zero && !sinceFirstComplete.IsRunning)
+                    {
+                        logger.WriteLine($"Package {id} {version} is now complete after {duration}. Polling for an additional {additionalPolling}.");
+                        sinceFirstComplete.Start();
+                    }
+                }
+                else
+                {
+                    if (sinceFirstComplete.IsRunning)
+                    {
+                        logger.WriteLine($"Package {id} {version} is no longer complete after {duration}. Resetting the timer.");
+                        sinceFirstComplete.Reset();
+                    }
                 }
             }
-            while (!complete && duration.Elapsed < TestData.SearchWaitDuration);
+
+            // Cache the response by URL for subsequent polling operations.
+            if (complete)
+            {
+                await _pollCacheLock.WaitAsync();
+                try
+                {
+                    _pollCache[url] = response;
+                }
+                finally
+                {
+                    _pollCacheLock.Release();
+                }
+            }
 
             Assert.True(complete, string.Format(failureMessageFormat, url, duration.Elapsed));
             logger.WriteLine(string.Format(successMessageFormat, url, duration.Elapsed));
         }
 
-        public class V2SearchResponse
+        private class V2SearchResponse
         {
             public List<V2SearchPackage> Data { get; set; }
             public string Index { get; set; }
             public long TotalHits { get; set; }
         }
 
-        public class V2SearchPackage
+        private class V2SearchPackage
         {
             public V2SearchPackageRegistration PackageRegistration { get; set; }
             public string Version { get; set; }
@@ -382,14 +451,14 @@ namespace NuGet.Services.EndToEnd.Support
             public bool RequiresLicenseAcceptance { get; set; }
         }
 
-        public class V2Dependency
+        private class V2Dependency
         {
             public string Id { get; set; }
             public string VersionSpec { get; set; }
             public string TargetFramework { get; set; }
         }
 
-        public class V2SearchPackageRegistration
+        private class V2SearchPackageRegistration
         {
             public string Id { get; set; }
             public long DownloadCount { get; set; }
