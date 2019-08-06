@@ -14,11 +14,13 @@ namespace NuGet.Services.EndToEnd
         private readonly PushedPackagesFixture _pushedPackages;
         private readonly ITestOutputHelper _logger;
         private readonly Clients _clients;
+        private readonly TestSettings _testSettings;
 
         public PushTests(PushedPackagesFixture pushedPackages, ITestOutputHelper logger)
         {
             _pushedPackages = pushedPackages;
             _clients = pushedPackages.Clients;
+            _testSettings = pushedPackages.TestSettings;
             _logger = logger;
         }
 
@@ -105,6 +107,30 @@ namespace NuGet.Services.EndToEnd
             // Act & Assert
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             await _clients.Gallery.SearchPackageODataV2FromDBAsync(package.Id, package.NormalizedVersion, _logger);
+        }
+
+        /// <summary>
+        /// Push a package to the gallery and verify the owner information is propagated.
+        /// </summary>
+        public async Task NewlyPushedPackageHasOwnerInformation()
+        {
+            // Arrange
+            var package = await _pushedPackages.PrepareAsync(PackageType.SemVer1Stable, _logger);
+            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
+
+            // wait for package to become available
+            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
+
+            // Act
+            foreach (var searchService in searchServices)
+            {
+                var result = await _clients.V2V3Search.QueryAsync(searchService, $"q=packageid:{package.Id} owner:{_testSettings.TestAccountOwner}", _logger);
+                Assert.NotNull(result);
+                Assert.NotNull(result.Data);
+                Assert.NotEmpty(result.Data);
+                Assert.Equal(1, result.Data.Count);
+                Assert.Equal(package.Id, result.Data[0].Id);
+            }
         }
     }
 }

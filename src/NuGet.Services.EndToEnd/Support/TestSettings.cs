@@ -45,6 +45,8 @@ namespace NuGet.Services.EndToEnd.Support
 
         public bool IsRepositorySigningEnabled { get; set; }
 
+        public string TestAccountOwner { get; set; }
+
         public string ApiKey { get; set; }
 
         public string SymbolServerUrlTemplate { get; set; }

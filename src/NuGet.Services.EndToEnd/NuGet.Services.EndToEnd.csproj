@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
+    <Compile Include="Support\AzureSearchOnlyAttribute.cs" />
     <Compile Include="LicenseTests.cs" />
     <Compile Include="Support\Clients\SymbolServerClient.cs" />
     <Compile Include="Support\FlatContainerStringFileType.cs" />
