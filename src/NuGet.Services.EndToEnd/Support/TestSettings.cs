@@ -58,6 +58,12 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         public bool SkipGalleryTests { get; set; }
 
+        public bool IsTestingAzureSearchService()
+        {
+            var singleSearchServiceConfig = _testSettings.SearchServiceConfiguration?.SingleSearchService;
+            return singleSearchServiceConfig != null && singleSearchServiceConfig.UseConfiguredUrls;
+        }
+
         public static async Task<TestSettings> CreateAsync()
         {
             if (_testSettings != null)
