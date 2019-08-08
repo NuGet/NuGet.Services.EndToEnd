@@ -126,10 +126,11 @@ namespace NuGet.Services.EndToEnd
             foreach (var searchService in searchServices)
             {
                 var result = await _clients.V2V3Search.QueryAsync(searchService, $"q=packageid:{package.Id} owner:{_testSettings.TestAccountOwner}", _logger);
+
+                // Assert
                 Assert.NotNull(result);
                 Assert.NotNull(result.Data);
-                Assert.NotEmpty(result.Data);
-                Assert.Equal(1, result.Data.Count);
+                Assert.Single(result.Data);
                 Assert.Equal(package.Id, result.Data[0].Id);
             }
         }
