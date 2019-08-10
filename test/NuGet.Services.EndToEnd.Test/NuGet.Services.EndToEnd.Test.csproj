@@ -46,6 +46,7 @@
     <Compile Include="Support\PushedPackagesFixtureTests.cs" />
     <Compile Include="Support\RetryingAzureManagementAPIWrapperTests.cs" />
     <Compile Include="Support\RetryUtilityTests.cs" />
+    <Compile Include="Support\TestDataTests.cs" />
     <Compile Include="Support\TestSettingsTests.cs" />
   </ItemGroup>
   <ItemGroup>

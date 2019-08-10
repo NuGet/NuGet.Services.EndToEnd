@@ -369,6 +369,19 @@ namespace NuGet.Services.EndToEnd.Support
                     }));
                     break;
 
+                case PackageType.EmbeddedIconJpeg:
+                    packageToPrepare = new PackageToPrepare(Package.Create(new PackageCreationContext
+                    {
+                        Id = id,
+                        NormalizedVersion = "1.0.0",
+                        FullVersion = "1.0.0",
+                        Properties = new PackageProperties(packageType)
+                        {
+                            EmbeddedIconFilename = "icon.jpg"
+                        },
+                    }));
+                    break;
+
                 case PackageType.SemVer1Stable:
                 case PackageType.FullValidation:
                 default:
@@ -408,7 +421,7 @@ namespace NuGet.Services.EndToEnd.Support
                     .Select(x => new PhysicalPackageFile(x.Stream)
                     {
                         TargetPath = $"lib/{x.FileName}"
-                    });
+                    }).ToList();
 
                 var nupkgPackage = Package.Create(new PackageCreationContext()
                 {
@@ -430,7 +443,7 @@ namespace NuGet.Services.EndToEnd.Support
                     .Select(x => new PhysicalPackageFile(x.Stream)
                     {
                         TargetPath = $"lib/{x.FileName}"
-                    });
+                    }).ToList();
 
                 var snupkgPackage = Package.Create(new PackageCreationContext()
                 {
