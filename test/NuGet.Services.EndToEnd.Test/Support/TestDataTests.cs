@@ -15,11 +15,12 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class TestDataTests
     {
-        [Fact]
-        public void InjectsIconFile()
+        [Theory]
+        [InlineData("icon.jpg")]
+        [InlineData("icon.png")]
+        public void InjectsIconFile(string iconFilename)
         {
-            const string iconFilename = "icon.jpg";
-            const string resourceName = "Icons." + iconFilename;
+            string resourceName = "Icons." + iconFilename;
             var iconData = TestDataResourceUtility.GetResourceBytes(resourceName);
             var packageStream = TestData.BuildPackageStream(new PackageCreationContext
             {
@@ -40,10 +41,9 @@ namespace NuGet.Services.EndToEnd.Support
                 byte[] actualIconData;
 
                 using (var iconDataStream = iconEntry.Open())
-                using (var ms = new MemoryStream())
+                using (var br = new BinaryReader(iconDataStream))
                 {
-                    iconDataStream.CopyTo(ms);
-                    actualIconData = ms.ToArray();
+                    actualIconData = br.ReadBytes(iconData.Length);
                 }
 
                 Assert.Equal(iconData, actualIconData);
