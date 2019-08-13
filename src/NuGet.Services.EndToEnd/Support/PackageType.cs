@@ -24,5 +24,6 @@ namespace NuGet.Services.EndToEnd.Support
         LicenseFile,
         LicenseUrl,
         EmbeddedIconJpeg,
+        EmbeddedIconPng,
     }
 }

@@ -29,11 +29,9 @@ namespace NuGet.Services.EndToEnd
 
         [Theory]
         [InlineData(PackageType.EmbeddedIconJpeg)]
+        [InlineData(PackageType.EmbeddedIconPng)]
         public async Task PushedPackageWithIconIsAvailableInV3(PackageType packageType)
         {
-            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
-            var galleryUrl = _clients.Gallery.GetGalleryBaseUrl(_logger);
-            var expectedPath = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}/icon");
             string expectedExtension;
             switch (packageType)
             {
@@ -41,15 +39,22 @@ namespace NuGet.Services.EndToEnd
                     expectedExtension = ".jpg";
                     break;
 
+                case PackageType.EmbeddedIconPng:
+                    expectedExtension = ".png";
+                    break;
+
                 default:
-                    throw new ArgumentException($"Unsupprted package type {packageType}");
+                    throw new ArgumentException($"Unsupported package type {packageType}");
             }
             var expectedFilename = $"icon{expectedExtension}";
-            var expectedContent = TestDataResourceUtility.GetResourceBytes(expectedFilename);
+            var expectedContent = TestDataResourceUtility.GetResourceBytes($"Icons.{expectedFilename}");
+
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+            var expectedPath = $"/{package.Id.ToLowerInvariant()}/{package.NormalizedVersion.ToLowerInvariant()}/icon";
 
             // Act & Assert
             var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
-            Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath.AbsoluteUri, x.CatalogEntry.IconUrl));
+            Assert.All(packageRegistrationList, x => Assert.EndsWith(expectedPath, x.CatalogEntry.IconUrl));
 
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             var iconContents = await _clients.FlatContainer.TryAndGetFileBinaryContent(package.Id, package.NormalizedVersion, FlatContainerContentType.Icon, _logger);
@@ -66,7 +71,7 @@ namespace NuGet.Services.EndToEnd
                     _logger);
 
                 var data = Assert.Single(results.Data);
-                Assert.Equal(expectedPath.AbsoluteUri, data.IconUrl);
+                Assert.EndsWith(expectedPath, data.IconUrl);
                 Assert.Equal(package.NormalizedVersion, data.Version);
                 var version = Assert.Single(data.Versions);
                 Assert.Equal(package.NormalizedVersion, version.Version);
