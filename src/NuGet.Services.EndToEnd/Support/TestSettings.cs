@@ -123,7 +123,7 @@ namespace NuGet.Services.EndToEnd.Support
         {
             var builder = new ConfigurationBuilder()
              .SetBasePath(Path.Combine(Environment.CurrentDirectory, "config"))
-             .AddJsonFile(configurationName + ".json");
+             .AddJsonFile(configurationName + ".json", optional: false);
 
             var configurationRoot = builder.Build();
 
