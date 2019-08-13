@@ -116,7 +116,7 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 if (allowNotFound && response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    return default;
+                    return default(TResult);
                 }
 
                 await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
