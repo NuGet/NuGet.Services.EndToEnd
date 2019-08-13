@@ -121,9 +121,17 @@ namespace NuGet.Services.EndToEnd.Support
 
         private static async Task<TestSettings> CreateInternalAsync(string configurationName)
         {
+            var configurationDirectoryName = Path.Combine(Environment.CurrentDirectory, "config");
+            var configurationFilename = configurationName + ".json";
+            var configurationFile = new FileInfo(Path.Combine(configurationDirectoryName, configurationFilename));
+            if (!configurationFile.Exists)
+            {
+                throw new InvalidOperationException($"Configuration file not found: {configurationFile.FullName}");
+            }
+
             var builder = new ConfigurationBuilder()
-             .SetBasePath(Path.Combine(Environment.CurrentDirectory, "config"))
-             .AddJsonFile(configurationName + ".json");
+                .SetBasePath(configurationDirectoryName)
+                .AddJsonFile(configurationFilename);
 
             var configurationRoot = builder.Build();
 
