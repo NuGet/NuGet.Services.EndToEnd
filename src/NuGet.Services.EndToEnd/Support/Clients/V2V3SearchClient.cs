@@ -486,6 +486,7 @@ namespace NuGet.Services.EndToEnd.Support
             public long TotalDownloads { get; set; }
             public List<V3VersionEntry> Versions { get; set; }
             public string LicenseUrl { get; set; }
+            public string IconUrl { get; set; }
         }
 
         public class V3VersionEntry

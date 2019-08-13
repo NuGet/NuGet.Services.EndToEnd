@@ -3,8 +3,9 @@
 
 namespace NuGet.Services.EndToEnd.Support
 {
-    public enum FlatContainerStringFileType
+    public enum FlatContainerContentType
     {
         License,
+        Icon,
     }
 }

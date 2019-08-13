@@ -47,7 +47,7 @@
     <Compile Include="LicenseTests.cs" />
     <Compile Include="Support\AssemblyMetadataPackageFile.cs" />
     <Compile Include="Support\Clients\SymbolServerClient.cs" />
-    <Compile Include="Support\FlatContainerStringFileType.cs" />
+    <Compile Include="Support\FlatContainerContentType.cs" />
     <Compile Include="Support\PackageProperties.cs" />
     <Compile Include="Support\Utilities\PortableMetadataReader.cs" />
     <Compile Include="Support\Utilities\TestDataResourceUtility.cs" />
