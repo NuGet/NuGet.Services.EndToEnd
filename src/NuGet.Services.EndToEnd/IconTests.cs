@@ -46,8 +46,8 @@ namespace NuGet.Services.EndToEnd
                 default:
                     throw new ArgumentException($"Unsupported package type {packageType}");
             }
-            var expectedFilename = $"icon{expectedExtension}";
-            var expectedContent = TestDataResourceUtility.GetResourceBytes($"Icons.{expectedFilename}");
+            var sourceFilename = $"icon{expectedExtension}";
+            var expectedContent = TestDataResourceUtility.GetResourceBytes($"Icons.{sourceFilename}");
 
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
             var expectedPath = $"/{package.Id.ToLowerInvariant()}/{package.NormalizedVersion.ToLowerInvariant()}/icon";
