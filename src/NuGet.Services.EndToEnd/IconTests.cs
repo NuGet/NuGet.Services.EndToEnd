@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NuGet.Services.EndToEnd.Support;
 using NuGet.Services.EndToEnd.Support.Utilities;
@@ -30,36 +27,43 @@ namespace NuGet.Services.EndToEnd
         [Theory]
         [InlineData(PackageType.EmbeddedIconJpeg)]
         [InlineData(PackageType.EmbeddedIconPng)]
-        public async Task PushedPackageWithIconIsAvailableInV3(PackageType packageType)
+        public async Task PushedPackageWithIconIsAvailableInRegistration(PackageType packageType)
         {
-            string expectedExtension;
-            switch (packageType)
-            {
-                case PackageType.EmbeddedIconJpeg:
-                    expectedExtension = ".jpg";
-                    break;
-
-                case PackageType.EmbeddedIconPng:
-                    expectedExtension = ".png";
-                    break;
-
-                default:
-                    throw new ArgumentException($"Unsupported package type {packageType}");
-            }
-            var sourceFilename = $"icon{expectedExtension}";
-            var expectedContent = TestDataResourceUtility.GetResourceBytes($"Icons.{sourceFilename}");
-
+            // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
-            var expectedPath = $"/{package.Id.ToLowerInvariant()}/{package.NormalizedVersion.ToLowerInvariant()}/icon";
+            var expectedPath = GetExpectedIconPath(package);
 
             // Act & Assert
             var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
             Assert.All(packageRegistrationList, x => Assert.EndsWith(expectedPath, x.CatalogEntry.IconUrl));
+        }
 
+        [Theory]
+        [InlineData(PackageType.EmbeddedIconJpeg)]
+        [InlineData(PackageType.EmbeddedIconPng)]
+        public async Task PushedPackageWithIconIsAvailableInFlatContainer(PackageType packageType)
+        {
+            // Arrange
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+            var expectedContent = GetIconData(packageType);
+            var expectedPath = GetExpectedIconPath(package);
+
+            // Act & Assert
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             var iconContents = await _clients.FlatContainer.TryAndGetFileBinaryContent(package.Id, package.NormalizedVersion, FlatContainerContentType.Icon, _logger);
             Assert.All(iconContents, x => Assert.Equal(expectedContent, x));
+        }
 
+        [Theory]
+        [InlineData(PackageType.EmbeddedIconJpeg)]
+        [InlineData(PackageType.EmbeddedIconPng)]
+        public async Task PushedPackageWithIconIsAvailableInSearch(PackageType packageType)
+        {
+            // Arrange
+            var package = await _pushedPackages.PrepareAsync(packageType, _logger);
+            var expectedPath = GetExpectedIconPath(package);
+
+            // Act & Assert
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
             var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
 
@@ -76,6 +80,32 @@ namespace NuGet.Services.EndToEnd
                 var version = Assert.Single(data.Versions);
                 Assert.Equal(package.NormalizedVersion, version.Version);
             }
+        }
+
+        private static string GetExpectedIconPath(Package package)
+        {
+            return $"/{package.Id.ToLowerInvariant()}/{package.NormalizedVersion.ToLowerInvariant()}/icon";
+        }
+
+        private static byte[] GetIconData(PackageType packageType)
+        {
+            string sourceExtension;
+            switch (packageType)
+            {
+                case PackageType.EmbeddedIconJpeg:
+                    sourceExtension = ".jpg";
+                    break;
+
+                case PackageType.EmbeddedIconPng:
+                    sourceExtension = ".png";
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unsupported package type {packageType}");
+            }
+            var sourceFilename = $"icon{sourceExtension}";
+            var expectedContent = TestDataResourceUtility.GetResourceBytes($"Icons.{sourceFilename}");
+            return expectedContent;
         }
     }
 }
