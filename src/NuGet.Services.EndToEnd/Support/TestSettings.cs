@@ -122,8 +122,8 @@ namespace NuGet.Services.EndToEnd.Support
         private static async Task<TestSettings> CreateInternalAsync(string configurationName)
         {
             var builder = new ConfigurationBuilder()
-             .SetBasePath(Path.Combine(Environment.CurrentDirectory, "config"))
-             .AddJsonFile(configurationName + ".json");
+                .SetBasePath(Path.Combine(Environment.CurrentDirectory, "config"))
+                .AddJsonFile(configurationName + ".json", optional: false);
 
             var configurationRoot = builder.Build();
 
