@@ -43,11 +43,14 @@
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
     <Compile Include="AzureSearchOnlyAttribute.cs" />
+    <Compile Include="IconTests.cs" />
     <Compile Include="LicenseTests.cs" />
+    <Compile Include="Support\AssemblyMetadataPackageFile.cs" />
     <Compile Include="Support\Clients\SymbolServerClient.cs" />
-    <Compile Include="Support\FlatContainerStringFileType.cs" />
+    <Compile Include="Support\FlatContainerContentType.cs" />
     <Compile Include="Support\PackageProperties.cs" />
     <Compile Include="Support\Utilities\PortableMetadataReader.cs" />
+    <Compile Include="Support\Utilities\TestDataResourceUtility.cs" />
     <Compile Include="SymbolsPackageTests.cs" />
     <Compile Include="Support\Clients\ClientHelper.cs" />
     <Compile Include="Support\Clients\IRetryingAzureManagementAPIWrapper.cs" />
@@ -107,6 +110,8 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="project.json" />
+    <EmbeddedResource Include="Support\TestData\Icons\icon.png" />
+    <EmbeddedResource Include="Support\TestData\Icons\icon.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Support\NuGetExe\nuget.4.1.0.exe">

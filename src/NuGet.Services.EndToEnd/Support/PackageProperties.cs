@@ -14,6 +14,7 @@ namespace NuGet.Services.EndToEnd.Support
         public LicenseMetadata LicenseMetadata { get; }
         public string LicenseFileContent { get; }
         public Uri LicenseUrl { get; }
+        public string EmbeddedIconFilename { get; set; }
 
         public PackageProperties(PackageType packageType)
         {

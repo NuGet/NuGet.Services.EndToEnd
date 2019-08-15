@@ -14,6 +14,6 @@ namespace NuGet.Services.EndToEnd.Support
         public IEnumerable<PackageDependencyGroup> DependencyGroups { get; set; }
 
         public PackageProperties Properties { get; set; }
-        public IEnumerable<PhysicalPackageFile> Files { get; set; }
+        public IReadOnlyCollection<IPackageFile> Files { get; set; }
     }
 }
