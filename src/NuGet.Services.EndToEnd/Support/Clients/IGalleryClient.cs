@@ -16,6 +16,7 @@ namespace NuGet.Services.EndToEnd.Support
         Task PushAsync(Stream nupkgStream, ITestOutputHelper logger, PackageType packageType);
         Task UnlistAsync(string id, string version, ITestOutputHelper logger);
         Task RelistAsync(string id, string version, ITestOutputHelper logger);
+        Task DeprecateAsync(string id, IReadOnlyCollection<string> versions, PackageDeprecationContext context, ITestOutputHelper logger);
         Task<IList<string>> AutocompletePackageIdsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger);
         Task<IList<string>> AutocompletePackageVersionsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger);
         Task SearchPackageODataV2FromDBAsync(string id, string version, ITestOutputHelper logger);

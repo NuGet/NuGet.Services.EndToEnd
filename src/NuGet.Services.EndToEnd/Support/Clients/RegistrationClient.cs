@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -38,7 +37,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// <param name="listed">The listed state to poll for.</param>
         /// <param name="semVer2">Whether or not the provided package is SemVer 2.0.0.</param>
         /// <param name="logger">The logger.</param>
-        /// <returns>Returns a task that completes when the package has the specied listed state or the timeout has occurred.</returns>
+        /// <returns>Returns a task that completes when the package has the specified listed state or the timeout has occurred.</returns>
         public async Task WaitForListedStateAsync(
             string id,
             string version,
@@ -58,6 +57,61 @@ namespace NuGet.Services.EndToEnd.Support
                 successMessageFormat: $"Package {id} {version} became {successState} on {{0}} after waiting {{1}}.",
                 failureMessageFormat: $"Package {id} {version} was still {failureState} on {{0}} after waiting {{1}}.",
                 logger: logger);
+        }
+
+        /// <summary>
+        /// Polls all registration base URLs until the provided ID and version has the specified listed state.
+        /// </summary>
+        /// <param name="id">The package ID.</param>
+        /// <param name="version">The package version.</param>
+        /// <param name="deprecation">The deprecation state to poll for.</param>
+        /// <param name="logger">The logger.</param>
+        /// <returns>Returns a task that completes when the package has the specified deprecation state or the timeout has occurred.</returns>
+        public async Task WaitForDeprecationStateAsync(
+            string id,
+            string version,
+            PackageDeprecationContext deprecation,
+            ITestOutputHelper logger)
+        {
+            var successState = deprecation != null ? "deprecated" : "undeprecated";
+            var failureState = deprecation != null ? "undeprecated" : "deprecated";
+
+            await PollAsync(
+                id,
+                version,
+                semVer2: true,
+                isComplete: catalogEntry => 
+                    catalogEntry.Id == id 
+                    && catalogEntry.Version == version
+                    && (catalogEntry.Deprecation == null) == (deprecation == null)
+                    && HasReason(catalogEntry, "Legacy", deprecation?.IsLegacy ?? false)
+                    && HasReason(catalogEntry, "CriticalBugs", deprecation?.HasCriticalBugs ?? false)
+                    && HasReason(catalogEntry, "Other", deprecation?.IsOther ?? false)
+                    && deprecation?.Message == catalogEntry.Deprecation?.Message 
+                    && deprecation?.AlternatePackageId == catalogEntry.Deprecation?.AlternatePackage?.Id
+                    && catalogEntry.Deprecation?.AlternatePackage?.Range == GetExpectedAlternatePackageRange(deprecation),
+                startingMessage: $"Waiting for package {id} {version} to be {successState} on registration base URLs:",
+                successMessageFormat: $"Package {id} {version} became {successState} on {{0}} after waiting {{1}}.",
+                failureMessageFormat: $"Package {id} {version} was still {failureState} on {{0}} after waiting {{1}}.",
+                logger: logger);
+        }
+
+        private static bool HasReason(CatalogEntry catalogEntry, string reasonName, bool hasReason)
+        {
+            return catalogEntry.Deprecation?.Reasons.Contains(reasonName) ?? false == hasReason;
+        }
+
+        private static string GetExpectedAlternatePackageRange(PackageDeprecationContext deprecation)
+        {
+            if (deprecation?.AlternatePackageId == null)
+            {
+                return null;
+            }
+
+            var alternatePackageVersion = deprecation.AlternatePackageVersion;
+            return alternatePackageVersion == null 
+                ? $"*" 
+                : $"[{alternatePackageVersion}, {alternatePackageVersion}]";
         }
 
         /// <summary>
@@ -238,6 +292,20 @@ namespace NuGet.Services.EndToEnd.Support
             public string LicenseExpression { get; set; }
             public string LicenseUrl { get; set; }
             public string IconUrl { get; set; }
+            public CatalogDeprecation Deprecation { get; set; }
+        }
+
+        public class CatalogDeprecation
+        {
+            public string Message { get; set; }
+            public IEnumerable<string> Reasons { get; set; }
+            public CatalogAlternatePackage AlternatePackage { get; set; }
+        }
+
+        public class CatalogAlternatePackage
+        {
+            public string Id { get; set; }
+            public string Range { get; set; }
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
+using Newtonsoft.Json.Linq;
 using NuGet.Services.AzureManagement;
 using NuGet.Versioning;
 using Xunit;
@@ -157,10 +158,28 @@ namespace NuGet.Services.EndToEnd.Support
             await SendToPackageAsync(HttpMethod.Delete, id, version, logger);
         }
 
+        public async Task DeprecateAsync(string id, IReadOnlyCollection<string> versions, PackageDeprecationContext context, ITestOutputHelper logger)
+        {
+            var galleryEndpoint = await GetGalleryUrlAsync(logger);
+            var url = $"{galleryEndpoint}/api/v2/package/{id}/deprecations";
+
+            var bodyJObject = new JObject(
+                new JProperty("versions", versions),
+                new JProperty("isLegacy", context?.IsLegacy ?? false),
+                new JProperty("hasCriticalBugs", context?.HasCriticalBugs ?? false),
+                new JProperty("isOther", context?.IsOther ?? false),
+                new JProperty("alternatePackageId", context?.AlternatePackageId),
+                new JProperty("alternatePackageVersion", context?.AlternatePackageVersion),
+                new JProperty("message", context?.Message));
+
+            var bodyJson = bodyJObject.ToString();
+            await SendAsync(HttpMethod.Put, url, logger, new StringContent(bodyJson));
+        }
+
         public async Task SearchPackageODataV2FromDBAsync(string id, string normalizedVersion, ITestOutputHelper logger)
         {
             var galleryEndpoint = await GetGalleryUrlAsync(logger);
-            // Add 1 eq 1 that will block the search hijack and will execute the query against the database.
+            // Add 1 eq 1 to block the search hijack and execute the query against the database.
             var urlRootAndPath = $"{galleryEndpoint}/api/v2/Packages()";
             var queryParameters = new Dictionary<string, string>()
             {
@@ -217,8 +236,13 @@ namespace NuGet.Services.EndToEnd.Support
         {
             var galleryEndpoint = await GetGalleryUrlAsync(logger);
             var url = $"{galleryEndpoint}/api/v2/package/{id}/{version}";
+            await SendAsync(method, url, logger);
+        }
+
+        private async Task SendAsync(HttpMethod method, string url, ITestOutputHelper logger, HttpContent content = null)
+        {
             using (var httpClient = new HttpClient())
-            using (var request = new HttpRequestMessage(method, url))
+            using (var request = new HttpRequestMessage(method, url) { Content = content })
             {
                 request.Headers.Add(ApiKeyHeader, _testSettings.ApiKey);
 

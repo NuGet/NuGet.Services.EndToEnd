@@ -395,8 +395,20 @@ namespace NuGet.Services.EndToEnd.Support
                     }));
                     break;
 
+                case PackageType.DeprecatedMultiple1:
+                case PackageType.DeprecatedMultiple2:
+                    packageToPrepare = new PackageToPrepare(
+                        Package.Create(
+                            PackageType.DeprecatedMultiple1, 
+                            GetPackageId(PackageType.DeprecatedMultiple1), 
+                            packageType == PackageType.DeprecatedMultiple1 ? "1.0.0" : "2.0.0"));
+                    break;
+
                 case PackageType.SemVer1Stable:
                 case PackageType.FullValidation:
+                case PackageType.DeprecatedSingleReason:
+                case PackageType.DeprecatedAlternateRegistration:
+                case PackageType.DeprecatedAlternateVersion:
                 default:
                     packageToPrepare = new PackageToPrepare(Package.Create(packageType, id, "1.0.0"));
                     break;
