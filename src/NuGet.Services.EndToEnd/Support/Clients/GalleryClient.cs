@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -164,7 +165,7 @@ namespace NuGet.Services.EndToEnd.Support
             var url = $"{galleryEndpoint}/api/v2/package/{id}/deprecations";
 
             var bodyJObject = new JObject(
-                new JProperty("versions", versions),
+                new JProperty("versions", new JArray(versions.ToArray())),
                 new JProperty("isLegacy", context?.IsLegacy ?? false),
                 new JProperty("hasCriticalBugs", context?.HasCriticalBugs ?? false),
                 new JProperty("isOther", context?.IsOther ?? false),
