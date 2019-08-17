@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
@@ -174,7 +175,11 @@ namespace NuGet.Services.EndToEnd.Support
                 new JProperty("message", context?.Message));
 
             var bodyJson = bodyJObject.ToString();
-            await SendAsync(HttpMethod.Put, url, logger, new StringContent(bodyJson));
+            await SendAsync(
+                HttpMethod.Put, 
+                url, 
+                logger, 
+                new StringContent(bodyJson, Encoding.UTF8, "application/json"));
         }
 
         public async Task SearchPackageODataV2FromDBAsync(string id, string normalizedVersion, ITestOutputHelper logger)
