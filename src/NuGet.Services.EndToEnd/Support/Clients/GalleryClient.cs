@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Services.AzureManagement;
 using NuGet.Versioning;
@@ -165,16 +166,18 @@ namespace NuGet.Services.EndToEnd.Support
             var galleryEndpoint = await GetGalleryUrlAsync(logger);
             var url = $"{galleryEndpoint}/api/v2/package/{id}/deprecations";
 
-            var bodyJObject = new JObject(
-                new JProperty("versions", new JArray(versions.ToArray())),
-                new JProperty("isLegacy", context?.IsLegacy ?? false),
-                new JProperty("hasCriticalBugs", context?.HasCriticalBugs ?? false),
-                new JProperty("isOther", context?.IsOther ?? false),
-                new JProperty("alternatePackageId", context?.AlternatePackageId),
-                new JProperty("alternatePackageVersion", context?.AlternatePackageVersion),
-                new JProperty("message", context?.Message));
+            var body = new
+            {
+                versions,
+                isLegacy = context?.IsLegacy ?? false,
+                hasCriticalBugs = context?.HasCriticalBugs ?? false,
+                isOther = context?.IsOther ?? false,
+                alternatePackageId = context?.AlternatePackageId,
+                alternatePackageVersion = context?.AlternatePackageVersion,
+                message = context?.Message
+            };
 
-            var bodyJson = bodyJObject.ToString();
+            var bodyJson = JsonConvert.SerializeObject(body);
             await SendAsync(
                 HttpMethod.Put, 
                 url, 
