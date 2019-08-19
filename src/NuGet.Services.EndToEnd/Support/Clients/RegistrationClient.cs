@@ -98,7 +98,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         private static bool HasReason(CatalogEntry catalogEntry, string reasonName, bool hasReason)
         {
-            return catalogEntry.Deprecation?.Reasons.Contains(reasonName) ?? false == hasReason;
+            return (catalogEntry.Deprecation?.Reasons.Contains(reasonName) ?? false) == hasReason;
         }
 
         private static string GetExpectedAlternatePackageRange(PackageDeprecationContext deprecation)
