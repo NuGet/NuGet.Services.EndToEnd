@@ -408,7 +408,6 @@ namespace NuGet.Services.EndToEnd.Support
                     break;
 
                 case PackageType.Deprecated:
-                case PackageType.Undeprecated:
                     packageToPrepare = new PackageToPrepare(
                         Package.Create(packageType, id, "1.0.0"),
                         PackageDeprecationContext.Default);

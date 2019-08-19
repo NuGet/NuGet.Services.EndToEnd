@@ -30,20 +30,5 @@ namespace NuGet.Services.EndToEnd
             await _clients.Registration.WaitForDeprecationStateAsync(
                 package.Id, package.FullVersion, PackageDeprecationContext.Default, _logger);
         }
-
-        [Fact]
-        public async Task UndeprecatePackage()
-        {
-            var package = await _pushedPackages.PrepareAsync(PackageType.Undeprecated, _logger);
-
-            await _clients.Registration.WaitForDeprecationStateAsync(
-                package.Id, package.FullVersion, PackageDeprecationContext.Default, _logger);
-
-            await _clients.Gallery.DeprecateAsync(
-                package.Id, new[] { package.FullVersion }, context: null, logger: _logger);
-
-            await _clients.Registration.WaitForDeprecationStateAsync(
-                package.Id, package.FullVersion, deprecation: null, logger: _logger);
-        }
     }
 }
