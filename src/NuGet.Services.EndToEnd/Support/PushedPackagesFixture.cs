@@ -185,9 +185,21 @@ namespace NuGet.Services.EndToEnd.Support
 
                         if (packageToPrepare.Unlist)
                         {
-                            logger.WriteLine($"Package of type {packageType} need to be unlisted. Unlisting {packageToPrepare}.");
+                            logger.WriteLine($"Package of type {packageType} needs to be unlisted. Unlisting {packageToPrepare}.");
                             await _galleryClient.UnlistAsync(packageToPrepare.Package.Id, packageToPrepare.Package.NormalizedVersion, logger);
                             logger.WriteLine($"Package {packageToPrepare} has been unlisted.");
+                        }
+
+                        if (packageToPrepare.Deprecation != null)
+                        {
+                            logger.WriteLine($"Package of type {packageType} needs to deprecated. Deprecating {packageToPrepare}.");
+                            await _galleryClient.DeprecateAsync(
+                                packageToPrepare.Package.Id, 
+                                new[] { packageToPrepare.Package.NormalizedVersion }, 
+                                packageToPrepare.Deprecation, 
+                                logger);
+
+                            logger.WriteLine($"Package {packageToPrepare} has been deprecated.");
                         }
                     }
                     catch (Exception ex)
@@ -395,20 +407,15 @@ namespace NuGet.Services.EndToEnd.Support
                     }));
                     break;
 
-                case PackageType.DeprecatedMultiple1:
-                case PackageType.DeprecatedMultiple2:
+                case PackageType.Deprecated:
+                case PackageType.Undeprecated:
                     packageToPrepare = new PackageToPrepare(
-                        Package.Create(
-                            PackageType.DeprecatedMultiple1, 
-                            GetPackageId(PackageType.DeprecatedMultiple1), 
-                            packageType == PackageType.DeprecatedMultiple1 ? "1.0.0" : "2.0.0"));
+                        Package.Create(packageType, id, "1.0.0"),
+                        PackageDeprecationContext.Default);
                     break;
 
                 case PackageType.SemVer1Stable:
                 case PackageType.FullValidation:
-                case PackageType.DeprecatedSingleReason:
-                case PackageType.DeprecatedAlternateRegistration:
-                case PackageType.DeprecatedAlternateVersion:
                 default:
                     packageToPrepare = new PackageToPrepare(Package.Create(packageType, id, "1.0.0"));
                     break;
@@ -549,18 +556,31 @@ namespace NuGet.Services.EndToEnd.Support
 
         private class PackageToPrepare
         {
-            public PackageToPrepare(Package package) : this(package, unlist: false)
+            public PackageToPrepare(Package package) 
+                : this(package, unlist: false, deprecation: null)
             {
             }
 
             public PackageToPrepare(Package package, bool unlist)
+                : this(package, unlist, deprecation: null)
+            {
+            }
+
+            public PackageToPrepare(Package package, PackageDeprecationContext deprecation)
+                : this(package, unlist: false, deprecation: deprecation)
+            {
+            }
+
+            public PackageToPrepare(Package package, bool unlist, PackageDeprecationContext deprecation)
             {
                 Package = package;
                 Unlist = unlist;
+                Deprecation = deprecation;
             }
 
             public Package Package { get; }
             public bool Unlist { get; }
+            public PackageDeprecationContext Deprecation { get; }
 
             public override string ToString()
             {
