@@ -60,58 +60,36 @@ namespace NuGet.Services.EndToEnd.Support
         }
 
         /// <summary>
-        /// Polls all registration base URLs until the provided ID and version has the specified listed state.
+        /// Polls all registration base URLs until the provided ID and version has the specified deprecation state.
         /// </summary>
         /// <param name="id">The package ID.</param>
         /// <param name="version">The package version.</param>
-        /// <param name="deprecation">The deprecation state to poll for.</param>
+        /// <param name="isDeprecated">The deprecation state to poll for.</param>
         /// <param name="logger">The logger.</param>
         /// <returns>Returns a task that completes when the package has the specified deprecation state or the timeout has occurred.</returns>
-        public async Task WaitForDeprecationStateAsync(
+        public async Task<CatalogDeprecation> WaitForDeprecationStateAsync(
             string id,
             string version,
-            PackageDeprecationContext deprecation,
+            bool isDeprecated,
             ITestOutputHelper logger)
         {
-            var successState = deprecation != null ? "deprecated" : "undeprecated";
-            var failureState = deprecation != null ? "undeprecated" : "deprecated";
+            var successState = isDeprecated ? "deprecated" : "undeprecated";
+            var failureState = isDeprecated ? "undeprecated" : "deprecated";
 
-            await PollAsync(
+            var package = await PollAsync(
                 id,
                 version,
                 semVer2: true,
                 isComplete: catalogEntry => 
                     catalogEntry.Id == id 
                     && catalogEntry.Version == version
-                    && (catalogEntry.Deprecation == null) == (deprecation == null)
-                    && HasReason(catalogEntry, "Legacy", deprecation?.IsLegacy ?? false)
-                    && HasReason(catalogEntry, "CriticalBugs", deprecation?.HasCriticalBugs ?? false)
-                    && HasReason(catalogEntry, "Other", deprecation?.IsOther ?? false)
-                    && deprecation?.Message == catalogEntry.Deprecation?.Message 
-                    && deprecation?.AlternatePackageId == catalogEntry.Deprecation?.AlternatePackage?.Id
-                    && catalogEntry.Deprecation?.AlternatePackage?.Range == GetExpectedAlternatePackageRange(deprecation),
+                    && (catalogEntry.Deprecation != null) == isDeprecated,
                 startingMessage: $"Waiting for package {id} {version} to be {successState} on registration base URLs:",
                 successMessageFormat: $"Package {id} {version} became {successState} on {{0}} after waiting {{1}}.",
                 failureMessageFormat: $"Package {id} {version} was still {failureState} on {{0}} after waiting {{1}}.",
                 logger: logger);
-        }
 
-        private static bool HasReason(CatalogEntry catalogEntry, string reasonName, bool hasReason)
-        {
-            return (catalogEntry.Deprecation?.Reasons.Contains(reasonName) ?? false) == hasReason;
-        }
-
-        private static string GetExpectedAlternatePackageRange(PackageDeprecationContext deprecation)
-        {
-            if (deprecation?.AlternatePackageId == null)
-            {
-                return null;
-            }
-
-            var alternatePackageVersion = deprecation.AlternatePackageVersion;
-            return alternatePackageVersion == null 
-                ? $"*" 
-                : $"[{alternatePackageVersion}, {alternatePackageVersion}]";
+            return package.Last().CatalogEntry.Deprecation;
         }
 
         /// <summary>
@@ -298,7 +276,7 @@ namespace NuGet.Services.EndToEnd.Support
         public class CatalogDeprecation
         {
             public string Message { get; set; }
-            public IEnumerable<string> Reasons { get; set; }
+            public IReadOnlyCollection<string> Reasons { get; set; }
             public CatalogAlternatePackage AlternatePackage { get; set; }
         }
 
