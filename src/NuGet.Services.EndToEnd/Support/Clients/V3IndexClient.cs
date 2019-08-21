@@ -24,22 +24,34 @@ namespace NuGet.Services.EndToEnd.Support
             _testSettings = testSettings;
         }
 
-        public async Task<IReadOnlyList<string>> GetSearchBaseUrlsAsync(ITestOutputHelper logger)
+        public async Task<IReadOnlyList<string>> GetSearchGalleryQueryServiceUrlsAsync(ITestOutputHelper logger)
         {
             var v3Index = await GetV3IndexAsync(logger);
-            return GetResourceUrls(v3Index, t => t.Type.StartsWith("SearchGalleryQueryService/"));
+            return GetResourceUrls(v3Index, "SearchGalleryQueryService");
+        }
+
+        public async Task<IReadOnlyList<string>> GetSearchQueryServiceUrlsAsync(ITestOutputHelper logger)
+        {
+            var v3Index = await GetV3IndexAsync(logger);
+            return GetResourceUrls(v3Index, "SearchQueryService");
+        }
+
+        public async Task<IReadOnlyList<string>> GetSearchAutocompleteServiceUrlsAsync(ITestOutputHelper logger)
+        {
+            var v3Index = await GetV3IndexAsync(logger);
+            return GetResourceUrls(v3Index, "SearchAutocompleteService");
         }
 
         public async Task<IReadOnlyList<string>> GetFlatContainerBaseUrlsAsync(ITestOutputHelper logger)
         {
             var v3Index = await GetV3IndexAsync(logger);
-            return GetResourceUrls(v3Index, t => t.Type.StartsWith("PackageBaseAddress/"));
+            return GetResourceUrls(v3Index, "PackageBaseAddress");
         }
 
         public async Task<IReadOnlyList<string>> GetRegistrationBaseUrlsAsync(ITestOutputHelper logger)
         {
             var v3Index = await GetV3IndexAsync(logger);
-            return GetResourceUrls(v3Index, t => t.Type.StartsWith("RegistrationsBaseUrl/"));
+            return GetResourceUrls(v3Index, "RegistrationsBaseUrl");
         }
 
         public async Task<IReadOnlyList<string>> GetSemVer2RegistrationBaseUrlsAsync(ITestOutputHelper logger)
@@ -52,11 +64,18 @@ namespace NuGet.Services.EndToEnd.Support
                      NuGetVersion.Parse(t.ClientVersion) >= Version430Alpha);
         }
 
+        private static List<string> GetResourceUrls(V3Index v3Index, string resourceType)
+        {
+            return GetResourceUrls(
+                v3Index,
+                r => r.Type == resourceType || r.Type.StartsWith($"{resourceType}/"));
+        }
+
         private static List<string> GetResourceUrls(V3Index v3Index, Func<Resource, bool> isMatch)
         {
             return v3Index
                 .Resources
-                .Where(r => isMatch(r))
+                .Where(isMatch)
                 .Select(r => r.Id.TrimEnd('/'))
                 .Distinct()
                 .OrderBy(u => u)

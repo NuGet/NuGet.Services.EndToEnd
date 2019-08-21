@@ -145,13 +145,32 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
+        private async Task<List<string>> GetSearchBaseUrlsAsync(ITestOutputHelper logger)
+        {
+            var galleryQueryServiceUrls = await _v3IndexClient.GetSearchGalleryQueryServiceUrlsAsync(logger);
+            var searchQueryServiceUrls = await _v3IndexClient.GetSearchQueryServiceUrlsAsync(logger);
+            var autocompleteServiceUrls = await _v3IndexClient.GetSearchAutocompleteServiceUrlsAsync(logger);
+
+            return galleryQueryServiceUrls
+                .Concat(searchQueryServiceUrls)
+                .Concat(autocompleteServiceUrls)
+                .Select(url =>
+                {
+                    var uri = new Uri(url, UriKind.Absolute);
+                    return uri.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
+                })
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+        }
+
         public async Task<IReadOnlyList<SearchServiceProperties>> GetSearchServicesAsync(ITestOutputHelper logger)
         {
             var searchServices = new List<SearchServiceProperties>();
 
             if (_azureManagementAPIWrapper == null)
             {
-                var searchBaseUrls = await _v3IndexClient.GetSearchBaseUrlsAsync(logger);
+                var searchBaseUrls = await GetSearchBaseUrlsAsync(logger);
 
                 logger.WriteLine($"Configured search service mode: use index.json search services and use hardcoded" +
                                  $" instance count({_testSettings.SearchServiceConfiguration.OverrideInstanceCount}).Services: { string.Join(", ", searchBaseUrls)}");
@@ -161,21 +180,24 @@ namespace NuGet.Services.EndToEnd.Support
                     throw new ArgumentException(nameof(_testSettings.SearchServiceConfiguration.OverrideInstanceCount));
                 }
 
-                searchServices.AddRange(searchBaseUrls.Select(url => new SearchServiceProperties(new Uri(url), _testSettings.SearchServiceConfiguration.OverrideInstanceCount))
-                                               .ToList());
+                searchServices.AddRange(searchBaseUrls
+                    .Select(url => new SearchServiceProperties(
+                        new Uri(url),
+                        _testSettings.SearchServiceConfiguration.OverrideInstanceCount))
+                    .ToList());
             }
             else
             {
                 if (_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices != null)
                 {
-                    var searchBaseUrls = await _v3IndexClient.GetSearchBaseUrlsAsync(logger);
+                    var searchBaseUrls = await GetSearchBaseUrlsAsync(logger);
 
                     logger.WriteLine($"Configured search service mode: use index.json search services and get service" +
                                      $" properties from Azure. Services: { string.Join(", ", searchBaseUrls)}");
 
                     foreach (var url in searchBaseUrls)
                     {
-                        // Clean the URL
+                        // Look up the service information by host name.
                         var uri = new Uri(url);
                         var host = uri.Host;
 
