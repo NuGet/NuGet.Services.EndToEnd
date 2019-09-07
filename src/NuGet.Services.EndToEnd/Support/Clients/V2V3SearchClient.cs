@@ -234,36 +234,71 @@ namespace NuGet.Services.EndToEnd.Support
 
         private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(ServiceDetails serviceDetails, ITestOutputHelper logger)
         {
-            if (serviceDetails.UseConfiguredUrls)
+            // If the configs contain only hardcoded URLs, returns the hardcoded URLs.
+            // If the configs contain only cloud service details, looks up URLs and instance count from Azure.
+            // If the configs contain both hardcoded URLs and cloud service details, looks up instance count from Azure
+            // but overrides URLs with hardcoded URLs.
+            var hasHardcodedUrls = serviceDetails.ProductionUrl != null &&
+                serviceDetails.StagingUrl != null;
+            var hasCloudServiceDetails = serviceDetails.Subscription != null &&
+                serviceDetails.ResourceGroup != null &&
+                serviceDetails.Name != null &&
+                serviceDetails.Slot != null;
+
+            if (!hasHardcodedUrls && !hasCloudServiceDetails)
             {
-                var serviceUrl = "staging".Equals(serviceDetails.Slot ?? "", StringComparison.OrdinalIgnoreCase)
-                    ? serviceDetails.StagingUrl
-                    : serviceDetails.ProductionUrl;
-                logger.WriteLine($"Using search service for {serviceDetails.Slot} with URL: {serviceUrl}");
+                throw new ArgumentException(
+                    $"Invalid {nameof(ServiceDetails)}, hardcoded URLs or cloud service details must be provided",
+                    nameof(serviceDetails));
+            }
+
+            if (hasHardcodedUrls && !serviceDetails.UseConfiguredUrls)
+            {
+                throw new ArgumentException(
+                    $"Invalid {nameof(ServiceDetails)}, {nameof(ServiceDetails.UseConfiguredUrls)} must be 'true' " +
+                    "to provide hardcoded URLs.",
+                    nameof(serviceDetails));
+            }
+
+            var hardcodedUrl = "staging".Equals(serviceDetails.Slot ?? "", StringComparison.OrdinalIgnoreCase)
+                ? serviceDetails.StagingUrl
+                : serviceDetails.ProductionUrl;
+
+            if (!hasCloudServiceDetails)
+            {
+                logger.WriteLine($"Using search service URL '{hardcodedUrl}' for slot '{serviceDetails.Slot}'");
 
                 return new SearchServiceProperties(
-                    ClientHelper.ConvertToHttpsAndClean(new Uri(serviceUrl)),
+                    ClientHelper.ConvertToHttpsAndClean(new Uri(hardcodedUrl)),
                     instanceCount: null);
             }
-            else
-            {
-                logger.WriteLine($"Extracting search service properties from Azure. " +
-                    $"Subscription: {serviceDetails.Subscription}, " +
-                    $"Resource group: {serviceDetails.ResourceGroup}, " +
-                    $"Service name: {serviceDetails.Name}");
 
-                string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
-                    serviceDetails.Subscription,
-                    serviceDetails.ResourceGroup,
-                    serviceDetails.Name,
-                    serviceDetails.Slot,
-                    logger,
-                    CancellationToken.None);
+            logger.WriteLine($"Extracting search service properties from Azure. " +
+                $"Subscription: {serviceDetails.Subscription}, " +
+                $"Resource group: {serviceDetails.ResourceGroup}, " +
+                $"Service name: {serviceDetails.Name}, " +
+                $"Slot: {serviceDetails.Slot}");
 
-                var cloudService = AzureHelper.ParseCloudServiceProperties(result);
+            string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
+                serviceDetails.Subscription,
+                serviceDetails.ResourceGroup,
+                serviceDetails.Name,
+                serviceDetails.Slot,
+                logger,
+                CancellationToken.None);
 
-                return new SearchServiceProperties(ClientHelper.ConvertToHttpsAndClean(cloudService.Uri), cloudService.InstanceCount);
-            }
+            var cloudService = AzureHelper.ParseCloudServiceProperties(result);
+            var serviceUrl = hasHardcodedUrls
+                ? new Uri(hardcodedUrl)
+                : cloudService.Uri;
+
+            logger.WriteLine(
+                $"Using search service URL '{hardcodedUrl}' for slot '{serviceDetails.Slot}' " +
+                $"with {cloudService.InstanceCount} instances");
+
+            return new SearchServiceProperties(
+                ClientHelper.ConvertToHttpsAndClean(serviceUrl),
+                cloudService.InstanceCount);
         }
 
         private static string BuildAutocompleteQueryString(

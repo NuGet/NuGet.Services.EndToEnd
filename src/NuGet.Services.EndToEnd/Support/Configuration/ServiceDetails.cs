@@ -3,15 +3,20 @@
 
 namespace NuGet.Services.EndToEnd.Support
 {
-    // TODO: Get rid of the old configs used for cloud service https://github.com/NuGet/Engineering/issues/2534 
     public class ServiceDetails
     {
-        public string Subscription { get; set; }
-        public string ResourceGroup { get; set; }
-        public string Name { get; set; }
+        // The desired service slot: "Production" or "Staging"
         public string Slot { get; set; }
+
+        // The desired service URLs.
         public bool UseConfiguredUrls { get; set; }
         public string ProductionUrl { get; set; }
         public string StagingUrl { get; set; }
+
+        // The following configs are specific to Azure Cloud Services.
+        // TODO: Remove. See: https://github.com/NuGet/Engineering/issues/2534
+        public string Subscription { get; set; }
+        public string ResourceGroup { get; set; }
+        public string Name { get; set; }
     }
 }
