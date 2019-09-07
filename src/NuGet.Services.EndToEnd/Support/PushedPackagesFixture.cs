@@ -51,9 +51,14 @@ namespace NuGet.Services.EndToEnd.Support
         {
         }
 
-        public PushedPackagesFixture(IGalleryClient galleryClient)
+        private PushedPackagesFixture(IGalleryClient galleryClient)
         {
             _galleryClient = galleryClient;
+        }
+
+        public static PushedPackagesFixture Create(IGalleryClient galleryClient)
+        {
+            return new PushedPackagesFixture(galleryClient);
         }
 
         public override async Task InitializeAsync()
