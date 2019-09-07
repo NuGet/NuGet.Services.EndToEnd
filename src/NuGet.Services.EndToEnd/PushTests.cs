@@ -87,10 +87,10 @@ namespace NuGet.Services.EndToEnd
                     logger: _logger);
 
                 // Assert
-                Assert.Equal(0, shouldBeEmptyV3.Data.Count);
-                Assert.Equal(0, shouldBeEmptyAutocomplete.Data.Count);
-                Assert.Equal(1, shouldNotBeEmptyV3.Data.Count);
-                Assert.Equal(1, shouldNotBeEmptyAutocomplete.Data.Count);
+                Assert.Empty(shouldBeEmptyV3.Data);
+                Assert.Empty(shouldBeEmptyAutocomplete.Data);
+                Assert.Single(shouldNotBeEmptyV3.Data);
+                Assert.Single(shouldNotBeEmptyAutocomplete.Data);
             }
         }
 

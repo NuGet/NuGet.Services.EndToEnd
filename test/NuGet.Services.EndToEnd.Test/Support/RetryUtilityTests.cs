@@ -56,7 +56,7 @@ namespace NuGet.Services.EndToEnd.Support
                 logger: _output));
 
             Assert.Equal(5, attempts);
-            Assert.Equal(actualEx.Message, "Bad! 5");
+            Assert.Equal("Bad! 5", actualEx.Message);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace NuGet.Services.EndToEnd.Support
             Assert.True(
                 stopwatch.Elapsed >= minimum,
                 $"Elapsed was {stopwatch.Elapsed}. Should be greater than or equal to {minimum}.");
-            Assert.Equal(actualEx.Message, "Bad!");
+            Assert.Equal("Bad!", actualEx.Message);
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace NuGet.Services.EndToEnd.Support
                 logger: _output));
 
             Assert.Equal(5, attempts);
-            Assert.Equal(actualEx.Message, "Bad!");
+            Assert.Equal("Bad!", actualEx.Message);
         }
     }
 }
