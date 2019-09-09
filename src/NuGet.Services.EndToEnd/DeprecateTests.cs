@@ -63,7 +63,7 @@ namespace NuGet.Services.EndToEnd
             var alternatePackageVersion = deprecation.AlternatePackageVersion;
             return alternatePackageVersion == null
                 ? $"*"
-                : $"[{alternatePackageVersion}, {alternatePackageVersion}]";
+                : $"[{alternatePackageVersion}, )";
         }
     }
 }
