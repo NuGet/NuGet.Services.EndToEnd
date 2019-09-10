@@ -25,5 +25,6 @@ namespace NuGet.Services.EndToEnd.Support
         LicenseUrl,
         EmbeddedIconJpeg,
         EmbeddedIconPng,
+        Deprecated,
     }
 }
