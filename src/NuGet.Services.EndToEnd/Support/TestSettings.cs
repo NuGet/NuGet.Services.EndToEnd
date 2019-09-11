@@ -60,8 +60,11 @@ namespace NuGet.Services.EndToEnd.Support
 
         public bool IsTestingAzureSearchService()
         {
-            var singleSearchServiceConfig = _testSettings.SearchServiceConfiguration?.SingleSearchService;
-            return singleSearchServiceConfig != null && singleSearchServiceConfig.UseConfiguredUrls;
+            var searchService = _testSettings.SearchServiceConfiguration?.SingleSearchService;
+            return searchService != null
+                   && (searchService.SearchBaseUrl != null
+                       || searchService.ProductionUrl != null
+                       || searchService.StagingUrl != null);
         }
 
         public static async Task<TestSettings> CreateAsync()
