@@ -239,9 +239,9 @@ namespace NuGet.Services.EndToEnd.Support
             // If the configs contain both a hardcoded URL and cloud service details, look up instance count from Azure
             // but override the URL with the hardcoded URL.
             string hardcodedUrl;
-            if (serviceDetails.SearchBaseUrl != null)
+            if (serviceDetails.BaseUrl != null)
             {
-                hardcodedUrl = serviceDetails.SearchBaseUrl;
+                hardcodedUrl = serviceDetails.BaseUrl;
             }
             else
             {
@@ -278,7 +278,7 @@ namespace NuGet.Services.EndToEnd.Support
                 $"Service name: {serviceDetails.Name}, " +
                 $"Slot: {serviceDetails.Slot}");
 
-            string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
+            var result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
                 serviceDetails.Subscription,
                 serviceDetails.ResourceGroup,
                 serviceDetails.Name,

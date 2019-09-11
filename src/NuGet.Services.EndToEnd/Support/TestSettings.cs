@@ -62,7 +62,7 @@ namespace NuGet.Services.EndToEnd.Support
         {
             var searchService = _testSettings.SearchServiceConfiguration?.SingleSearchService;
             return searchService != null
-                   && (searchService.SearchBaseUrl != null
+                   && (searchService.BaseUrl != null
                        || searchService.ProductionUrl != null
                        || searchService.StagingUrl != null);
         }

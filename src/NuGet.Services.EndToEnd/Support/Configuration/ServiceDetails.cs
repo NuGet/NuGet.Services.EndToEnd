@@ -6,7 +6,7 @@ namespace NuGet.Services.EndToEnd.Support
     public class ServiceDetails
     {
         // The desired service URLs.
-        public string SearchBaseUrl { get; set; }
+        public string BaseUrl { get; set; }
         public string ProductionUrl { get; set; } // Remove as part of https://github.com/NuGet/Engineering/issues/2686.
         public string StagingUrl { get; set; } // Remove as part of https://github.com/NuGet/Engineering/issues/2686.
 
