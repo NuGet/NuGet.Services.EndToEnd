@@ -43,11 +43,13 @@
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
     <Compile Include="AzureSearchOnlyAttribute.cs" />
+    <Compile Include="DeprecateTests.cs" />
     <Compile Include="IconTests.cs" />
     <Compile Include="LicenseTests.cs" />
     <Compile Include="Support\AssemblyMetadataPackageFile.cs" />
     <Compile Include="Support\Clients\SymbolServerClient.cs" />
     <Compile Include="Support\FlatContainerContentType.cs" />
+    <Compile Include="Support\PackageDeprecationContext.cs" />
     <Compile Include="Support\PackageProperties.cs" />
     <Compile Include="Support\Utilities\PortableMetadataReader.cs" />
     <Compile Include="Support\Utilities\TestDataResourceUtility.cs" />
