@@ -43,8 +43,6 @@ namespace NuGet.Services.EndToEnd.Support
 
         public List<string> TrustedHttpsCertificates { get; set; }
 
-        public bool IsRepositorySigningEnabled { get; set; }
-
         public string TestAccountOwner { get; set; }
 
         public string ApiKey { get; set; }
