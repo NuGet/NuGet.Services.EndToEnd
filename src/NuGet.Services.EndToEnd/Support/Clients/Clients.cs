@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Threading;
 using NuGet.Services.AzureManagement;
 
@@ -73,6 +74,10 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         private static Clients InitializeInternal(TestSettings testSettings)
         {
+            // Ensure that SSLv3 is disabled and that Tls v1.2 is enabled.
+            ServicePointManager.SecurityProtocol &= ~SecurityProtocolType.Ssl3;
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+
             var httpClient = new SimpleHttpClient();
             var gallery = new GalleryClient(httpClient, testSettings, GetAzureManagementAPIWrapperForGallery(testSettings));
             var v3Index = new V3IndexClient(httpClient, testSettings);
