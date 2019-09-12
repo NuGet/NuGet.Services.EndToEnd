@@ -168,22 +168,17 @@ namespace NuGet.Services.EndToEnd.Support
         {
             var searchServices = new List<SearchServiceProperties>();
 
-            if (_azureManagementAPIWrapper == null)
+            if (_azureManagementAPIWrapper == null
+                || (_testSettings.SearchServiceConfiguration?.IndexJsonMappedSearchServices == null && _testSettings.SearchServiceConfiguration?.SingleSearchService == null))
             {
                 var searchBaseUrls = await GetSearchBaseUrlsAsync(logger);
 
-                logger.WriteLine($"Configured search service mode: use index.json search services and use hardcoded" +
-                                 $" instance count({_testSettings.SearchServiceConfiguration.OverrideInstanceCount}).Services: { string.Join(", ", searchBaseUrls)}");
-
-                if (_testSettings.SearchServiceConfiguration.OverrideInstanceCount == 0)
-                {
-                    throw new ArgumentException(nameof(_testSettings.SearchServiceConfiguration.OverrideInstanceCount));
-                }
+                logger.WriteLine($"Configured search service mode: use index.json search services. Services: {string.Join(", ", searchBaseUrls)}");
 
                 searchServices.AddRange(searchBaseUrls
                     .Select(url => new SearchServiceProperties(
-                        new Uri(url),
-                        _testSettings.SearchServiceConfiguration.OverrideInstanceCount))
+                        ClientHelper.ConvertToHttpsAndClean(new Uri(url)),
+                        instanceCount: null))
                     .ToList());
             }
             else
@@ -193,83 +188,75 @@ namespace NuGet.Services.EndToEnd.Support
                     var searchBaseUrls = await GetSearchBaseUrlsAsync(logger);
 
                     logger.WriteLine($"Configured search service mode: use index.json search services and get service" +
-                                     $" properties from Azure. Services: { string.Join(", ", searchBaseUrls)}");
+                                     $" properties from Azure. Services: {string.Join(", ", searchBaseUrls)}");
+
+                    logger.WriteLine($"Mapped services: {string.Join(", ", _testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices.Keys)}");
 
                     foreach (var url in searchBaseUrls)
                     {
-                        // Look up the service information by host name.
                         var uri = new Uri(url);
                         var host = uri.Host;
 
-                        if (!_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices.ContainsKey(host))
+                        var officialUrl = ClientHelper.ConvertToHttpsAndClean(uri);
+                        if (_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices.TryGetValue(host, out var mappedService))
                         {
-                            throw new ArgumentException($"IndexJsonMappedSearchServices doesn't contain map for service {host}");
-                        }
-
-                        var mappedService = _testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices[host];
-
-                        var searchServiceProperties = await GetSearchServiceFromAzureAsync(mappedService, logger);
-
-                        if (_testSettings.SearchServiceConfiguration.UseOfficialDns)
-                        {
-                            searchServices.Add(new SearchServiceProperties(
-                                ClientHelper.ConvertToHttpsAndClean(uri),
-                                searchServiceProperties.InstanceCount));
+                            var searchServiceProperties = await GetSearchServiceFromAzureAsync(
+                               officialUrl,
+                               mappedService,
+                               $"index.json mapped search service '{host}'",
+                               logger);
+                            searchServices.Add(searchServiceProperties);
                         }
                         else
                         {
-                            searchServices.Add(searchServiceProperties);
+                            searchServices.Add(new SearchServiceProperties(officialUrl, instanceCount: null));
                         }
                     }
                 }
-                else
+                else if (_testSettings.SearchServiceConfiguration.SingleSearchService != null)
                 {
                     logger.WriteLine($"Configured search service mode: use single search service.");
-                    searchServices.Add(await GetSearchServiceFromAzureAsync(_testSettings.SearchServiceConfiguration.SingleSearchService, logger));
+
+                    searchServices.Add(await GetSearchServiceFromAzureAsync(
+                        officialUrl: null,
+                        serviceDetails: _testSettings.SearchServiceConfiguration.SingleSearchService,
+                        errorDetail: "single search service",
+                        logger: logger));
                 }
             }
 
             return searchServices;
         }
 
-        private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(ServiceDetails serviceDetails, ITestOutputHelper logger)
+        private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(
+            Uri officialUrl,
+            ServiceDetails serviceDetails,
+            string errorDetail,
+            ITestOutputHelper logger)
         {
-            // If the configs contain only a hardcoded URL, return the hardcoded URL.
-            // If the configs contain only cloud service details, look up URL and instance count from Azure.
-            // If the configs contain both a hardcoded URL and cloud service details, look up instance count from Azure
-            // but override the URL with the hardcoded URL.
-            string hardcodedUrl;
+            Uri serviceUrl;
             if (serviceDetails.BaseUrl != null)
             {
-                hardcodedUrl = serviceDetails.BaseUrl;
+                serviceUrl = ClientHelper.ConvertToHttpsAndClean(new Uri(serviceDetails.BaseUrl));
             }
             else
             {
-                hardcodedUrl = StringComparer.OrdinalIgnoreCase.Equals("staging", serviceDetails.Slot)
-                   ? serviceDetails.StagingUrl
-                   : serviceDetails.ProductionUrl;
+                serviceUrl = officialUrl;
             }
-            var hasHardcodedUrl = hardcodedUrl != null;
+
+            if (serviceUrl == null)
+            {
+                throw new ArgumentException($"For the {errorDetail}, no service URL was found.");
+            }
 
             var hasCloudServiceDetails = serviceDetails.Subscription != null &&
                 serviceDetails.ResourceGroup != null &&
                 serviceDetails.Name != null &&
                 serviceDetails.Slot != null;
 
-            if (!hasHardcodedUrl && !hasCloudServiceDetails)
+            if (!hasCloudServiceDetails)
             {
-                throw new ArgumentException(
-                    $"Invalid {nameof(ServiceDetails)}, a hardcoded URL or cloud service details must be provided.",
-                    nameof(serviceDetails));
-            }
-
-            if (hasHardcodedUrl && !hasCloudServiceDetails)
-            {
-                logger.WriteLine($"Using search service URL '{hardcodedUrl}' for slot '{serviceDetails.Slot}'.");
-
-                return new SearchServiceProperties(
-                    ClientHelper.ConvertToHttpsAndClean(new Uri(hardcodedUrl)),
-                    instanceCount: null);
+                return new SearchServiceProperties(serviceUrl, instanceCount: null);
             }
 
             logger.WriteLine($"Extracting search service properties from Azure. " +
@@ -287,15 +274,12 @@ namespace NuGet.Services.EndToEnd.Support
                 CancellationToken.None);
 
             var cloudService = AzureHelper.ParseCloudServiceProperties(result);
-            var serviceUrl = hasHardcodedUrl ? new Uri(hardcodedUrl) : cloudService.Uri;
 
             logger.WriteLine(
                 $"Using search service URL '{serviceUrl.AbsoluteUri}' for slot '{serviceDetails.Slot}' " +
                 $"with {cloudService.InstanceCount} instances.");
 
-            return new SearchServiceProperties(
-                ClientHelper.ConvertToHttpsAndClean(serviceUrl),
-                cloudService.InstanceCount);
+            return new SearchServiceProperties(serviceUrl, cloudService.InstanceCount);
         }
 
         private static string BuildAutocompleteQueryString(

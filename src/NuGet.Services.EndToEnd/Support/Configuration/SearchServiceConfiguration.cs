@@ -8,18 +8,19 @@ namespace NuGet.Services.EndToEnd.Support
 {
     /// <summary>
     /// There are 3 modes for search service configuration:
-    /// 1. SingleSearchService - if not null, only the configured search service will be used.
-    /// 2. IndexJsonMappedSearchServices - if not null, we will use all search service instances configured in index.json for testing. This property will provide mapping between index.json
-    /// entry and Azure service.
-    /// 3. OverrideInstanceCount - provide a hard coded instance count and don't attempt to get data from Azure.
+    /// 
+    /// 1. Search services from the service index - if there is no Azure Management API configuration set or if there is
+    ///    no SingleSearchService and IndexJsonMappedSearchServices configuration.
+    ///    
+    /// 2. SingleSearchService - if not null, only the configured search service will be used.
+    /// 
+    /// 3. IndexJsonMappedSearchServices - if not null, we will use all search service instances configured in
+    ///    the service index for testing. This property will provide mapping between the service index and necessary
+    ///    configuration for interacting with the search service.
     /// </summary>
     public class SearchServiceConfiguration
     {
-        public int OverrideInstanceCount { get; set; }
-
         public Dictionary<string, ServiceDetails> IndexJsonMappedSearchServices { get; set; }
-
-        public bool UseOfficialDns { get; set; }
 
         public ServiceDetails SingleSearchService { get; set; }
 

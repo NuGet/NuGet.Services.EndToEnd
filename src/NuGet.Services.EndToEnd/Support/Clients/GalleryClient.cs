@@ -4,15 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NuGet.Services.AzureManagement;
 using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
@@ -30,84 +26,32 @@ namespace NuGet.Services.EndToEnd.Support
 
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
-        private readonly IRetryingAzureManagementAPIWrapper _azureManagementAPIWrapper;
 
-        private Uri _galleryUrl = null;
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
-
-        public GalleryClient(SimpleHttpClient httpClient, TestSettings testSettings, IRetryingAzureManagementAPIWrapper azureManagementAPIWrapper)
+        public GalleryClient(SimpleHttpClient httpClient, TestSettings testSettings)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _testSettings = testSettings ?? throw new ArgumentNullException(nameof(testSettings));
-            _azureManagementAPIWrapper = azureManagementAPIWrapper;
         }
 
-        public async Task<Uri> GetGalleryUrlAsync(ITestOutputHelper logger)
+        public Uri GetGalleryServiceBaseUrl()
         {
-            if (_galleryUrl != null)
+            var serviceBaseUrl = _testSettings.GalleryConfiguration.ServiceDetails?.BaseUrl;
+            if (serviceBaseUrl != null)
             {
-                return _galleryUrl;
+                return new Uri(serviceBaseUrl);
             }
 
-            try
-            {
-                await _semaphore.WaitAsync();
-
-                if (_galleryUrl != null)
-                {
-                    return _galleryUrl;
-                }
-
-                if (_azureManagementAPIWrapper == null || _testSettings.GalleryConfiguration.ServiceDetails == null)
-                {
-                    _galleryUrl = new Uri(_testSettings.GalleryConfiguration.GalleryBaseUrl);
-                    logger.WriteLine($"Configured gallery mode: use hardcoded URL {_galleryUrl}");
-                }
-                else if (_testSettings.GalleryConfiguration.ServiceDetails.BaseUrl != null)
-                {
-                    _galleryUrl = new Uri(_testSettings.GalleryConfiguration.ServiceDetails.BaseUrl);
-                    logger.WriteLine($"Configured gallery mode: use hardcoded URL {_galleryUrl}");
-                }
-                else
-                {
-                    var serviceDetails = _testSettings.GalleryConfiguration.ServiceDetails;
-
-                    logger.WriteLine($"Configured gallery mode: get service properties from Azure. " +
-                       $"Subscription: {serviceDetails.Subscription}, " +
-                       $"Resource group: {serviceDetails.ResourceGroup}, " +
-                       $"Service name: {serviceDetails.Name}");
-
-                    string result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
-                                    serviceDetails.Subscription,
-                                    serviceDetails.ResourceGroup,
-                                    serviceDetails.Name,
-                                    serviceDetails.Slot,
-                                    logger,
-                                    CancellationToken.None);
-
-                    var cloudService = AzureHelper.ParseCloudServiceProperties(result);
-
-                    _galleryUrl = ClientHelper.ConvertToHttpsAndClean(cloudService.Uri);
-
-                    logger.WriteLine($"Gallery URL to use: {_galleryUrl}");
-                }
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-
-            return _galleryUrl;
+            return GetGalleryBaseUrl();
         }
 
-        public Uri GetGalleryBaseUrl(ITestOutputHelper logger)
+        public Uri GetGalleryBaseUrl()
         {
             return new Uri(_testSettings.GalleryConfiguration.GalleryBaseUrl);
         }
 
         public async Task<IList<string>> AutocompletePackageIdsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger)
         {
-            var galleryEndpoint = await GetGalleryUrlAsync(logger);
+            var galleryEndpoint = GetGalleryServiceBaseUrl();
             var serviceEndpoint = $"{galleryEndpoint}/api/v2/package-ids";
             var uri = AppendAutocompletePackageIdsQueryString(serviceEndpoint, id, includePrerelease, semVerLevel);
 
@@ -116,7 +60,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<IList<string>> AutocompletePackageVersionsAsync(string id, bool includePrerelease, string semVerLevel, ITestOutputHelper logger)
         {
-            var galleryEndpoint = await GetGalleryUrlAsync(logger);
+            var galleryEndpoint = GetGalleryServiceBaseUrl();
             var serviceEndpoint = $"{galleryEndpoint}/api/v2/package-versions";
             var uri = AppendAutocompletePackageVersionsQueryString($"{serviceEndpoint}/{id}", includePrerelease, semVerLevel);
 
@@ -125,7 +69,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task PushAsync(Stream nupkgStream, ITestOutputHelper logger, PackageType packageType)
         {
-            var galleryEndpoint = await GetGalleryUrlAsync(logger);
+            var galleryEndpoint = GetGalleryServiceBaseUrl();
 
             string url;
             switch (packageType)
@@ -168,7 +112,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task DeprecateAsync(string id, IReadOnlyCollection<string> versions, PackageDeprecationContext context, ITestOutputHelper logger)
         {
-            var galleryEndpoint = await GetGalleryUrlAsync(logger);
+            var galleryEndpoint = GetGalleryServiceBaseUrl();
             var url = $"{galleryEndpoint}/api/v2/package/{id}/deprecations";
 
             var body = new
@@ -192,7 +136,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task SearchPackageODataV2FromDBAsync(string id, string normalizedVersion, ITestOutputHelper logger)
         {
-            var galleryEndpoint = await GetGalleryUrlAsync(logger);
+            var galleryEndpoint = GetGalleryServiceBaseUrl();
             // Add 1 eq 1 to block the search hijack and execute the query against the database.
             var urlRootAndPath = $"{galleryEndpoint}/api/v2/Packages()";
             var queryParameters = new Dictionary<string, string>()
@@ -248,7 +192,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         private async Task SendToPackageAsync(HttpMethod method, string id, string version, ITestOutputHelper logger)
         {
-            var galleryEndpoint = await GetGalleryUrlAsync(logger);
+            var galleryEndpoint = GetGalleryServiceBaseUrl();
             var url = $"{galleryEndpoint}/api/v2/package/{id}/{version}";
             await SendAsync(method, url, logger);
         }

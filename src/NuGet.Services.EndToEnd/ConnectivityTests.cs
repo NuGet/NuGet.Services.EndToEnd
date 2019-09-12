@@ -27,7 +27,7 @@ namespace NuGet.Services.EndToEnd
         [Fact]
         public async Task GalleryIsReachable()
         {
-            var galleryUrl = await _clients.Gallery.GetGalleryUrlAsync(_logger);
+            var galleryUrl = _clients.Gallery.GetGalleryServiceBaseUrl();
             using (var httpClient = new HttpClient())
             using (var response = await httpClient.GetAsync(galleryUrl))
             {

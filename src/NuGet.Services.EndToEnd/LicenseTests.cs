@@ -31,7 +31,7 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.LicenseExpression, _logger);
-            var galleryUrl = _clients.Gallery.GetGalleryBaseUrl(_logger);
+            var galleryUrl = _clients.Gallery.GetGalleryBaseUrl();
             var expectedPath = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}/license");
 
             // Act & Assert
@@ -51,7 +51,7 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.LicenseFile, _logger);
-            var galleryUrl = _clients.Gallery.GetGalleryBaseUrl(_logger);
+            var galleryUrl = _clients.Gallery.GetGalleryBaseUrl();
             var expectedPath = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}/license");
 
             // Act & Assert

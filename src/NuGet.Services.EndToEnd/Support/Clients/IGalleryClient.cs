@@ -11,8 +11,20 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public interface IGalleryClient
     {
-        Task<Uri> GetGalleryUrlAsync(ITestOutputHelper logger);
-        Uri GetGalleryBaseUrl(ITestOutputHelper logger);
+        /// <summary>
+        /// Get the gallery base URL used for interacting with the system. When deploying a component that is not
+        /// NuGetGallery, this will be the well-known public URL. When deploying NuGetGallery, this will be the staging
+        /// slot URL.
+        /// </summary>
+        Uri GetGalleryServiceBaseUrl();
+
+        /// <summary>
+        /// Get the well-known public URL of the NuGetGallery. This method should only be used when asserting the value
+        /// of a URL that is expected to point to the well known URL of NuGetGallery. Use the value returned by
+        /// <see cref="GetGalleryServiceBaseUrl"/> to interact with the gallery endpoints.
+        /// </summary>
+        Uri GetGalleryBaseUrl();
+
         Task PushAsync(Stream nupkgStream, ITestOutputHelper logger, PackageType packageType);
         Task UnlistAsync(string id, string version, ITestOutputHelper logger);
         Task RelistAsync(string id, string version, ITestOutputHelper logger);

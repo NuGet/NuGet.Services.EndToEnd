@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Threading;
 using NuGet.Services.AzureManagement;
@@ -79,7 +78,7 @@ namespace NuGet.Services.EndToEnd.Support
             ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
 
             var httpClient = new SimpleHttpClient();
-            var gallery = new GalleryClient(httpClient, testSettings, GetAzureManagementAPIWrapperForGallery(testSettings));
+            var gallery = new GalleryClient(httpClient, testSettings);
             var v3Index = new V3IndexClient(httpClient, testSettings);
             var v2v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings, GetAzureManagementAPIWrapperForSearchService(testSettings));
             var flatContainer = new FlatContainerClient(httpClient, v3Index);
@@ -118,7 +117,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         private static IRetryingAzureManagementAPIWrapper GetAzureManagementAPIWrapperForSearchService(TestSettings testSettings)
         {
-            if (testSettings.SearchServiceConfiguration.AzureManagementAPIWrapperConfiguration != null)
+            if (testSettings.SearchServiceConfiguration?.AzureManagementAPIWrapperConfiguration != null)
             {
                 return new RetryingAzureManagementAPIWrapper(
                     new AzureManagementAPIWrapper(testSettings.SearchServiceConfiguration.AzureManagementAPIWrapperConfiguration),

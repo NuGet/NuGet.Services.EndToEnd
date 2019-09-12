@@ -90,16 +90,16 @@ namespace NuGet.Services.EndToEnd.Support
                 _testSettings,
                 _galleryClient,
                 _version,
-                _sourceType,
+                sourceType,
                 _httpCachePath,
                 _globalPackagesPath);
         }
 
-        private async Task<string> GetSourceAsync(ITestOutputHelper logger)
+        private string GetSource()
         {
             if (_sourceType == SourceType.V2)
             {
-                return $"{await _galleryClient.GetGalleryUrlAsync(logger)}/api/v2";
+                return $"{_galleryClient.GetGalleryServiceBaseUrl()}/api/v2";
             }
 
             return _testSettings.V3IndexUrl;
@@ -112,7 +112,7 @@ namespace NuGet.Services.EndToEnd.Support
                 "restore",
                 projectPath,
                 "-Source",
-                await GetSourceAsync(logger),
+                GetSource(),
             };
 
             var projectDirectory = Path.GetDirectoryName(projectPath);
@@ -127,7 +127,7 @@ namespace NuGet.Services.EndToEnd.Support
                 "install",
                 id,
                 "-Source",
-                await GetSourceAsync(logger),
+                GetSource(),
                 "-OutputDirectory",
                 outputDirectory,
             };
@@ -149,7 +149,7 @@ namespace NuGet.Services.EndToEnd.Support
                 "-Version",
                 version,
                 "-Source",
-                await GetSourceAsync(logger),
+                GetSource(),
                 "-OutputDirectory",
                 outputDirectory,
             };
