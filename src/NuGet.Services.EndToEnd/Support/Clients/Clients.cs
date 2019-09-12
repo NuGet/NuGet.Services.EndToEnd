@@ -74,7 +74,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         private static Clients InitializeInternal(TestSettings testSettings)
         {
-            // Ensure that SSLv3 is disabled and that Tls v1.2 is enabled.
+            // Ensure that SSLv3 is disabled and that TLS v1.2 is the minimum TLS version.
             ServicePointManager.SecurityProtocol &= ~SecurityProtocolType.Ssl3;
             ServicePointManager.SecurityProtocol &= SecurityProtocolType.Tls;
             ServicePointManager.SecurityProtocol &= SecurityProtocolType.Tls11;
