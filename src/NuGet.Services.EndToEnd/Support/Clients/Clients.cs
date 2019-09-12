@@ -76,6 +76,8 @@ namespace NuGet.Services.EndToEnd.Support
         {
             // Ensure that SSLv3 is disabled and that Tls v1.2 is enabled.
             ServicePointManager.SecurityProtocol &= ~SecurityProtocolType.Ssl3;
+            ServicePointManager.SecurityProtocol &= SecurityProtocolType.Tls;
+            ServicePointManager.SecurityProtocol &= SecurityProtocolType.Tls11;
             ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
 
             var httpClient = new SimpleHttpClient();
