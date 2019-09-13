@@ -63,6 +63,11 @@ namespace NuGet.Services.EndToEnd.Support
                     _galleryUrl = new Uri(_testSettings.GalleryConfiguration.GalleryBaseUrl);
                     logger.WriteLine($"Configured gallery mode: use hardcoded URL {_galleryUrl}");
                 }
+                else if (_testSettings.GalleryConfiguration.ServiceDetails.BaseUrl != null)
+                {
+                    _galleryUrl = new Uri(_testSettings.GalleryConfiguration.ServiceDetails.BaseUrl);
+                    logger.WriteLine($"Configured gallery mode: use hardcoded URL {_galleryUrl}");
+                }
                 else
                 {
                     var serviceDetails = _testSettings.GalleryConfiguration.ServiceDetails;
