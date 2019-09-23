@@ -11,7 +11,7 @@ using static NuGet.Services.EndToEnd.Support.RegistrationClient;
 namespace NuGet.Services.EndToEnd
 {
     [Collection(nameof(PushedPackagesCollection))]
-    public class DeprecateTests : IClassFixture<TrustedHttpsCertificatesFixture>
+    public class DeprecateTests
     {
         private readonly PushedPackagesFixture _pushedPackages;
         private readonly Clients _clients;

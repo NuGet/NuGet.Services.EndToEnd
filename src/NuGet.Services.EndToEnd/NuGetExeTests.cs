@@ -17,7 +17,7 @@ namespace NuGet.Services.EndToEnd
     /// Tests that integrate with nuget.exe, since this exercises our primary client code.
     /// </summary>
     [Collection(nameof(PushedPackagesCollection))]
-    public class NuGetExeTests : IClassFixture<TrustedHttpsCertificatesFixture>, IDisposable
+    public class NuGetExeTests : IDisposable
     {
         private readonly PushedPackagesFixture _pushedPackages;
         private readonly TestSettings _testSettings;

@@ -41,8 +41,6 @@ namespace NuGet.Services.EndToEnd.Support
 
         public GalleryConfiguration GalleryConfiguration { get; set; }
 
-        public List<string> TrustedHttpsCertificates { get; set; }
-
         public string TestAccountOwner { get; set; }
 
         public string ApiKey { get; set; }

@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 namespace NuGet.Services.EndToEnd
 {
     [Collection(nameof(PushedPackagesCollection))]
-    public class RelistTests : IClassFixture<TrustedHttpsCertificatesFixture>
+    public class RelistTests
     {
         private readonly PushedPackagesFixture _pushedPackages;
         private readonly Clients _clients;

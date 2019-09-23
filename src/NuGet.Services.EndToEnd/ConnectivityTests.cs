@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 namespace NuGet.Services.EndToEnd
 {
     [Collection(nameof(CommonCollection))]
-    public class ConnectivityTests : IClassFixture<TrustedHttpsCertificatesFixture>
+    public class ConnectivityTests
     {
         private readonly Clients _clients;
         private readonly ITestOutputHelper _logger;

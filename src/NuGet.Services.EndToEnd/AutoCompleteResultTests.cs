@@ -10,7 +10,6 @@ namespace NuGet.Services.EndToEnd
 {
     [Collection(nameof(PushedPackagesCollection))]
     public class AutocompleteResultTests
-        : IClassFixture<TrustedHttpsCertificatesFixture>
     {
         private readonly PushedPackagesFixture _pushedPackages;
         private readonly ITestOutputHelper _logger;

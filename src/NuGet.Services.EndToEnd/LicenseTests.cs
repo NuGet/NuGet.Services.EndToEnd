@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 namespace NuGet.Services.EndToEnd
 {
     [Collection(nameof(PushedPackagesCollection))]
-    public class LicenseTests : IClassFixture<TrustedHttpsCertificatesFixture>
+    public class LicenseTests
     {
         private readonly PushedPackagesFixture _pushedPackages;
         private readonly ITestOutputHelper _logger;

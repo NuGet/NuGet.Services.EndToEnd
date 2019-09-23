@@ -15,7 +15,7 @@ namespace NuGet.Services.EndToEnd
     /// Tests that verify the symbols package related flows
     /// </summary>
     [Collection(nameof(PushedPackagesCollection))]
-    public class SymbolsPackageTests : IClassFixture<TrustedHttpsCertificatesFixture>, IDisposable
+    public class SymbolsPackageTests : IDisposable
     {
         private readonly PushedPackagesFixture _pushedPackages;
         private readonly TestSettings _testSettings;

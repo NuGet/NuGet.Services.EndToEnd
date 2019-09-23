@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 namespace NuGet.Services.EndToEnd
 {
     [Collection(nameof(PushedPackagesCollection))]
-    public class IconTests : IClassFixture<TrustedHttpsCertificatesFixture>
+    public class IconTests
     {
         private readonly PushedPackagesFixture _pushedPackages;
         private readonly Clients _clients;
