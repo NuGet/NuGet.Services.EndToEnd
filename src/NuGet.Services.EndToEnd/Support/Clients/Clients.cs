@@ -96,25 +96,6 @@ namespace NuGet.Services.EndToEnd.Support
                 symbolServerClient);
         }
 
-        private static IRetryingAzureManagementAPIWrapper GetAzureManagementAPIWrapperForGallery(TestSettings testSettings)
-        {
-            if (testSettings.GalleryConfiguration.AzureManagementAPIWrapperConfiguration != null)
-            {
-                return new RetryingAzureManagementAPIWrapper(
-                    new AzureManagementAPIWrapper(testSettings.GalleryConfiguration.AzureManagementAPIWrapperConfiguration),
-                    RetryUtility.DefaultSleepDuration);
-            }
-
-            if (testSettings.AzureManagementAPIWrapperConfiguration != null)
-            {
-                return new RetryingAzureManagementAPIWrapper(
-                    new AzureManagementAPIWrapper(testSettings.AzureManagementAPIWrapperConfiguration),
-                    RetryUtility.DefaultSleepDuration);
-            }
-
-            return null;
-        }
-
         private static IRetryingAzureManagementAPIWrapper GetAzureManagementAPIWrapperForSearchService(TestSettings testSettings)
         {
             if (testSettings.SearchServiceConfiguration?.AzureManagementAPIWrapperConfiguration != null)

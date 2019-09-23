@@ -393,7 +393,7 @@ namespace NuGet.Services.EndToEnd.Support
                 _pollCacheLock.Release();
             }
 
-            var additionalPolling = _testSettings.SearchServiceConfiguration.AdditionalPollingDuration;
+            var additionalPolling = _testSettings.SearchServiceConfiguration?.AdditionalPollingDuration ?? TimeSpan.Zero;
             var duration = Stopwatch.StartNew();
             var sinceFirstComplete = new Stopwatch();
             var attempts = 0;
