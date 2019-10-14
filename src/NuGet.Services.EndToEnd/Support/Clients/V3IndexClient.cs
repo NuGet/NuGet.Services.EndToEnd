@@ -54,6 +54,16 @@ namespace NuGet.Services.EndToEnd.Support
             return GetResourceUrls(v3Index, "RegistrationsBaseUrl");
         }
 
+        public async Task<IReadOnlyList<string>> GetRegistrationBaseUrlsAsyncForSearch(ITestOutputHelper logger)
+        {
+            if (_testSettings.SearchBaseRegistrationRoots != null && _testSettings.SearchBaseRegistrationRoots.Length > 0)
+            {
+                return _testSettings.SearchBaseRegistrationRoots;
+            }
+
+            return await GetRegistrationBaseUrlsAsync(logger);
+        }
+
         public async Task<IReadOnlyList<string>> GetSemVer2RegistrationBaseUrlsAsync(ITestOutputHelper logger)
         {
             var v3Index = await GetV3IndexAsync(logger);
@@ -62,6 +72,16 @@ namespace NuGet.Services.EndToEnd.Support
                 t => t.Type == "RegistrationsBaseUrl/Versioned" &&
                      t.ClientVersion != null &&
                      NuGetVersion.Parse(t.ClientVersion) >= Version430Alpha);
+        }
+
+        public async Task<IReadOnlyList<string>> GetSemVer2RegistrationBaseUrlsAsyncForSearch(ITestOutputHelper logger)
+        {
+            if (_testSettings.SearchSemver2RegistrationRoots != null && _testSettings.SearchSemver2RegistrationRoots.Length > 0)
+            {
+                return _testSettings.SearchSemver2RegistrationRoots;
+            }
+
+            return await GetSemVer2RegistrationBaseUrlsAsync(logger);
         }
 
         private static List<string> GetResourceUrls(V3Index v3Index, string resourceType)

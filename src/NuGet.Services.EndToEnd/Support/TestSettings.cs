@@ -85,7 +85,7 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 _semaphore.Release();
             }
-            
+
             return _testSettings;
         }
 
@@ -105,6 +105,28 @@ namespace NuGet.Services.EndToEnd.Support
 
             throw new ArgumentException($"{configurationName} is not one of the local test supported configurations!");
         }
+
+        /// <summary>
+        /// Override base URLs for regular (Semver 1) registration to be used in Azure Search tests.
+        /// </summary>
+        /// <remarks>
+        /// Azure search service has registration root supplied through its own configuration
+        /// that it uses it responses (instead of taking one from the service index file). This makes
+        /// switching to (and testing) the alternative registration hives as service index information
+        /// and search service configuration will not align at all times. This setting allows providing
+        /// overrides for expected registration roots for Search Service tests.
+        /// </remarks>
+        public string[] SearchBaseRegistrationRoots { get; set; }
+
+        /// <summary>
+        /// Override base URLs for GZipped registration to be used in Azure Search tests.
+        /// </summary>
+        public string[] SearchGZipRegistrationRoots { get; set; }
+
+        /// <summary>
+        /// Override base URLs for Semver 2 registration to be used in Azure Search tests.
+        /// </summary>
+        public string[] SearchSemver2RegistrationRoots { get; set; }
 
         private static async Task<TestSettings> CreateInternalAsync()
         {

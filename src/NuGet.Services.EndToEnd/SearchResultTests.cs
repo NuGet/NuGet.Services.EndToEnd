@@ -28,8 +28,8 @@ namespace NuGet.Services.EndToEnd
         public async Task RegistrationValuesInResultMatchRequestSemVerLevel()
         {
             // Arrange
-            var allRegistrationAddresses = await _clients.V3Index.GetRegistrationBaseUrlsAsync(_logger);
-            var semVer2RegistrationAddresses = await _clients.V3Index.GetSemVer2RegistrationBaseUrlsAsync(_logger);
+            var semVer1RegistrationAddresses = await _clients.V3Index.GetRegistrationBaseUrlsAsyncForSearch(_logger);
+            var semVer2RegistrationAddresses = await _clients.V3Index.GetSemVer2RegistrationBaseUrlsAsyncForSearch(_logger);
             var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
             
             var semVer2Package = await _pushedPackages.PrepareAsync(PackageType.SemVer2Prerel, _logger);
@@ -45,7 +45,7 @@ namespace NuGet.Services.EndToEnd
             {
                 // Search service changes the registration URL scheme to match the request URL. Modify what we found in
                 // the index.json so match this.
-                var allReg = allRegistrationAddresses.Select(u => MatchSchemeAndPort(searchService.Uri, u));
+                var semVer1Reg = semVer1RegistrationAddresses.Select(u => MatchSchemeAndPort(searchService.Uri, u));
                 var semVer2Reg = semVer2RegistrationAddresses.Select(u => MatchSchemeAndPort(searchService.Uri, u));
 
                 // Act
@@ -62,7 +62,7 @@ namespace NuGet.Services.EndToEnd
                         semVer2Reg.Any(a => semVer1Query.Data[i].Registration.Contains(a)),
                         $"{semVer1Query.Data[i].Id} has a SemVer 2.0.0 registration base URL.");
                     Assert.True(
-                        allReg.Any(a => semVer1Query.Data[i].Registration.Contains(a)),
+                        semVer1Reg.Any(a => semVer1Query.Data[i].Registration.Contains(a)),
                         $"{semVer1Query.Data[i].Id} has should have an expected registration base URL.");
                 }
 
