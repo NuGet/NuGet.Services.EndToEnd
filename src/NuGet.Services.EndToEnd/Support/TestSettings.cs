@@ -126,7 +126,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// <summary>
         /// Override base URLs for Semver 2 registration to be used in Azure Search tests.
         /// </summary>
-        public string[] SearchSemver2RegistrationRoots { get; set; }
+        public string[] SearchSemVer2RegistrationRoots { get; set; }
 
         private static async Task<TestSettings> CreateInternalAsync()
         {
