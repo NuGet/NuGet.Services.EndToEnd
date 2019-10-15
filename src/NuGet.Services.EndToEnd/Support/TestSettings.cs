@@ -116,17 +116,17 @@ namespace NuGet.Services.EndToEnd.Support
         /// and search service configuration will not align at all times. This setting allows providing
         /// overrides for expected registration roots for Search Service tests.
         /// </remarks>
-        public string[] SearchBaseRegistrationRoots { get; set; }
+        public List<string> SearchRegistrationBaseUrls { get; set; }
 
         /// <summary>
         /// Override base URLs for GZipped registration to be used in Azure Search tests.
         /// </summary>
-        public string[] SearchGZipRegistrationRoots { get; set; }
+        public List<string> SearchGZipRegistrationBaseUrls { get; set; }
 
         /// <summary>
         /// Override base URLs for Semver 2 registration to be used in Azure Search tests.
         /// </summary>
-        public string[] SearchSemVer2RegistrationRoots { get; set; }
+        public List<string> SearchSemVer2RegistrationBaseUrls { get; set; }
 
         private static async Task<TestSettings> CreateInternalAsync()
         {

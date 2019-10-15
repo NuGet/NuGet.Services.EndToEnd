@@ -56,9 +56,9 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<IReadOnlyList<string>> GetRegistrationBaseUrlsAsyncForSearch(ITestOutputHelper logger)
         {
-            if (_testSettings.SearchBaseRegistrationRoots != null && _testSettings.SearchBaseRegistrationRoots.Length > 0)
+            if (_testSettings.SearchRegistrationBaseUrls != null && _testSettings.SearchRegistrationBaseUrls.Any())
             {
-                return _testSettings.SearchBaseRegistrationRoots;
+                return _testSettings.SearchRegistrationBaseUrls;
             }
 
             return await GetRegistrationBaseUrlsAsync(logger);
@@ -76,9 +76,9 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<IReadOnlyList<string>> GetSemVer2RegistrationBaseUrlsAsyncForSearch(ITestOutputHelper logger)
         {
-            if (_testSettings.SearchSemVer2RegistrationRoots != null && _testSettings.SearchSemVer2RegistrationRoots.Length > 0)
+            if (_testSettings.SearchSemVer2RegistrationBaseUrls != null && _testSettings.SearchSemVer2RegistrationBaseUrls.Any())
             {
-                return _testSettings.SearchSemVer2RegistrationRoots;
+                return _testSettings.SearchSemVer2RegistrationBaseUrls;
             }
 
             return await GetSemVer2RegistrationBaseUrlsAsync(logger);
