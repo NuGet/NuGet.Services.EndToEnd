@@ -20,6 +20,8 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class SearchServiceConfiguration
     {
+        public static readonly TimeSpan DefaultAdditionalPollingDuration = TimeSpan.FromSeconds(30);
+
         public Dictionary<string, ServiceDetails> IndexJsonMappedSearchServices { get; set; }
 
         public ServiceDetails SingleSearchService { get; set; }
@@ -35,6 +37,6 @@ namespace NuGet.Services.EndToEnd.Support
         /// index. These two indexes are updated independently (although very close in time) so there are two sources
         /// of variability in when packages show up in results.
         /// </summary>
-        public TimeSpan AdditionalPollingDuration { get; set; }
+        public TimeSpan AdditionalPollingDuration { get; set; } = DefaultAdditionalPollingDuration;
     }
 }
