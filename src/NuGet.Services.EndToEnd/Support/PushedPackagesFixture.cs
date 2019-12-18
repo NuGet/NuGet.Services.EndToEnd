@@ -25,16 +25,6 @@ namespace NuGet.Services.EndToEnd.Support
     {
         private const string SemVer2PrerelVersion = "1.0.0-alpha.1";
 
-        private static readonly HashSet<PackageType> SemVer2PackageTypes = new HashSet<PackageType>
-        {
-            PackageType.SemVer2Prerel,
-            PackageType.SemVer2PrerelRelisted,
-            PackageType.SemVer2PrerelUnlisted,
-            PackageType.SemVer2StableMetadata,
-            PackageType.SemVer2StableMetadataUnlisted,
-            PackageType.SemVer2DueToSemVer2Dep,
-        };
-
         private readonly SemaphoreSlim _pushLock = new SemaphoreSlim(initialCount: 1);
         private readonly object _packagesLock = new object();
 
@@ -46,6 +36,7 @@ namespace NuGet.Services.EndToEnd.Support
         private IGalleryClient _galleryClient;
 
         private static readonly string SymbolsProjectTemplateFolder = Path.Combine(Environment.CurrentDirectory, "Support", "TestData", "E2E.TestPortableSymbols");
+        private static readonly string DotnetToolProjectTemplateFolder = Path.Combine(Environment.CurrentDirectory, "Support", "TestData", "E2E.DotnetTool");
 
         public PushedPackagesFixture()
         {
@@ -418,6 +409,9 @@ namespace NuGet.Services.EndToEnd.Support
                         PackageDeprecationContext.Default);
                     break;
 
+                case PackageType.DotnetTool:
+                    return await PrepareDotnetToolPackageAsync(id, "1.0.0", logger);
+
                 case PackageType.SemVer1Stable:
                 case PackageType.FullValidation:
                 default:
@@ -427,6 +421,32 @@ namespace NuGet.Services.EndToEnd.Support
 
             packagesToPrepare.Add(packageToPrepare);
             return packagesToPrepare;
+        }
+
+        private async Task<List<PackageToPrepare>> PrepareDotnetToolPackageAsync(string id, string version, ITestOutputHelper logger)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectPath = CopyDotnetToolProjectFromTemplate(id, version, testDirectory.FullPath);
+
+                var packCommandResult = await DotNetExeClient.PackProjectAsync(id, version, projectPath, logger);
+                if (!string.IsNullOrEmpty(packCommandResult.Error))
+                {
+                    throw new ExternalException($"Error packing the .NET tool package! Error: {packCommandResult.Error} Output: {packCommandResult.Output}");
+                }
+
+                var buildOutput = Path.Combine(testDirectory.FullPath, "bin", "Debug");
+                var nupkgFiles = Directory.GetFiles(buildOutput, "*.nupkg");
+                if (nupkgFiles.Count() == 0)
+                {
+                    throw new InvalidOperationException($".NET tool project pack failed to create a package");
+                }
+
+                return new List<PackageToPrepare>
+                {
+                    new PackageToPrepare(Package.Create(nupkgFiles[0], new PackageProperties(PackageType.DotnetTool))),
+                };
+            }
         }
 
         private async Task<List<PackageToPrepare>> PrepareSymbolsPackageAsync(string id, string version, ITestOutputHelper logger)
@@ -496,9 +516,19 @@ namespace NuGet.Services.EndToEnd.Support
 
         private static string CopySymbolsProjectFromTemplate(string id, string version, string tempProjectFolder)
         {
-            var sourceDirectoryFiles = Directory.GetFiles(SymbolsProjectTemplateFolder,"*.*", SearchOption.AllDirectories);
+            return CopyProjectFromTemplate(SymbolsProjectTemplateFolder, id, version, tempProjectFolder);
+        }
+
+        private static string CopyDotnetToolProjectFromTemplate(string id, string version, string tempProjectFolder)
+        {
+            return CopyProjectFromTemplate(DotnetToolProjectTemplateFolder, id, version, tempProjectFolder);
+        }
+
+        private static string CopyProjectFromTemplate(string templateDirectory, string id, string version, string tempProjectFolder)
+        {
+            var sourceFiles = Directory.GetFiles(templateDirectory, "*.*", SearchOption.AllDirectories);
             string projectPath = string.Empty;
-            foreach (string sourceFile in sourceDirectoryFiles)
+            foreach (string sourceFile in sourceFiles)
             {
                 var fileName = Path.GetFileName(sourceFile);
                 if (string.Equals(fileName, "AssemblyInfo.cs"))
@@ -537,13 +567,6 @@ namespace NuGet.Services.EndToEnd.Support
 
                 return id;
             }
-        }
-
-        private static string GenerateUniqueId(PackageType packageType)
-        {
-            var timestamp = DateTimeOffset.UtcNow.ToString("yyMMdd.HHmmss.fffffff");
-            var id = $"E2E.{packageType.ToString()}.{timestamp}";
-            return id;
         }
 
         private static MemoryStream GetMemoryStreamForFile(string filename)

@@ -68,6 +68,23 @@ namespace NuGet.Services.EndToEnd.Support
                                context.Properties);
         }
 
+        public static Package Create(string path, PackageProperties packageProperties)
+        {
+            var byteArray = File.ReadAllBytes(path);
+            var nupkgBytes = Array.AsReadOnly(byteArray);
+            using (var packageStream = new MemoryStream(byteArray))
+            using (var packageArchiveReader = new PackageArchiveReader(packageStream))
+            {
+
+                return new Package(
+                    packageArchiveReader.NuspecReader.GetId(),
+                    packageArchiveReader.NuspecReader.GetVersion().ToNormalizedString(),
+                    packageArchiveReader.NuspecReader.GetVersion().ToFullString(),
+                    nupkgBytes,
+                    packageProperties);
+            }
+        }
+
         public static Package SignedPackage()
         {
             if (string.IsNullOrEmpty(EnvironmentSettings.SignedPackagePath) ||

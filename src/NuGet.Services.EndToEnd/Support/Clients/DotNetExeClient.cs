@@ -17,11 +17,24 @@ namespace NuGet.Services.EndToEnd.Support
             var arguments = new List<string>
             {
                 "build",
-                projectPath
+                projectPath,
             };
 
             var projectDirectory = Path.GetDirectoryName(projectPath);
+            return await RunAsync(projectDirectory, arguments, logger);
+        }
 
+        public static async Task<CommandRunnerResult> PackProjectAsync(string id, string version, string projectPath, ITestOutputHelper logger)
+        {
+            var arguments = new List<string>
+            {
+                "pack",
+                projectPath,
+                $"/p:PackageId={id}",
+                $"/p:PackageVersion={version}",
+            };
+
+            var projectDirectory = Path.GetDirectoryName(projectPath);
             return await RunAsync(projectDirectory, arguments, logger);
         }
 

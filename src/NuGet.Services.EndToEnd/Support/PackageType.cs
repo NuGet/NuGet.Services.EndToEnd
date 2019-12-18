@@ -26,5 +26,6 @@ namespace NuGet.Services.EndToEnd.Support
         EmbeddedIconJpeg,
         EmbeddedIconPng,
         Deprecated,
+        DotnetTool,
     }
 }

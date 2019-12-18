@@ -42,6 +42,12 @@ namespace NuGet.Services.EndToEnd.Support
             return await _httpClient.GetJsonAsync<V3SearchResponse>(queryUrl.AbsoluteUri, logger);
         }
 
+        public async Task<AutocompleteResponse> AutocompleteAsync(SearchServiceProperties searchService, string queryString, ITestOutputHelper logger)
+        {
+            var queryUrl = new Uri(searchService.Uri, $"autocomplete?{queryString}");
+            return await _httpClient.GetJsonAsync<AutocompleteResponse>(queryUrl.AbsoluteUri, logger);
+        }
+
         public async Task<AutocompleteResponse> AutocompletePackageIdsAsync(
             SearchServiceProperties searchService,
             string packageId,
@@ -522,9 +528,15 @@ namespace NuGet.Services.EndToEnd.Support
             public string[] Tags { get; set; }
             public string[] Authors { get; set; }
             public long TotalDownloads { get; set; }
+            public List<V3PackageType> PackageTypes { get; set; }
             public List<V3VersionEntry> Versions { get; set; }
             public string LicenseUrl { get; set; }
             public string IconUrl { get; set; }
+        }
+
+        public class V3PackageType
+        {
+            public string Name { get; set; }
         }
 
         public class V3VersionEntry

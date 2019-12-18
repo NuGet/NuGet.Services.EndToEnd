@@ -46,11 +46,15 @@
     <Compile Include="DeprecateTests.cs" />
     <Compile Include="IconTests.cs" />
     <Compile Include="LicenseTests.cs" />
+    <Compile Include="PackageTypeTests.cs" />
     <Compile Include="Support\AssemblyMetadataPackageFile.cs" />
     <Compile Include="Support\Clients\SymbolServerClient.cs" />
     <Compile Include="Support\FlatContainerContentType.cs" />
     <Compile Include="Support\PackageDeprecationContext.cs" />
     <Compile Include="Support\PackageProperties.cs" />
+    <Content Include="Support\TestData\E2E.DotnetTool\Program.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Compile Include="Support\Utilities\PortableMetadataReader.cs" />
     <Compile Include="Support\Utilities\TestDataResourceUtility.cs" />
     <Compile Include="SymbolsPackageTests.cs" />
@@ -113,6 +117,9 @@
     <None Include="project.json" />
     <EmbeddedResource Include="Support\TestData\Icons\icon.png" />
     <EmbeddedResource Include="Support\TestData\Icons\icon.jpg" />
+    <Content Include="Support\TestData\E2E.DotnetTool\E2E.DotnetTool.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Support\NuGetExe\nuget.4.1.0.exe">

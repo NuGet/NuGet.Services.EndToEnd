@@ -1,14 +1,10 @@
 ﻿{
   "TestSettings": {
-    "V3IndexUrl": "https://apiint.nugettest.org/v3-index/index.json",
-    "TrustedHttpsCertificates": {},
+    "V3IndexUrl": "https://apiint.nugettest.org/v3/index.json",
     "ApiKey": "API_KEY",
     "SymbolServerUrlTemplate": "https://symbolsint.nugettest.org/download/symbols/{0}",
     "GalleryConfiguration": {
-      "OverrideServiceUrl": "https://int.nugettest.org"
-    },
-    "SearchServiceConfiguration": {
-      "OverrideInstanceCount": 2
+      "GalleryBaseUrl": "https://int.nugettest.org"
     }
   }
 }
