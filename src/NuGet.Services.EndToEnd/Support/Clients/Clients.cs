@@ -3,7 +3,6 @@
 
 using System.Net;
 using System.Threading;
-using NuGet.Services.AzureManagement;
 
 namespace NuGet.Services.EndToEnd.Support
 {
@@ -80,7 +79,7 @@ namespace NuGet.Services.EndToEnd.Support
             var httpClient = new SimpleHttpClient();
             var gallery = new GalleryClient(httpClient, testSettings);
             var v3Index = new V3IndexClient(httpClient, testSettings);
-            var v2v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings, GetAzureManagementAPIWrapperForSearchService(testSettings));
+            var v2v3Search = new V2V3SearchClient(httpClient, v3Index, testSettings);
             var flatContainer = new FlatContainerClient(httpClient, v3Index);
             var registration = new RegistrationClient(httpClient, v3Index);
             var nuGetExe = new NuGetExeClient(testSettings, gallery);
@@ -94,25 +93,6 @@ namespace NuGet.Services.EndToEnd.Support
                 registration,
                 nuGetExe,
                 symbolServerClient);
-        }
-
-        private static IRetryingAzureManagementAPIWrapper GetAzureManagementAPIWrapperForSearchService(TestSettings testSettings)
-        {
-            if (testSettings.SearchServiceConfiguration?.AzureManagementAPIWrapperConfiguration != null)
-            {
-                return new RetryingAzureManagementAPIWrapper(
-                    new AzureManagementAPIWrapper(testSettings.SearchServiceConfiguration.AzureManagementAPIWrapperConfiguration),
-                    RetryUtility.DefaultSleepDuration);
-            }
-
-            if (testSettings.AzureManagementAPIWrapperConfiguration != null)
-            {
-                return new RetryingAzureManagementAPIWrapper(
-                    new AzureManagementAPIWrapper(testSettings.AzureManagementAPIWrapperConfiguration),
-                    RetryUtility.DefaultSleepDuration);
-            }
-
-            return null;
         }
     }
 }

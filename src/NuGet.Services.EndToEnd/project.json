@@ -2,22 +2,17 @@
   "dependencies": {
     "Microsoft.AspNetCore.WebUtilities": "1.1.1",
     "Microsoft.Extensions.Configuration.Binder": "1.1.2",
-    "Microsoft.Extensions.Configuration.FileExtensions": "1.1.2",
-    "Microsoft.Extensions.Configuration.Json": "1.1.2",
-    "Microsoft.Extensions.Primitives": "1.1.1",
-    "Newtonsoft.Json": "10.0.2",
     "NuGet.Frameworks": "4.9.2",
     "NuGet.Packaging": "4.9.2",
     "NuGet.Protocol": "4.9.2",
-    "NuGet.Services.AzureManagement": "2.51.0",
-    "NuGet.Services.Configuration": "2.51.0",
+    "NuGet.Services.Configuration": "2.68.0",
     "NuGet.Versioning": "4.9.2",
     "System.Reflection.Metadata": "1.7.0-preview.18571.3",
     "xunit": "2.4.1",
     "xunit.runner.visualstudio": "2.4.1"
   },
   "frameworks": {
-    "net462": {}
+    "net472": {}
   },
   "runtimes": {
     "win": {}

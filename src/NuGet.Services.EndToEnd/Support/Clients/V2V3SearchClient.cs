@@ -9,7 +9,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
-using NuGet.Services.AzureManagement;
 using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,22 +17,18 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class V2V3SearchClient
     {
-        private const int MinPort = 44301;
-
         private readonly V3IndexClient _v3IndexClient;
         private readonly SimpleHttpClient _httpClient;
         private readonly TestSettings _testSettings;
-        private readonly IRetryingAzureManagementAPIWrapper _azureManagementAPIWrapper;
 
         private readonly SemaphoreSlim _pollCacheLock = new SemaphoreSlim(1);
         private readonly Dictionary<string, V2SearchResponse> _pollCache = new Dictionary<string, V2SearchResponse>();
 
-        public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings, IRetryingAzureManagementAPIWrapper azureManagementAPIWrapper)
+        public V2V3SearchClient(SimpleHttpClient httpClient, V3IndexClient v3IndexClient, TestSettings testSettings)
         {
             _httpClient = httpClient;
             _v3IndexClient = v3IndexClient;
             _testSettings = testSettings;
-            _azureManagementAPIWrapper = azureManagementAPIWrapper;
         }
 
         public async Task<V3SearchResponse> QueryAsync(SearchServiceProperties searchService, string queryString, ITestOutputHelper logger)
@@ -124,31 +119,13 @@ namespace NuGet.Services.EndToEnd.Support
 
         private IEnumerable<string> GetSearchUrlsForPolling(SearchServiceProperties searchServices)
         {
-            if (!searchServices.InstanceCount.HasValue)
+            var uriBuilder = new UriBuilder(searchServices.Uri)
             {
-                var uriBuilder = new UriBuilder(searchServices.Uri)
-                {
-                    Scheme = "https",
-                    Path = "/search/query"
-                };
+                Scheme = "https",
+                Path = "/search/query"
+            };
 
-                yield return uriBuilder.Uri.ToString();
-            }
-            else
-            {
-                for (var instanceIndex = 0; instanceIndex < searchServices.InstanceCount.Value; instanceIndex++)
-                {
-                    var port = MinPort + instanceIndex;
-                    var uriBuilder = new UriBuilder(searchServices.Uri)
-                    {
-                        Scheme = "https",
-                        Port = port,
-                        Path = "/search/query"
-                    };
-
-                    yield return uriBuilder.Uri.ToString();
-                }
-            }
+            yield return uriBuilder.Uri.ToString();
         }
 
         private async Task<List<string>> GetSearchBaseUrlsAsync(ITestOutputHelper logger)
@@ -174,17 +151,14 @@ namespace NuGet.Services.EndToEnd.Support
         {
             var searchServices = new List<SearchServiceProperties>();
 
-            if (_azureManagementAPIWrapper == null
-                || (_testSettings.SearchServiceConfiguration?.IndexJsonMappedSearchServices == null && _testSettings.SearchServiceConfiguration?.SingleSearchService == null))
+            if (_testSettings.SearchServiceConfiguration?.IndexJsonMappedSearchServices == null && _testSettings.SearchServiceConfiguration?.SingleSearchService == null)
             {
                 var searchBaseUrls = await GetSearchBaseUrlsAsync(logger);
 
                 logger.WriteLine($"Configured search service mode: use index.json search services. Services: {string.Join(", ", searchBaseUrls)}");
 
                 searchServices.AddRange(searchBaseUrls
-                    .Select(url => new SearchServiceProperties(
-                        ClientHelper.ConvertToHttpsAndClean(new Uri(url)),
-                        instanceCount: null))
+                    .Select(url => new SearchServiceProperties(ClientHelper.ConvertToHttpsAndClean(new Uri(url))))
                     .ToList());
             }
             else
@@ -206,7 +180,7 @@ namespace NuGet.Services.EndToEnd.Support
                         var officialUrl = ClientHelper.ConvertToHttpsAndClean(uri);
                         if (_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices.TryGetValue(host, out var mappedService))
                         {
-                            var searchServiceProperties = await GetSearchServiceFromAzureAsync(
+                            var searchServiceProperties = GetSearchServiceFromAzureAsync(
                                officialUrl,
                                mappedService,
                                $"index.json mapped search service '{host}'",
@@ -215,7 +189,7 @@ namespace NuGet.Services.EndToEnd.Support
                         }
                         else
                         {
-                            searchServices.Add(new SearchServiceProperties(officialUrl, instanceCount: null));
+                            searchServices.Add(new SearchServiceProperties(officialUrl));
                         }
                     }
                 }
@@ -223,7 +197,7 @@ namespace NuGet.Services.EndToEnd.Support
                 {
                     logger.WriteLine($"Configured search service mode: use single search service.");
 
-                    searchServices.Add(await GetSearchServiceFromAzureAsync(
+                    searchServices.Add(GetSearchServiceFromAzureAsync(
                         officialUrl: null,
                         serviceDetails: _testSettings.SearchServiceConfiguration.SingleSearchService,
                         errorDetail: "single search service",
@@ -234,7 +208,7 @@ namespace NuGet.Services.EndToEnd.Support
             return searchServices;
         }
 
-        private async Task<SearchServiceProperties> GetSearchServiceFromAzureAsync(
+        private SearchServiceProperties GetSearchServiceFromAzureAsync(
             Uri officialUrl,
             ServiceDetails serviceDetails,
             string errorDetail,
@@ -255,37 +229,7 @@ namespace NuGet.Services.EndToEnd.Support
                 throw new ArgumentException($"For the {errorDetail}, no service URL was found.");
             }
 
-            var hasCloudServiceDetails = serviceDetails.Subscription != null &&
-                serviceDetails.ResourceGroup != null &&
-                serviceDetails.Name != null &&
-                serviceDetails.Slot != null;
-
-            if (!hasCloudServiceDetails)
-            {
-                return new SearchServiceProperties(serviceUrl, instanceCount: null);
-            }
-
-            logger.WriteLine($"Extracting search service properties from Azure. " +
-                $"Subscription: {serviceDetails.Subscription}, " +
-                $"Resource group: {serviceDetails.ResourceGroup}, " +
-                $"Service name: {serviceDetails.Name}, " +
-                $"Slot: {serviceDetails.Slot}");
-
-            var result = await _azureManagementAPIWrapper.GetCloudServicePropertiesAsync(
-                serviceDetails.Subscription,
-                serviceDetails.ResourceGroup,
-                serviceDetails.Name,
-                serviceDetails.Slot,
-                logger,
-                CancellationToken.None);
-
-            var cloudService = AzureHelper.ParseCloudServiceProperties(result);
-
-            logger.WriteLine(
-                $"Using search service URL '{serviceUrl.AbsoluteUri}' for slot '{serviceDetails.Slot}' " +
-                $"with {cloudService.InstanceCount} instances.");
-
-            return new SearchServiceProperties(serviceUrl, cloudService.InstanceCount);
+            return new SearchServiceProperties(serviceUrl);
         }
 
         private static string BuildAutocompleteQueryString(

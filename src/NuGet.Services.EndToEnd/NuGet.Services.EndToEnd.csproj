@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGet.Services.EndToEnd</RootNamespace>
     <AssemblyName>NuGet.Services.EndToEnd</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -59,15 +59,12 @@
     <Compile Include="Support\Utilities\TestDataResourceUtility.cs" />
     <Compile Include="SymbolsPackageTests.cs" />
     <Compile Include="Support\Clients\ClientHelper.cs" />
-    <Compile Include="Support\Clients\IRetryingAzureManagementAPIWrapper.cs" />
     <Compile Include="Support\Clients\DotNetExeClient.cs" />
-    <Compile Include="Support\Clients\RetryingAzureManagementAPIWrapper.cs" />
     <Compile Include="Support\Clients\SearchServiceProperties.cs" />
     <Compile Include="Support\Clients\V3IndexClient.cs" />
     <Compile Include="Support\CommonCollection.cs" />
     <Compile Include="Support\CommonFixture.cs" />
     <Compile Include="Support\Configuration\ServiceDetails.cs" />
-    <Compile Include="Support\Configuration\AzureManagementAPIWrapperConfiguration.cs" />
     <Compile Include="ConnectivityTests.cs" />
     <Compile Include="NuGetExeTests.cs" />
     <Compile Include="RelistTests.cs" />

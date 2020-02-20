@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGet.Services.EndToEnd</RootNamespace>
     <AssemblyName>NuGet.Services.EndToEnd.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -44,7 +45,6 @@
     <Compile Include="Support\ExceptionExtensionsTests.cs" />
     <Compile Include="Support\HttpResponseMessageExtensionsTests.cs" />
     <Compile Include="Support\PushedPackagesFixtureTests.cs" />
-    <Compile Include="Support\RetryingAzureManagementAPIWrapperTests.cs" />
     <Compile Include="Support\RetryUtilityTests.cs" />
     <Compile Include="Support\TestDataTests.cs" />
     <Compile Include="Support\TestSettingsTests.cs" />

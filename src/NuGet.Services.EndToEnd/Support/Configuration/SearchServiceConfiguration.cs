@@ -26,8 +26,6 @@ namespace NuGet.Services.EndToEnd.Support
 
         public ServiceDetails SingleSearchService { get; set; }
 
-        public AzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; set; }
-
         /// <summary>
         /// Additional time to poll after a package was found in the search index. This is necessary for Azure Search
         /// Service since a package can appear in one Azure Search replica before another. We could go deep into the
