@@ -180,7 +180,7 @@ namespace NuGet.Services.EndToEnd.Support
                         var officialUrl = ClientHelper.ConvertToHttpsAndClean(uri);
                         if (_testSettings.SearchServiceConfiguration.IndexJsonMappedSearchServices.TryGetValue(host, out var mappedService))
                         {
-                            var searchServiceProperties = GetSearchServiceFromAzureAsync(
+                            var searchServiceProperties = GetSearchServiceFromAzure(
                                officialUrl,
                                mappedService,
                                $"index.json mapped search service '{host}'",
@@ -197,7 +197,7 @@ namespace NuGet.Services.EndToEnd.Support
                 {
                     logger.WriteLine($"Configured search service mode: use single search service.");
 
-                    searchServices.Add(GetSearchServiceFromAzureAsync(
+                    searchServices.Add(GetSearchServiceFromAzure(
                         officialUrl: null,
                         serviceDetails: _testSettings.SearchServiceConfiguration.SingleSearchService,
                         errorDetail: "single search service",
@@ -208,7 +208,7 @@ namespace NuGet.Services.EndToEnd.Support
             return searchServices;
         }
 
-        private SearchServiceProperties GetSearchServiceFromAzureAsync(
+        private SearchServiceProperties GetSearchServiceFromAzure(
             Uri officialUrl,
             ServiceDetails serviceDetails,
             string errorDetail,
