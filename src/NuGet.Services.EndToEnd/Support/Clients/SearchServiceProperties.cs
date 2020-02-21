@@ -11,13 +11,11 @@ namespace NuGet.Services.EndToEnd.Support
     /// </summary>
     public class SearchServiceProperties
     {
-        public SearchServiceProperties(Uri uri, int? instanceCount)
+        public SearchServiceProperties(Uri uri)
         {
             Uri = uri;
-            InstanceCount = instanceCount;
         }
 
         public Uri Uri { get; }
-        public int? InstanceCount { get; }
     }
 }

@@ -33,8 +33,6 @@ namespace NuGet.Services.EndToEnd.Support
         {
         }
 
-        public AzureManagementAPIWrapperConfiguration AzureManagementAPIWrapperConfiguration { get; set; }
-
         public string V3IndexUrl { get; set; }
 
         public SearchServiceConfiguration SearchServiceConfiguration { get; set; }

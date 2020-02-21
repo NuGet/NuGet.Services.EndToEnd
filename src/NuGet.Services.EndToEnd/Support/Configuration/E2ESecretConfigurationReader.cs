@@ -17,6 +17,8 @@ namespace NuGet.Services.EndToEnd.Support
         private ISecretReaderFactory _secretReaderFactory;
         private Lazy<ISecretInjector> _secretInjector;
 
+        public IEnumerable<IConfigurationProvider> Providers => throw new NotImplementedException();
+
         public E2ESecretConfigurationReader(IConfigurationRoot config, ISecretReaderFactory secretReaderFactory)
         {
             _configuration = config;
