@@ -112,7 +112,7 @@ namespace NuGet.Services.EndToEnd
         /// <summary>
         /// Push a package to the gallery and verify the owner information is propagated.
         /// </summary>
-        [AzureSearchOnly]
+        [Fact]
         public async Task NewlyPushedPackageHasOwnerInformation()
         {
             // Arrange

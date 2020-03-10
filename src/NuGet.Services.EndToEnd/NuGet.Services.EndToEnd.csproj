@@ -42,7 +42,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
-    <Compile Include="AzureSearchOnlyAttribute.cs" />
     <Compile Include="DeprecateTests.cs" />
     <Compile Include="IconTests.cs" />
     <Compile Include="LicenseTests.cs" />
@@ -111,7 +110,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="project.json" />
     <EmbeddedResource Include="Support\TestData\Icons\icon.png" />
     <EmbeddedResource Include="Support\TestData\Icons\icon.jpg" />
     <Content Include="Support\TestData\E2E.DotnetTool\E2E.DotnetTool.csproj">
