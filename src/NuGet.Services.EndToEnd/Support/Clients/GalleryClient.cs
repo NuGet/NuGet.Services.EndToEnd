@@ -137,11 +137,11 @@ namespace NuGet.Services.EndToEnd.Support
         public async Task SearchPackageODataV2FromDBAsync(string id, string normalizedVersion, ITestOutputHelper logger)
         {
             var galleryEndpoint = GetGalleryServiceBaseUrl();
-            // Add 1 eq 1 to block the search hijack and execute the query against the database.
-            var urlRootAndPath = $"{galleryEndpoint}/api/v2/Packages()";
+            // Add the hijack=false query parameter to block the search hijack and execute the query against the database.
+            var urlRootAndPath = $"{galleryEndpoint}/api/v2/Packages(Id='{id}',Version='{normalizedVersion}')";
             var queryParameters = new Dictionary<string, string>()
             {
-                { "$filter", $"Id eq '{id}' and NormalizedVersion eq '{normalizedVersion}' and 1 eq 1" }
+                { "hijack", "false" }
             };
             var url = QueryHelpers.AddQueryString(urlRootAndPath, queryParameters);
 
