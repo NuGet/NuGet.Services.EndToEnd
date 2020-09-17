@@ -33,13 +33,13 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task<V3SearchResponse> QueryAsync(SearchServiceProperties searchService, string queryString, ITestOutputHelper logger)
         {
-            var queryUrl = new Uri(searchService.Uri, $"query?{queryString}");
+            var queryUrl = new Uri(searchService.Uri, $"query?testData=true&{queryString}");
             return await _httpClient.GetJsonAsync<V3SearchResponse>(queryUrl.AbsoluteUri, logger);
         }
 
         public async Task<AutocompleteResponse> AutocompleteAsync(SearchServiceProperties searchService, string queryString, ITestOutputHelper logger)
         {
-            var queryUrl = new Uri(searchService.Uri, $"autocomplete?{queryString}");
+            var queryUrl = new Uri(searchService.Uri, $"autocomplete?testData=true&{queryString}");
             return await _httpClient.GetJsonAsync<AutocompleteResponse>(queryUrl.AbsoluteUri, logger);
         }
 
@@ -237,7 +237,7 @@ namespace NuGet.Services.EndToEnd.Support
             bool? includePrerelease,
             string semVerLevel = null)
         {
-            query += $"&prerelease={includePrerelease ?? false}";
+            query += $"&testData=true&prerelease={includePrerelease ?? false}";
 
             NuGetVersion semVerLevelVersion;
             if (!string.IsNullOrEmpty(semVerLevel) && NuGetVersion.TryParse(semVerLevel, out semVerLevelVersion))
