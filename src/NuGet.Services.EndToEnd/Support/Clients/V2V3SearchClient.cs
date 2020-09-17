@@ -237,7 +237,7 @@ namespace NuGet.Services.EndToEnd.Support
             bool? includePrerelease,
             string semVerLevel = null)
         {
-            query += $"&prerelease={includePrerelease ?? false}";
+            query += $"testData=true&prerelease={includePrerelease ?? false}";
 
             NuGetVersion semVerLevelVersion;
             if (!string.IsNullOrEmpty(semVerLevel) && NuGetVersion.TryParse(semVerLevel, out semVerLevelVersion))
