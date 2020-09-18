@@ -159,6 +159,7 @@ namespace NuGet.Services.EndToEnd.Support
         {
             var queryParameters = new Dictionary<string, string>()
             {
+                { "testData", "true" },
                 { "partialId", id },
                 { "includePrerelease", includePrerelease?.ToString() ?? bool.FalseString }
             };
@@ -177,6 +178,7 @@ namespace NuGet.Services.EndToEnd.Support
         {
             var queryParameters = new Dictionary<string, string>()
             {
+                { "testData", "true" },
                 { "includePrerelease", includePrerelease?.ToString() ?? bool.FalseString }
             };
 
