@@ -39,10 +39,12 @@ Trace-Log "DotNet CLI directory: $($env:DOTNET_INSTALL_DIR)"
 
 # Try to use the Azure DevOps temp directory, which is cleaned up by the agent and has a short path.
 if ($env:AGENT_TEMPDIRECTORY) {
+    $env:TMP = $env:AGENT_TEMPDIRECTORY
     $env:TEMP = $env:AGENT_TEMPDIRECTORY
 }
 
-Trace-Log "Using temp directory: $($env:TEMP)"
+Trace-Log "Using TMP directory: $($env:TMP)"
+Trace-Log "Using TEMP directory: $($env:TEMP)"
 
 Function Run-Tests {
     [CmdletBinding()]
