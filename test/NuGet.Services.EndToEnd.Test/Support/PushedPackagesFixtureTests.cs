@@ -17,11 +17,11 @@ namespace NuGet.Services.EndToEnd.Support
         private readonly PushedPackagesFixture _fixture;
         private readonly ITestOutputHelper _logger;
 
-        public PushedPackagesFixtureTests()
+        public PushedPackagesFixtureTests(ITestOutputHelper output)
         {
             _galleryClient = new Mock<IGalleryClient>();
             _fixture = PushedPackagesFixture.Create(_galleryClient.Object);
-            _logger = new Mock<ITestOutputHelper>().Object;
+            _logger = output;
         }
 
         [Theory]
