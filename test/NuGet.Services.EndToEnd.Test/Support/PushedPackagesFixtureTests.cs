@@ -46,7 +46,7 @@ namespace NuGet.Services.EndToEnd.Support
             Assert.Equal(fullVersion, package.FullVersion);
         }
 
-        [Fact]
+        [Fact(Skip = "Flaky, fix tracked here: https://github.com/NuGet/NuGetGallery/issues/8260")]
         public async Task PushesAllPackagesOnFirstPush()
         {
             // Act
