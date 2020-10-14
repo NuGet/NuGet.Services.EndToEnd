@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26719.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30517.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D505F569-4DF7-42EE-BAA0-472FEC55B28F}"
 EndProject
@@ -9,9 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Services.EndToEnd", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5BC6A97C-227D-4213-9A6B-58A1FED9ADE6}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		build.ps1 = build.ps1
 		buildandtest.ps1 = buildandtest.ps1
+		Directory.Build.props = Directory.Build.props
 		NuGet.config = NuGet.config
 		README.md = README.md
 		test.ps1 = test.ps1
