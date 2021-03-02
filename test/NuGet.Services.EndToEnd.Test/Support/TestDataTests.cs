@@ -54,5 +54,49 @@ namespace NuGet.Services.EndToEnd.Support
                 }
             }
         }
+
+        [Fact]
+        public void InjectsReadmeFile()
+        {
+            string readmeFilename = "readme.md";
+            string resourceName = "Readmes." + readmeFilename;
+            var readmeData = TestDataResourceUtility.GetResourceStringContent(resourceName);
+            var packageStream = TestData.BuildPackageStream(new PackageCreationContext
+            {
+                Id = "testP",
+                NormalizedVersion = "1.0.0",
+                FullVersion = "1.0.0",
+                Properties = new PackageProperties(PackageType.EmbeddedReadmeFile)
+                {
+                    EmbeddedReadmeFilename = readmeFilename
+                },
+            });
+
+            using (packageStream)
+            using (var zipArchive = new ZipArchive(packageStream, ZipArchiveMode.Read))
+            {
+                var readmeEntry = zipArchive.GetEntry(readmeFilename);
+                Assert.NotNull(readmeEntry);
+                string actualReadmeData;
+
+                using (var readmeDataStream = readmeEntry.Open())
+                using (var br = new StreamReader(readmeDataStream))
+                {
+                    actualReadmeData = br.ReadToEnd();
+                }
+
+                Assert.Equal(readmeData, actualReadmeData);
+
+                var nuspecEntry = zipArchive.GetEntry($"testP.nuspec");
+                Assert.NotNull(nuspecEntry);
+
+                using (var nuspecStream = nuspecEntry.Open())
+                using (var streamReader = new StreamReader(nuspecStream))
+                {
+                    var nuspecContent = streamReader.ReadToEnd();
+                    Assert.Contains($"<readme>{readmeFilename}</readme>", nuspecContent);
+                }
+            }
+        }
     }
 }

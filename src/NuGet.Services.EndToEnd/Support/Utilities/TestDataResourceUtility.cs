@@ -20,6 +20,14 @@ namespace NuGet.Services.EndToEnd.Support.Utilities
             }
         }
 
+        public static string GetResourceStringContent(string name)
+        {
+            using (var reader = new StreamReader(GetManifestResourceStream(name)))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
         private static Stream GetManifestResourceStream(string name)
         {
             var resourceName = GetResourceName(name);

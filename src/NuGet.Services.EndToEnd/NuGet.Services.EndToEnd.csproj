@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutocompleteResultTests.cs" />
+    <Compile Include="ReadmeTests.cs" />
     <Compile Include="DeprecateTests.cs" />
     <Compile Include="IconTests.cs" />
     <Compile Include="LicenseTests.cs" />
@@ -112,6 +113,7 @@
     </None>
     <EmbeddedResource Include="Support\TestData\Icons\icon.png" />
     <EmbeddedResource Include="Support\TestData\Icons\icon.jpg" />
+    <EmbeddedResource Include="Support\TestData\Readmes\readme.md" />
     <Content Include="Support\TestData\E2E.DotnetTool\E2E.DotnetTool.csproj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

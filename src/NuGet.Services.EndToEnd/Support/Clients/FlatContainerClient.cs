@@ -156,6 +156,9 @@ namespace NuGet.Services.EndToEnd.Support
                 case FlatContainerContentType.License:
                     filePath = "license";
                     break;
+                case FlatContainerContentType.Readme:
+                    filePath = "readme";
+                    break;
 
                 default:
                     throw new ArgumentException($"Unsupported content type: {stringFileType}", nameof(stringFileType));

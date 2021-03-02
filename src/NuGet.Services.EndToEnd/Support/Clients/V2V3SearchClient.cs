@@ -476,6 +476,7 @@ namespace NuGet.Services.EndToEnd.Support
             public List<V3VersionEntry> Versions { get; set; }
             public string LicenseUrl { get; set; }
             public string IconUrl { get; set; }
+            public string ReadmeUrl { get; set; }
         }
 
         public class V3PackageType

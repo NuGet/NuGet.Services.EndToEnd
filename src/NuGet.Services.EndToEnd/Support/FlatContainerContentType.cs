@@ -7,5 +7,6 @@ namespace NuGet.Services.EndToEnd.Support
     {
         License,
         Icon,
+        Readme,
     }
 }
