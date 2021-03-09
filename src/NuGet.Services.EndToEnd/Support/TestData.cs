@@ -93,13 +93,13 @@ namespace NuGet.Services.EndToEnd.Support
 
             if (context.Properties.EmbeddedIconFilename != null || context.Properties.EmbeddedReadmeFilename != null)
             {
-                return InjectIconOrReadmeMetadata(packageStream, context);
+                return InjectEmbeddedMetadata(packageStream, context);
             }
 
             return packageStream;
         }
 
-        private static Stream InjectIconOrReadmeMetadata(Stream packageStream, PackageCreationContext context)
+        private static Stream InjectEmbeddedMetadata(Stream packageStream, PackageCreationContext context)
         {
             using (var archive = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
             {

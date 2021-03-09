@@ -24,15 +24,17 @@ namespace NuGet.Services.EndToEnd
             _logger = logger;
         }
 
-        [Fact]
-        public async Task PushedPackageWithReadmeIsAvailableInRegistration()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task PushedPackageWithReadmeIsAvailableInRegistration(bool semVer2)
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.EmbeddedReadmeFile, _logger);
             var expectedPath = GetExpectedReadmePath(package);
 
             // Act & Assert
-            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
+            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: semVer2, logger: _logger);
             Assert.All(packageRegistrationList, x => Assert.EndsWith(expectedPath, x.CatalogEntry.ReadmeUrl));
         }
 
@@ -48,30 +50,6 @@ namespace NuGet.Services.EndToEnd
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             var readmeContents = await _clients.FlatContainer.TryAndGetFileStringContent(package.Id, package.NormalizedVersion, FlatContainerContentType.Readme, _logger);
             Assert.All(readmeContents, x => Assert.Equal(expectedContent, x));
-        }
-
-        [Fact]
-        public async Task PushedPackageWithReadmeIsAvailableInSearch()
-        {
-            // Arrange
-            var package = await _pushedPackages.PrepareAsync(PackageType.EmbeddedReadmeFile, _logger);
-
-            // Act & Assert
-            await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
-            var searchServices = await _clients.V2V3Search.GetSearchServicesAsync(_logger);
-
-            foreach (var searchService in searchServices)
-            {
-                var results = await _clients.V2V3Search.QueryAsync(
-                    searchService,
-                    $"q=packageid:{package.Id}",
-                    _logger);
-
-                var data = Assert.Single(results.Data);
-                Assert.Equal(package.NormalizedVersion, data.Version);
-                var version = Assert.Single(data.Versions);
-                Assert.Equal(package.NormalizedVersion, version.Version);
-            }
         }
 
         private static string GetExpectedReadmePath(Package package)
