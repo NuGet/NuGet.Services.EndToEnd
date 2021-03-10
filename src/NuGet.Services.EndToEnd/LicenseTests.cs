@@ -35,7 +35,7 @@ namespace NuGet.Services.EndToEnd
             var expectedPath = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}/license");
 
             // Act & Assert
-            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
+            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives: false, logger: _logger);
             Assert.All(packageRegistrationList, x => Assert.Equal(package.Properties.LicenseMetadata.License, x.CatalogEntry.LicenseExpression));
             Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath.AbsoluteUri, x.CatalogEntry.LicenseUrl));
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
@@ -55,7 +55,7 @@ namespace NuGet.Services.EndToEnd
             var expectedPath = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}/license");
 
             // Act & Assert
-            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
+            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives: false, logger: _logger);
             Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath.AbsoluteUri, x.CatalogEntry.LicenseUrl));
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             var licenseFileList = await _clients.FlatContainer.TryAndGetFileStringContent(package.Id, package.NormalizedVersion, FlatContainerContentType.License, _logger);
@@ -74,7 +74,7 @@ namespace NuGet.Services.EndToEnd
             var package = await _pushedPackages.PrepareAsync(PackageType.LicenseUrl, _logger);
 
             // Act & Assert
-            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
+            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives: false, logger: _logger);
             Assert.All(packageRegistrationList, x => Assert.Equal(package.Properties.LicenseUrl.AbsoluteUri, x.CatalogEntry.LicenseUrl));
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
 

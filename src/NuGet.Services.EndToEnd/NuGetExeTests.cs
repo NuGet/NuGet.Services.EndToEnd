@@ -44,11 +44,11 @@ namespace NuGet.Services.EndToEnd
 
         [Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
-        public async Task LatestNuGetExeCanRestorePackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
+        public async Task LatestNuGetExeCanRestorePackage(PackageType packageType, PackageType[] dependencies, bool excludeSemVer2Hives, SourceType sourceType)
         {
             // Arrange
             var nuGetExe = PrepareNuGetExe(sourceType);
-            var package = await PreparePackageAsync(packageType, dependencies, semVer2);
+            var package = await PreparePackageAsync(packageType, dependencies, excludeSemVer2Hives);
             var projectPath = WriteProjectWithDependency(package.Id, package.NormalizedVersion);
             var projectDirectory = Path.GetDirectoryName(projectPath);
 
@@ -62,11 +62,11 @@ namespace NuGet.Services.EndToEnd
 
         [Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
-        public async Task LatestNuGetExeCanInstallPackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
+        public async Task LatestNuGetExeCanInstallPackage(PackageType packageType, PackageType[] dependencies, bool excludeSemVer2Hives, SourceType sourceType)
         {
             // Arrange
             var nuGetExe = PrepareNuGetExe(sourceType);
-            var package = await PreparePackageAsync(packageType, dependencies, semVer2);
+            var package = await PreparePackageAsync(packageType, dependencies, excludeSemVer2Hives);
 
             // Act
             var result = await nuGetExe.InstallAsync(
@@ -82,12 +82,12 @@ namespace NuGet.Services.EndToEnd
 
         [Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
-        public async Task LatestNuGetExeCanInstallLatestPackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
+        public async Task LatestNuGetExeCanInstallLatestPackage(PackageType packageType, PackageType[] dependencies, bool excludeSemVer2Hives, SourceType sourceType)
         {
             // Arrange
             var nuGetExe = PrepareNuGetExe(sourceType);
             var prerelease = true;
-            var package = await PreparePackageAsync(packageType, dependencies, semVer2);
+            var package = await PreparePackageAsync(packageType, dependencies, excludeSemVer2Hives);
 
             // Act
             var result = await nuGetExe.InstallLatestAsync(
@@ -103,11 +103,11 @@ namespace NuGet.Services.EndToEnd
 
         [Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
-        public async Task LatestNuGetExeCanVerifyRepositorySignedPackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
+        public async Task LatestNuGetExeCanVerifyRepositorySignedPackage(PackageType packageType, PackageType[] dependencies, bool excludeSemVer2Hives, SourceType sourceType)
         {
             // Arrange
             var nuGetExe = PrepareNuGetExe(sourceType);
-            var package = await PreparePackageAsync(packageType, dependencies, semVer2);
+            var package = await PreparePackageAsync(packageType, dependencies, excludeSemVer2Hives);
 
             // Act
             var result = await nuGetExe.InstallAsync(
@@ -125,11 +125,11 @@ namespace NuGet.Services.EndToEnd
 
         [Theory]
         [MemberData(nameof(PackageAndSourceTypes))]
-        public async Task Pre490NuGetExeCanVerifyRepositorySignedPackage(PackageType packageType, PackageType[] dependencies, bool semVer2, SourceType sourceType)
+        public async Task Pre490NuGetExeCanVerifyRepositorySignedPackage(PackageType packageType, PackageType[] dependencies, bool excludeSemVer2Hives, SourceType sourceType)
         {
             // Arrange - NuGet 4.9.0+ use a different version of the repository signing resource.
             var nuGetExe = PrepareNuGetExe(sourceType, "4.7.0");
-            var package = await PreparePackageAsync(packageType, dependencies, semVer2);
+            var package = await PreparePackageAsync(packageType, dependencies, excludeSemVer2Hives);
 
             // Act
             var result = await nuGetExe.InstallAsync(
@@ -150,7 +150,7 @@ namespace NuGet.Services.EndToEnd
         {
             // Arrange
             var nuGetExe = PrepareNuGetExe(SourceType.V3);
-            var package = await PreparePackageAsync(PackageType.Signed, dependencies: new PackageType[0], semVer2: false);
+            var package = await PreparePackageAsync(PackageType.Signed, dependencies: new PackageType[0], excludeSemVer2Hives: false);
 
             // Act
             var result = await nuGetExe.InstallAsync(
@@ -174,7 +174,7 @@ namespace NuGet.Services.EndToEnd
             // Arrange
             var nuGetExe = PrepareNuGetExe(sourceType, "4.1.0");
             var prerelease = true;
-            var package = await PreparePackageAsync(packageType, dependencies, semVer2: true);
+            var package = await PreparePackageAsync(packageType, dependencies, excludeSemVer2Hives: true);
 
             // Act
             var result = await nuGetExe.InstallLatestAsync(
@@ -213,13 +213,13 @@ namespace NuGet.Services.EndToEnd
             return path;
         }
 
-        private async Task<Package> PreparePackageAsync(PackageType packageType, PackageType[] dependencies, bool semVer2)
+        private async Task<Package> PreparePackageAsync(PackageType packageType, PackageType[] dependencies, bool excludeSemVer2Hives)
         {
             foreach (var pt in new[] { packageType }.Concat(dependencies))
             {
                 var package = await _pushedPackages.PrepareAsync(pt, _logger);
                 await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
-                await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, _logger);
+                await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives, _logger);
                 await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
             }
 

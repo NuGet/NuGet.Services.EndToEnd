@@ -80,9 +80,9 @@ namespace NuGet.Services.EndToEnd.Support
                 string actualReadmeData;
 
                 using (var readmeDataStream = readmeEntry.Open())
-                using (var br = new StreamReader(readmeDataStream))
+                using (var streamReader = new StreamReader(readmeDataStream))
                 {
-                    actualReadmeData = br.ReadToEnd();
+                    actualReadmeData = streamReader.ReadToEnd();
                 }
 
                 Assert.Equal(readmeData, actualReadmeData);

@@ -24,18 +24,17 @@ namespace NuGet.Services.EndToEnd
             _logger = logger;
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task PushedPackageWithReadmeIsAvailableInRegistration(bool semVer2)
+        [Fact]
+        public async Task PushedPackageWithReadmeIsAvailableInRegistration(bool excludeSemVer2Hives)
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.EmbeddedReadmeFile, _logger);
-            var expectedPath = GetExpectedReadmePath(package);
+            var galleryUrl = _clients.Gallery.GetGalleryBaseUrl();
+            var expectedPath = new Uri(galleryUrl, $"/{package.Id}/{package.NormalizedVersion}#show-readme-container");
 
             // Act & Assert
-            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: semVer2, logger: _logger);
-            Assert.All(packageRegistrationList, x => Assert.EndsWith(expectedPath, x.CatalogEntry.ReadmeUrl));
+            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives: excludeSemVer2Hives, logger: _logger);
+            Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath.AbsoluteUri, x.CatalogEntry.ReadmeUrl));
         }
 
         [Fact]
@@ -44,17 +43,11 @@ namespace NuGet.Services.EndToEnd
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.EmbeddedReadmeFile, _logger);
             var expectedContent = GetReadmeData();
-            var expectedPath = GetExpectedReadmePath(package);
 
             // Act & Assert
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
             var readmeContents = await _clients.FlatContainer.TryAndGetFileStringContent(package.Id, package.NormalizedVersion, FlatContainerContentType.Readme, _logger);
             Assert.All(readmeContents, x => Assert.Equal(expectedContent, x));
-        }
-
-        private static string GetExpectedReadmePath(Package package)
-        {
-            return $"/{package.Id}/{package.NormalizedVersion}#show-readme-container";
         }
 
         private static string GetReadmeData()
