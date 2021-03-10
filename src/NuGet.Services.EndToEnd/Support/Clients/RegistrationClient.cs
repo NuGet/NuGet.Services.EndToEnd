@@ -79,7 +79,7 @@ namespace NuGet.Services.EndToEnd.Support
             var package = await PollAsync(
                 id,
                 version,
-                semVer2: true,
+                excludeSemVer2Hives: true,
                 isComplete: catalogEntry => 
                     catalogEntry.Id == id 
                     && catalogEntry.Version == version
