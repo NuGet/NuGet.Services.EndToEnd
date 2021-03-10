@@ -25,7 +25,7 @@ namespace NuGet.Services.EndToEnd
         }
 
         [Fact]
-        public async Task PushedPackageWithReadmeIsAvailableInRegistration(bool excludeSemVer2Hives)
+        public async Task PushedPackageWithReadmeIsAvailableInRegistration()
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.EmbeddedReadmeFile, _logger);
@@ -33,7 +33,7 @@ namespace NuGet.Services.EndToEnd
             var expectedPath = new Uri(galleryUrl, $"/{package.Id}/{package.NormalizedVersion}#show-readme-container");
 
             // Act & Assert
-            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives: excludeSemVer2Hives, logger: _logger);
+            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives: false, logger: _logger);
             Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath.AbsoluteUri, x.CatalogEntry.ReadmeUrl));
         }
 
