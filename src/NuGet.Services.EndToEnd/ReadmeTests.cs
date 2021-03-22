@@ -52,7 +52,7 @@ namespace NuGet.Services.EndToEnd
 
         private static string GetReadmeData()
         {
-            var sourceFilename = $"Readmes.readme.md";
+            var sourceFilename = "Readmes.readme.md";
             var expectedContent = TestDataResourceUtility.GetResourceStringContent(sourceFilename);
             return expectedContent;
         }

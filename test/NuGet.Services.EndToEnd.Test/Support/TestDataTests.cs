@@ -87,7 +87,7 @@ namespace NuGet.Services.EndToEnd.Support
 
                 Assert.Equal(readmeData, actualReadmeData);
 
-                var nuspecEntry = zipArchive.GetEntry($"testP.nuspec");
+                var nuspecEntry = zipArchive.GetEntry("testP.nuspec");
                 Assert.NotNull(nuspecEntry);
 
                 using (var nuspecStream = nuspecEntry.Open())
