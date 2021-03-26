@@ -34,7 +34,7 @@ namespace NuGet.Services.EndToEnd
             var expectedPath = GetExpectedIconPath(package);
 
             // Act & Assert
-            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, SemVer2: false, logger: _logger);
+            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
             Assert.All(packageRegistrationList, x => Assert.EndsWith(expectedPath, x.CatalogEntry.IconUrl));
         }
 

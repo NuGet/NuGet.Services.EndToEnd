@@ -97,7 +97,7 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         /// <param name="id">The package ID.</param>
         /// <param name="version">The package version.</param>
-        /// <param name="semVer2">Whether or not the provided package exclude SemVer 2.0.0.</param>
+        /// <param name="semVer2">Whether or not the provided package is SemVer 2.0.0.</param>
         /// <param name="logger">The logger.</param>
         /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
         public async Task<IReadOnlyList<RegistrationPackage>> WaitForPackageAsync(
