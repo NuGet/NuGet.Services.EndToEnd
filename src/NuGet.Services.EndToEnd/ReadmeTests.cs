@@ -30,7 +30,7 @@ namespace NuGet.Services.EndToEnd
             // Arrange
             var package = await _pushedPackages.PrepareAsync(PackageType.EmbeddedReadmeFile, _logger);
             var galleryUrl = _clients.Gallery.GetGalleryBaseUrl();
-            var expectedPath = new Uri(galleryUrl, $"/{package.Id}/{package.NormalizedVersion}#show-readme-container");
+            var expectedPath = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}#show-readme-container");
 
             // Act & Assert
             var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives: false, logger: _logger);

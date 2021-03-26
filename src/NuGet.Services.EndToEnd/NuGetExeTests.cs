@@ -312,7 +312,7 @@ namespace NuGet.Services.EndToEnd
             get
             {
                 return GetTestDataRows()
-                    .Where(x => x.SemVer2)
+                    .Where(x => x.ExcludeSemVer2Hives)
                     .Select(x => new object[] { x.PackageType, x.Dependencies, x.SourceType });
             }
         }
@@ -322,7 +322,7 @@ namespace NuGet.Services.EndToEnd
             get
             {
                 return GetTestDataRows()
-                    .Select(x => new object[] { x.PackageType, x.Dependencies, x.SemVer2, x.SourceType });
+                    .Select(x => new object[] { x.PackageType, x.Dependencies, x.ExcludeSemVer2Hives, x.SourceType });
             }
         }
 
@@ -333,23 +333,23 @@ namespace NuGet.Services.EndToEnd
                 new PackageTypeAndSourceType
                 {
                     PackageType = PackageType.SemVer1Stable,
-                    SemVer2 = false,
+                    ExcludeSemVer2Hives = false,
                 },
                 new PackageTypeAndSourceType
                 {
                     PackageType = PackageType.SemVer2Prerel,
-                    SemVer2 = true,
+                    ExcludeSemVer2Hives = true,
                 },
                 new PackageTypeAndSourceType
                 {
                     PackageType = PackageType.SemVer2StableMetadata,
-                    SemVer2 = true,
+                    ExcludeSemVer2Hives = true,
                 },
                 new PackageTypeAndSourceType
                 {
                     PackageType = PackageType.SemVer2DueToSemVer2Dep,
                     Dependencies = new[] { PackageType.SemVer2Prerel },
-                    SemVer2 = true,
+                    ExcludeSemVer2Hives = true,
                 },
             };
 
@@ -366,7 +366,7 @@ namespace NuGet.Services.EndToEnd
                 {
                     PackageType = pt.PackageType,
                     Dependencies = pt.Dependencies,
-                    SemVer2 = pt.SemVer2,
+                    ExcludeSemVer2Hives = pt.ExcludeSemVer2Hives,
                     SourceType = st,
                 };
             return rows;
@@ -376,7 +376,7 @@ namespace NuGet.Services.EndToEnd
         {
             public PackageType PackageType { get; set; }
             public PackageType[] Dependencies { get; set; } = new PackageType[0];
-            public bool SemVer2 { get; set; }
+            public bool ExcludeSemVer2Hives { get; set; }
             public SourceType SourceType { get; set; }
         }
     }
