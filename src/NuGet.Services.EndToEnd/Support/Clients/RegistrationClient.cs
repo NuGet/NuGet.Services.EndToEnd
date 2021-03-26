@@ -79,7 +79,7 @@ namespace NuGet.Services.EndToEnd.Support
             var package = await PollAsync(
                 id,
                 version,
-                excludeSemVer2Hives: true,
+                semVer2: true,
                 isComplete: catalogEntry => 
                     catalogEntry.Id == id 
                     && catalogEntry.Version == version
@@ -97,19 +97,19 @@ namespace NuGet.Services.EndToEnd.Support
         /// </summary>
         /// <param name="id">The package ID.</param>
         /// <param name="version">The package version.</param>
-        /// <param name="excludeSemVer2Hives">Whether or not the provided package exclude SemVer 2.0.0.</param>
+        /// <param name="semVer2">Whether or not the provided package exclude SemVer 2.0.0.</param>
         /// <param name="logger">The logger.</param>
         /// <returns>Returns a task that completes when the package is available or the timeout has occurred.</returns>
         public async Task<IReadOnlyList<RegistrationPackage>> WaitForPackageAsync(
             string id,
             string version,
-            bool excludeSemVer2Hives,
+            bool semVer2,
             ITestOutputHelper logger)
         {
             return await PollAsync(
                 id,
                 version,
-                excludeSemVer2Hives,
+                semVer2,
                 catalogEntry => catalogEntry.Id == id && catalogEntry.Version == version,
                 startingMessage: $"Waiting for package {id} {version} to be available on registration base URLs:",
                 successMessageFormat: $"Package {id} {version} was found on {{0}} after waiting {{1}}.",
@@ -120,7 +120,7 @@ namespace NuGet.Services.EndToEnd.Support
         private Task<IReadOnlyList<RegistrationPackage>> PollAsync(
             string id,
             string version,
-            bool excludeSemVer2Hives,
+            bool semVer2,
             Func<CatalogEntry, bool> isComplete,
             string startingMessage,
             string successMessageFormat,
@@ -133,7 +133,7 @@ namespace NuGet.Services.EndToEnd.Support
             return RetryUtility.ExecuteWithRetry<IReadOnlyList<RegistrationPackage>>(
                 async () =>
                 {
-                    var baseUrls = await (excludeSemVer2Hives ? _v3IndexClient.GetSemVer2RegistrationBaseUrlsAsync(logger) : _v3IndexClient.GetRegistrationBaseUrlsAsync(logger));
+                    var baseUrls = await (semVer2 ? _v3IndexClient.GetSemVer2RegistrationBaseUrlsAsync(logger) : _v3IndexClient.GetRegistrationBaseUrlsAsync(logger));
 
                     Assert.True(baseUrls.Count > 0, "At least one registration base URL must be configured.");
 

@@ -33,7 +33,7 @@ namespace NuGet.Services.EndToEnd
             var expectedPath = new Uri(galleryUrl, $"packages/{package.Id}/{package.NormalizedVersion}#show-readme-container");
 
             // Act & Assert
-            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives: false, logger: _logger);
+            var packageRegistrationList = await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
             Assert.All(packageRegistrationList, x => Assert.Equal(expectedPath.AbsoluteUri, x.CatalogEntry.ReadmeUrl));
         }
 

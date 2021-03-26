@@ -32,14 +32,14 @@ namespace NuGet.Services.EndToEnd
         [InlineData(PackageType.SemVer2Prerel, true)]
         [InlineData(PackageType.SemVer2StableMetadata, true)]
         [InlineData(PackageType.FullValidation, false)]
-        public async Task NewlyPushedIsAvailableInV3(PackageType packageType, bool excludeSemVer2Hives)
+        public async Task NewlyPushedIsAvailableInV3(PackageType packageType, bool semVer2)
         {
             // Arrange
             var package = await _pushedPackages.PrepareAsync(packageType, _logger);
 
             // Act & Assert
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives, logger: _logger);
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2, logger: _logger);
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
         }
 
@@ -51,7 +51,7 @@ namespace NuGet.Services.EndToEnd
 
             // Act & Assert
             await _clients.FlatContainer.WaitForPackageAsync(package.Id, package.NormalizedVersion, _logger);
-            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, excludeSemVer2Hives: false, logger: _logger);
+            await _clients.Registration.WaitForPackageAsync(package.Id, package.FullVersion, semVer2: false, logger: _logger);
             await _clients.V2V3Search.WaitForPackageAsync(package.Id, package.FullVersion, _logger);
         }
 

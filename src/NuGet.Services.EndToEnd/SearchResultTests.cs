@@ -36,9 +36,9 @@ namespace NuGet.Services.EndToEnd
             var semVer1Package = await _pushedPackages.PrepareAsync(PackageType.SemVer1Stable, _logger);
 
             // wait for all packages to become available to ensure that we have results.
-            await _clients.Registration.WaitForPackageAsync(semVer2Package.Id, semVer2Package.FullVersion, excludeSemVer2Hives: true, logger: _logger);
+            await _clients.Registration.WaitForPackageAsync(semVer2Package.Id, semVer2Package.FullVersion, semVer2: true, logger: _logger);
             await _clients.V2V3Search.WaitForPackageAsync(semVer2Package.Id, semVer2Package.FullVersion, _logger);
-            await _clients.Registration.WaitForPackageAsync(semVer1Package.Id, semVer1Package.FullVersion, excludeSemVer2Hives: false, logger: _logger);
+            await _clients.Registration.WaitForPackageAsync(semVer1Package.Id, semVer1Package.FullVersion, semVer2: false, logger: _logger);
             await _clients.V2V3Search.WaitForPackageAsync(semVer1Package.Id, semVer1Package.FullVersion, _logger);
 
             foreach (var searchService in searchServices)
