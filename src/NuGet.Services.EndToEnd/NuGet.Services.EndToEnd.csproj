@@ -46,6 +46,7 @@
     <Compile Include="IconTests.cs" />
     <Compile Include="LicenseTests.cs" />
     <Compile Include="PackageTypeTests.cs" />
+    <Compile Include="ReadmeTests.cs" />
     <Compile Include="Support\AssemblyMetadataPackageFile.cs" />
     <Compile Include="Support\Clients\SymbolServerClient.cs" />
     <Compile Include="Support\FlatContainerContentType.cs" />
@@ -112,6 +113,7 @@
     </None>
     <EmbeddedResource Include="Support\TestData\Icons\icon.png" />
     <EmbeddedResource Include="Support\TestData\Icons\icon.jpg" />
+    <EmbeddedResource Include="Support\TestData\Readmes\readme.md" />
     <Content Include="Support\TestData\E2E.DotnetTool\E2E.DotnetTool.csproj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -42,6 +42,19 @@ namespace NuGet.Services.EndToEnd.Support
                 context.Files = context.Files.Concat(extraFiles).ToList();
             }
 
+            if (context.Properties.EmbeddedReadmeFilename != null)
+            {
+                var extraFiles = new[]
+                {
+                    new AssemblyMetadataPackageFile($"Readmes.{context.Properties.EmbeddedReadmeFilename}")
+                    {
+                        Path = context.Properties.EmbeddedReadmeFilename,
+                        EffectivePath = context.Properties.EmbeddedReadmeFilename,
+                    }
+                };
+                context.Files = context.Files.Concat(extraFiles).ToList();
+            }
+
             var packageBuilder = new PackageBuilder();
             packageBuilder.Id = context.Id;
             packageBuilder.Version = NuGetVersion.Parse(context.FullVersion ?? context.NormalizedVersion);
@@ -78,15 +91,15 @@ namespace NuGet.Services.EndToEnd.Support
 
             var packageStream = GetStreamFromBuilder(packageBuilder);
 
-            if (context.Properties.EmbeddedIconFilename != null)
+            if (context.Properties.EmbeddedIconFilename != null || context.Properties.EmbeddedReadmeFilename != null)
             {
-                return InjectIconMetadata(packageStream, context);
+                return InjectEmbeddedMetadata(packageStream, context);
             }
 
             return packageStream;
         }
 
-        private static Stream InjectIconMetadata(Stream packageStream, PackageCreationContext context)
+        private static Stream InjectEmbeddedMetadata(Stream packageStream, PackageCreationContext context)
         {
             using (var archive = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
             {
@@ -97,7 +110,17 @@ namespace NuGet.Services.EndToEnd.Support
                 {
                     nuspecContent = streamReader.ReadToEnd();
                 }
-                nuspecContent = nuspecContent.Replace("</metadata>", $"  <icon>{context.Properties.EmbeddedIconFilename}</icon>\n  </metadata>");
+
+                if (context.Properties.EmbeddedIconFilename != null)
+                {
+                    nuspecContent = nuspecContent.Replace("</metadata>", $"  <icon>{context.Properties.EmbeddedIconFilename}</icon>\n  </metadata>");
+                }
+
+                if(context.Properties.EmbeddedReadmeFilename != null)
+                {
+                    nuspecContent = nuspecContent.Replace("</metadata>", $"  <readme>{context.Properties.EmbeddedReadmeFilename}</readme>\n  </metadata>");
+                }
+
                 using (var nuspecStream = nuspecEntry.Open())
                 using (var streamWriter = new StreamWriter(nuspecStream))
                 {

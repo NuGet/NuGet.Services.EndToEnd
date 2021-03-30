@@ -270,6 +270,7 @@ namespace NuGet.Services.EndToEnd.Support
             public string LicenseExpression { get; set; }
             public string LicenseUrl { get; set; }
             public string IconUrl { get; set; }
+            public string ReadmeUrl { get; set; }
             public CatalogDeprecation Deprecation { get; set; }
         }
 

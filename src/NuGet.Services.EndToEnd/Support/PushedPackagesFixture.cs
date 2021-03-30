@@ -403,6 +403,19 @@ namespace NuGet.Services.EndToEnd.Support
                     }));
                     break;
 
+                case PackageType.EmbeddedReadmeFile:
+                    packageToPrepare = new PackageToPrepare(Package.Create(new PackageCreationContext
+                    {
+                        Id = id,
+                        NormalizedVersion = "1.0.0",
+                        FullVersion = "1.0.0",
+                        Properties = new PackageProperties(packageType)
+                        {
+                            EmbeddedReadmeFilename = "readme.md"
+                        },
+                    }));
+                    break;
+
                 case PackageType.Deprecated:
                     packageToPrepare = new PackageToPrepare(
                         Package.Create(packageType, id, "1.0.0"),
