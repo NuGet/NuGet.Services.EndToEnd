@@ -166,6 +166,9 @@
     <PackageReference Include="System.Reflection.Metadata">
       <Version>1.7.0-preview.18571.3</Version>
     </PackageReference>
+    <PackageReference Include="System.Text.Encodings.Web">
+      <Version>5.0.1</Version>
+    </PackageReference>
     <PackageReference Include="xunit">
       <Version>2.4.1</Version>
     </PackageReference>
