@@ -9,7 +9,7 @@ param (
     [string]$SemanticVersion = '1.0.0-zlocal',
     [string]$Branch,
     [string]$CommitSHA,
-    [string]$BuildBranch = 'b669016094bf990a1bcacdb37adb20ab6ebcfad0'
+    [string]$BuildBranch = '89a00d98282d7c879da6c697dc6e9da91ccf00fd'
 )
 
 # For TeamCity - If any issue occurs, this script fail the build. - By default, TeamCity returns an exit code of 0 for all powershell scripts, even if they fail
