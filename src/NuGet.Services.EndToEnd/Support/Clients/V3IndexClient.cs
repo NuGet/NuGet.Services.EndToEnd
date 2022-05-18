@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Versioning;
@@ -104,10 +105,16 @@ namespace NuGet.Services.EndToEnd.Support
 
         private async Task<V3Index> GetV3IndexAsync(ITestOutputHelper logger)
         {
-            return await _httpClient.GetJsonAsync<V3Index>(
-                _testSettings.V3IndexUrl,
-                allowNotFound: false,
-                logResponseBody: false,
+            return await RetryUtility.ExecuteWithRetry(
+                async () =>
+                {
+                    return await _httpClient.GetJsonAsync<V3Index>(
+                        _testSettings.V3IndexUrl,
+                        allowNotFound: false,
+                        logResponseBody: false,
+                        logger: logger);
+                },
+                ex => (ex.HasTypeOrInnerType<WebException>(out var we) && we.Status == WebExceptionStatus.NameResolutionFailure),
                 logger: logger);
         }
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -294,7 +295,8 @@ namespace NuGet.Services.EndToEnd.Support
                     await Task.WhenAll(tasks);
                 },
                 ex => ex.HasTypeOrInnerType<SocketException>()
-                   || ex.HasTypeOrInnerType<TaskCanceledException>(),
+                   || ex.HasTypeOrInnerType<TaskCanceledException>()
+                   || (ex.HasTypeOrInnerType<WebException>(out var we) && we.Status == WebExceptionStatus.NameResolutionFailure),
                 logger: logger);
 
         }
