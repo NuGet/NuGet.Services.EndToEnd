@@ -13,3 +13,7 @@ Testing of edge cases or implementation details should be done in component-spec
     1. Change the `CurrentMode` property to the environment you wish to target.
     2. Inside of the `Create` method, find the instantiation of `TestSettings` that corresponds to the environment you wish to test.
     Replace the `TestSetting`'s `"API_KEY"` string with the API key you created in step #2.
+
+## Trademarks
+
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow Microsoft’s Trademark & Brand Guidelines. Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
