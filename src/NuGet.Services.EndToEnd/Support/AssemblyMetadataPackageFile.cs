@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Runtime.Versioning;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Services.EndToEnd.Support.Utilities;
 
@@ -27,6 +28,8 @@ namespace NuGet.Services.EndToEnd.Support
         public string EffectivePath { get; set; }
 
         public FrameworkName TargetFramework { get; set; }
+
+        public NuGetFramework NuGetFramework { get; set; }
 
         public DateTimeOffset LastWriteTime { get; set; }
 
