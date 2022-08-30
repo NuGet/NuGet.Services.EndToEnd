@@ -161,7 +161,8 @@ namespace NuGet.Services.EndToEnd.Support
                        && (hre.StatusCode == HttpStatusCode.InternalServerError
                            || hre.StatusCode == HttpStatusCode.BadGateway
                            || hre.StatusCode == HttpStatusCode.ServiceUnavailable
-                           || hre.StatusCode == HttpStatusCode.GatewayTimeout)),
+                           || hre.StatusCode == HttpStatusCode.GatewayTimeout))
+                   || (ex.HasTypeOrInnerType<WebException>(out var we) && we.Status == WebExceptionStatus.NameResolutionFailure),
                 logger: logger);
         }
 
