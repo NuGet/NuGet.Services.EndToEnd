@@ -54,7 +54,8 @@ namespace NuGet.Services.EndToEnd.Support
                     await Task.WhenAll(tasks);
                 },
                 ex => ex.HasTypeOrInnerType<SocketException>()
-                    || ex.HasTypeOrInnerType<TaskCanceledException>(),
+                   || ex.HasTypeOrInnerType<TaskCanceledException>()
+                   || (ex.HasTypeOrInnerType<WebException>(out var we) && we.Status == WebExceptionStatus.NameResolutionFailure),
                 logger: logger);
         }
 
