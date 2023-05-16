@@ -82,7 +82,7 @@ namespace NuGet.Services.EndToEnd.Support
                     break;
             }
 
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient().AddUserAgent(nameof(GalleryClient)))
             using (var request = new HttpRequestMessage(HttpMethod.Put, url))
             {
                 // Use the default push timeout that the client uses.
@@ -145,7 +145,7 @@ namespace NuGet.Services.EndToEnd.Support
             };
             var url = QueryHelpers.AddQueryString(urlRootAndPath, queryParameters);
 
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient().AddUserAgent(nameof(GalleryClient)))
             using (var request = new HttpRequestMessage(HttpMethod.Get, url))
             using (var response = await httpClient.SendAsync(request))
             {
@@ -201,7 +201,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         private async Task SendAsync(HttpMethod method, string url, ITestOutputHelper logger, HttpContent content = null)
         {
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient().AddUserAgent(nameof(GalleryClient)))
             using (var request = new HttpRequestMessage(method, url) { Content = content })
             {
                 request.Headers.Add(ApiKeyHeader, _testSettings.ApiKey);

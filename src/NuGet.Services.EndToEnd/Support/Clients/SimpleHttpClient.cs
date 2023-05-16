@@ -111,7 +111,7 @@ namespace NuGet.Services.EndToEnd.Support
             Func<Stream, Task<TResult>> getResult)
         {
             using (var httpClientHander = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip })
-            using (var httpClient = new HttpClient(httpClientHander))
+            using (var httpClient = new HttpClient(httpClientHander).AddUserAgent(nameof(SimpleHttpClient)))
             using (var response = await httpClient.GetAsync(url))
             {
                 if (allowNotFound && response.StatusCode == HttpStatusCode.NotFound)

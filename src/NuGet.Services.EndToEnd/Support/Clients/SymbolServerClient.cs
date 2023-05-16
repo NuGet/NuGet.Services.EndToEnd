@@ -73,7 +73,7 @@ namespace NuGet.Services.EndToEnd.Support
             var duration = Stopwatch.StartNew();
             while (!complete && duration.Elapsed < TestData.SymbolsWaitDuration)
             {
-                using (var httpClient = new HttpClient())
+                using (var httpClient = new HttpClient().AddUserAgent(nameof(SymbolServerClient)))
                 {
                     // Add Checksum headers for fetching the pdbs from symbol server. This header is used
                     // by the symbol server to validate the request(provided by supported clients) for 
