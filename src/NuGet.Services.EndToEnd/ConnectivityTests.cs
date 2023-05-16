@@ -28,7 +28,7 @@ namespace NuGet.Services.EndToEnd
         public async Task GalleryIsReachable()
         {
             var galleryUrl = _clients.Gallery.GetGalleryServiceBaseUrl();
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient().AddUserAgent(nameof(ConnectivityTests)))
             using (var response = await httpClient.GetAsync(galleryUrl))
             {
                 await response.EnsureSuccessStatusCodeOrLogAsync(galleryUrl.AbsoluteUri, _logger);
@@ -39,7 +39,7 @@ namespace NuGet.Services.EndToEnd
         [Fact]
         public async Task V3IndexIsReachable()
         {
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient().AddUserAgent(nameof(ConnectivityTests)))
             using (var response = await httpClient.GetAsync(_testSettings.V3IndexUrl))
             {
                 await response.EnsureSuccessStatusCodeOrLogAsync(_testSettings.V3IndexUrl, _logger);
@@ -55,7 +55,7 @@ namespace NuGet.Services.EndToEnd
             {
                 _logger.WriteLine($"Verifying connectivity to search base URL: {searchService.Uri.AbsoluteUri}");
 
-                using (var httpClient = new HttpClient())
+                using (var httpClient = new HttpClient().AddUserAgent(nameof(ConnectivityTests)))
                 using (var response = await httpClient.GetAsync(searchService.Uri))
                 {
                     await response.EnsureSuccessStatusCodeOrLogAsync(searchService.Uri.AbsoluteUri, _logger);
