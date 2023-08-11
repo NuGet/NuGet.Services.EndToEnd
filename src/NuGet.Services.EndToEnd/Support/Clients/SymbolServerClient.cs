@@ -82,7 +82,7 @@ namespace NuGet.Services.EndToEnd.Support
                     using (var response = await httpClient.GetAsync(symbolFileEndpoint))
                     {
                         complete = response.StatusCode == HttpStatusCode.OK;
-
+                        logger.WriteLine($"GET {symbolFileEndpoint.AbsoluteUri}: {response.StatusCode}");
                     }
                 }
 
