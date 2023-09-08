@@ -165,7 +165,7 @@
       <Version>6.2.4</Version>
     </PackageReference>
     <PackageReference Include="NuGet.Services.Configuration">
-      <Version>2.103.0</Version>
+      <Version>2.110.0-agr-kv-lib-upgrade3-8363300</Version>
     </PackageReference>
     <PackageReference Include="System.Reflection.Metadata">
       <Version>1.7.0-preview.18571.3</Version>
