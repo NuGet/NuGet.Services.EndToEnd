@@ -14,7 +14,7 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public static class TestData
     {
-        public static readonly NuGetFramework TargetFramework = NuGetFramework.Parse("net48");
+        public static readonly NuGetFramework TargetFramework = NuGetFramework.Parse("net472");
         public static readonly TimeSpan FlatContainerWaitDuration = TimeSpan.FromMinutes(20);
         public static readonly TimeSpan RegistrationWaitDuration = TimeSpan.FromMinutes(20);
         public static readonly TimeSpan SearchWaitDuration = TimeSpan.FromMinutes(35);
