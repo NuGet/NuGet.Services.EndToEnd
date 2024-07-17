@@ -155,7 +155,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         /// <summary>
         /// This method will generate the list of applicable packages for a given <see cref="PackageType"/> and
-        /// push them squentially to the NuGet gallery. Note this method will maintain the order of the packages
+        /// push them sequentially to the NuGet gallery. Note this method will maintain the order of the packages
         /// in the list that were pushed to the gallery.
         /// </summary>
         /// <param name="requestedPackageType">The type being currently requested to be pushed to gallery.</param>

@@ -30,6 +30,7 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 "pack",
                 projectPath,
+                "--configuration", "Debug",
                 $"/p:PackageId={id}",
                 $"/p:PackageVersion={version}",
             };
