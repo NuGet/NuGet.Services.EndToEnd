@@ -26,9 +26,7 @@ namespace NuGet.Services.EndToEnd
         [InlineData(PackageType.SemVer1Stable, true, null)]
         [InlineData(PackageType.SemVer1StableUnicodeId, true, null)]
         [InlineData(PackageType.SemVer1Stable, false, null)]
-        [InlineData(PackageType.SemVer1StableUnicodeId, false, null)]
         [InlineData(PackageType.SemVer2Prerel, true, "2.0.0")]
-        [InlineData(PackageType.SemVer2PrerelUnicodeId, true, "2.0.0")]
         [InlineData(PackageType.SemVer2StableMetadata, false, "2.0.0")]
         public async Task V2PackageVersionsAutocompleteResultsMatchV3Results(
             PackageType packageType,

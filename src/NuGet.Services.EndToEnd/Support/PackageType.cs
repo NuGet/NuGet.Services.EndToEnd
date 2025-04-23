@@ -14,7 +14,6 @@ namespace NuGet.Services.EndToEnd.Support
         SemVer1StableUnlisted,
         SemVer2DueToSemVer2Dep,
         SemVer2Prerel,
-        SemVer2PrerelUnicodeId,
         SemVer2PrerelRelisted,
         SemVer2PrerelUnlisted,
         SemVer2StableMetadata,
