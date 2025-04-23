@@ -10,9 +10,11 @@ namespace NuGet.Services.EndToEnd.Support
     public enum PackageType
     {
         SemVer1Stable,
+        SemVer1StableUnicodeId,
         SemVer1StableUnlisted,
         SemVer2DueToSemVer2Dep,
         SemVer2Prerel,
+        SemVer2PrerelUnicodeId,
         SemVer2PrerelRelisted,
         SemVer2PrerelUnlisted,
         SemVer2StableMetadata,

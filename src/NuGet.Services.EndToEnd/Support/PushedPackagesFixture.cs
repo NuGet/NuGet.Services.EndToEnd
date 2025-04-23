@@ -319,6 +319,11 @@ namespace NuGet.Services.EndToEnd.Support
                     packageToPrepare = new PackageToPrepare(Package.Create(packageType, id, SemVer2PrerelVersion));
                     break;
 
+                case PackageType.SemVer2PrerelUnicodeId:
+                    // package Id contains unicode characters.
+                    packageToPrepare = new PackageToPrepare(Package.Create(packageType, id + "пакет包elsökning123", SemVer2PrerelVersion));
+                    break;
+
                 case PackageType.SemVer2PrerelRelisted:
                     packageToPrepare = new PackageToPrepare(Package.Create(packageType, id, "1.0.0-alpha.1"),
                         unlist: true); 
@@ -424,6 +429,11 @@ namespace NuGet.Services.EndToEnd.Support
 
                 case PackageType.DotnetTool:
                     return await PrepareDotnetToolPackageAsync(id, "1.0.0", logger);
+
+                case PackageType.SemVer1StableUnicodeId:
+                    // package Id contains unicode characters.
+                    packageToPrepare = new PackageToPrepare(Package.Create(packageType, id + "пакет包elsökning123", "1.0.0"));
+                    break;
 
                 case PackageType.SemVer1Stable:
                 case PackageType.FullValidation:
