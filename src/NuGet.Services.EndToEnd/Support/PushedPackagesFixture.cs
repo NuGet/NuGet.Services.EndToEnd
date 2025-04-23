@@ -425,6 +425,11 @@ namespace NuGet.Services.EndToEnd.Support
                 case PackageType.DotnetTool:
                     return await PrepareDotnetToolPackageAsync(id, "1.0.0", logger);
 
+                case PackageType.SemVer1StableUnicodeId:
+                    // package Id contains unicode characters.
+                    packageToPrepare = new PackageToPrepare(Package.Create(packageType, id + "пакет包elsökning123", "1.0.0"));
+                    break;
+
                 case PackageType.SemVer1Stable:
                 case PackageType.FullValidation:
                 default:

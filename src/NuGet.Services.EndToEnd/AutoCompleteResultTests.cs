@@ -24,6 +24,7 @@ namespace NuGet.Services.EndToEnd
 
         [GalleryTestTheory]
         [InlineData(PackageType.SemVer1Stable, true, null)]
+        [InlineData(PackageType.SemVer1StableUnicodeId, true, null)]
         [InlineData(PackageType.SemVer1Stable, false, null)]
         [InlineData(PackageType.SemVer2Prerel, true, "2.0.0")]
         [InlineData(PackageType.SemVer2StableMetadata, false, "2.0.0")]
