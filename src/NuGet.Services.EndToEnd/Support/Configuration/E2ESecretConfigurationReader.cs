@@ -75,7 +75,8 @@ namespace NuGet.Services.EndToEnd.Support
 
         private ISecretInjector InitSecretInjector()
         {
-            return _secretReaderFactory.CreateSecretInjector(_secretReaderFactory.CreateSecretReader());
+            var secretReader = new EnvVarWrapperSecretReader(_secretReaderFactory);
+            return _secretReaderFactory.CreateSecretInjector(secretReader);
         }
     }
 }
