@@ -54,7 +54,7 @@ Invoke-BuildStep 'Getting private build tools' {
         $configFileName = "$($env:ConfigurationName).json"
         $sourceFile = "$SourcesDirectory\build\private\E2EConfig\$configFileName"
         $destinationDirectory = "$SourcesDirectory\src\NuGet.Services.EndToEnd\ExternalConfig"
-        Write-Host "Copying over configuration file $configFileName from private build tools into $destinationDirectory"
+        Write-Host "Copying configuration file $sourceFile into $destinationDirectory"
         if (-not (Test-Path $destinationDirectory)) {
             New-Item -Path $destinationDirectory -ItemType "directory"
         }
