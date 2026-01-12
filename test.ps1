@@ -1,4 +1,4 @@
-[CmdletBinding(DefaultParameterSetName='RegularBuild')]
+[CmdletBinding(DefaultParameterSetName = 'RegularBuild')]
 param (
     [ValidateSet("debug", "release")]
     [string]$Configuration = 'debug',
@@ -16,8 +16,8 @@ trap {
     exit 1
 }
 
-$CLIRoot= Join-Path $PSScriptRoot 'cli'
-$env:DOTNET_INSTALL_DIR=$CLIRoot
+$CLIRoot = Join-Path $PSScriptRoot 'cli'
+$env:DOTNET_INSTALL_DIR = $CLIRoot
 
 . "$PSScriptRoot\build\common.ps1"
 
@@ -56,8 +56,7 @@ Function Run-Tests {
 
     $UnitTestAssemblies = @("test\NuGet.Services.EndToEnd.Test\bin\$Configuration\NuGet.Services.EndToEnd.Test.dll")
 
-    $AllTestAssemblies = $UnitTestAssemblies + `
-        @("src\NuGet.Services.EndToEnd\bin\$Configuration\NuGet.Services.EndToEnd.dll")
+    $AllTestAssemblies = $UnitTestAssemblies + @("src\NuGet.Services.EndToEnd\bin\$Configuration\NuGet.Services.EndToEnd.dll")
 
     if ($OnlyUnitTests) {
         $AllTestAssemblies = $UnitTestAssemblies
@@ -66,8 +65,15 @@ Function Run-Tests {
     $TestCount = 0
 
     foreach ($TestAssembly in $AllTestAssemblies) {
-        & $xUnitExe (Join-Path $PSScriptRoot $TestAssembly) -xml "TestResults.$TestCount.xml" -Verbose
+        $testResultsPath = Join-Path $PSScriptRoot "TestResults.$TestCount.xml"
+        & $xUnitExe (Join-Path $PSScriptRoot $TestAssembly) -xml $testResultsPath -Verbose
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Test execution failed in assembly $TestAssembly."
+        }
         $TestCount++
+        if (!(Test-Path $testResultsPath)) {
+            Write-Error "Test results file $testResultsPath not found."
+        }
     }
 }
 
@@ -95,7 +101,7 @@ Trace-Log "Time elapsed $(Format-ElapsedTime ($endTime - $startTime))"
 Trace-Log ('=' * 60)
 
 if ($TestErrors) {
-    $ErrorLines = $TestErrors | %{ ">>> $($_.Exception.Message)" }
+    $ErrorLines = $TestErrors | % { ">>> $($_.Exception.Message)" }
     Error-Log "Tests completed with $($TestErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -Fatal
 }
 
