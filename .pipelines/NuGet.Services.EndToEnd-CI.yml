@@ -1,6 +1,10 @@
 name: NuGet.Services.EndToEnd CI $(BuildId)
 
-trigger: none
+trigger:
+  branches:
+    include:
+    - '*'
+  batch: True
 
 variables:
 - name: BuildConfiguration
