@@ -1,6 +1,7 @@
 name: NuGet.Services.EndToEnd CI $(BuildId)
 
 trigger: none
+pr: none
 
 variables:
 - name: BuildConfiguration
