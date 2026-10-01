@@ -35,13 +35,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public Uri GetGalleryServiceBaseUrl()
         {
-            var serviceBaseUrl = _testSettings.GalleryConfiguration.ServiceDetails?.BaseUrl;
-            if (serviceBaseUrl != null)
-            {
-                return new Uri(serviceBaseUrl);
-            }
-
-            return GetGalleryBaseUrl();
+            return new Uri(_testSettings.GalleryConfiguration.GetServiceBaseUrl());
         }
 
         public Uri GetGalleryBaseUrl()
