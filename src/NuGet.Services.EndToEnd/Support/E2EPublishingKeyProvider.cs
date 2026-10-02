@@ -43,7 +43,7 @@ namespace NuGet.Services.EndToEnd.Support
         internal async Task<PublishingKey> AcquireAsync(TestSettings settings)
         {
             // Validate everything before constructing a credential or making any network request.
-            var context = GetContext(settings);
+            var context = ValidateConfiguration(settings);
             if (!Guid.TryParse(settings.ManagedIdentityClientId, out var clientId) || clientId == Guid.Empty)
             {
                 throw new InvalidOperationException("E2E trusted publishing requires a non-empty managed identity client ID.");
@@ -81,7 +81,7 @@ namespace NuGet.Services.EndToEnd.Support
                 string content;
                 try
                 {
-                    // Do not use SimpleHttpClient/RetryUtility here: a token can be exchanged only once.
+                    // Do not retry the exchange: the token can be consumed by the first attempt.
                     using (var response = await client.SendAsync(request).ConfigureAwait(false))
                     {
                         if (!response.IsSuccessStatusCode)
@@ -126,7 +126,7 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        internal static PublishingContext GetContext(TestSettings settings)
+        private static (string ResourceUri, Uri GalleryUri) ValidateConfiguration(TestSettings settings)
         {
             if (settings == null) { throw new ArgumentNullException(nameof(settings)); }
             var match = Regex.Match(settings.ConfigurationName ?? string.Empty,
@@ -158,8 +158,7 @@ namespace NuGet.Services.EndToEnd.Support
                 throw new InvalidOperationException("E2E trusted publishing requires an approved HTTPS Gallery root URL for the configuration environment.");
             }
 
-            // Keep the configured resource spelling; Uri.AbsoluteUri would append a slash.
-            return new PublishingContext(publishing.ResourceUri, gallery);
+            return (publishing.ResourceUri, gallery);
         }
 
         private static bool TryGetHttpsRootUri(string value, out Uri uri)
@@ -194,16 +193,5 @@ namespace NuGet.Services.EndToEnd.Support
             public DateTimeOffset? Expires { get; set; }
         }
 
-        internal sealed class PublishingContext
-        {
-            internal PublishingContext(string resourceUri, Uri galleryUri)
-            {
-                ResourceUri = resourceUri;
-                GalleryUri = galleryUri;
-            }
-
-            internal string ResourceUri { get; }
-            internal Uri GalleryUri { get; }
-        }
     }
 }

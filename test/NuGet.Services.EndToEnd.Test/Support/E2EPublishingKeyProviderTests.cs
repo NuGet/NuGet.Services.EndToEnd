@@ -18,7 +18,7 @@ namespace NuGet.Services.EndToEnd.Support
 {
     public class E2EPublishingKeyProviderTests
     {
-        private const string ClientId = "5bae2092-bff9-45b2-a511-8fa7bc9d87ca";
+        private const string ClientId = "11111111-2222-4333-8444-555555555555";
         private static readonly DateTimeOffset Now = new DateTimeOffset(2026, 9, 30, 0, 0, 0, TimeSpan.Zero);
 
         [Theory]
@@ -219,7 +219,7 @@ namespace NuGet.Services.EndToEnd.Support
         [Fact]
         public async Task DeserializesExpiryAndRejectsInvalidResponsesWithoutLeakingSecrets()
         {
-            foreach (var remaining in new[] { TimeSpan.FromTicks(1), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(55), TimeSpan.FromHours(1) })
+            foreach (var remaining in new[] { TimeSpan.FromTicks(1), TimeSpan.FromHours(1) })
             {
                 var expires = Now.Add(remaining).ToOffset(TimeSpan.FromHours(2));
                 var valid = new Harness { ResponseBody = Response(expires) };

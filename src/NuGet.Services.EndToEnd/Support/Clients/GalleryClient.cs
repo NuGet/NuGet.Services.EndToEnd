@@ -63,6 +63,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public async Task PushAsync(Stream nupkgStream, ITestOutputHelper logger, PackageType packageType)
         {
+            LogPublishingKeyExpiry(logger);
             var galleryEndpoint = GetGalleryServiceBaseUrl();
 
             string url;
@@ -195,6 +196,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         private async Task SendAsync(HttpMethod method, string url, ITestOutputHelper logger, HttpContent content = null)
         {
+            LogPublishingKeyExpiry(logger);
             using (var httpClient = new HttpClient().AddUserAgent(nameof(GalleryClient)))
             using (var request = new HttpRequestMessage(method, url) { Content = content })
             {
@@ -204,6 +206,14 @@ namespace NuGet.Services.EndToEnd.Support
                 {
                     await response.EnsureSuccessStatusCodeOrLogAsync(url, logger);
                 }
+            }
+        }
+
+        private void LogPublishingKeyExpiry(ITestOutputHelper logger)
+        {
+            if (_testSettings.PublishingKeyExpires.HasValue)
+            {
+                logger.WriteLine($"Publishing key expires at {_testSettings.PublishingKeyExpires.Value.UtcDateTime:O}.");
             }
         }
     }
