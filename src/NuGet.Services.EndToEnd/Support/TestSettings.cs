@@ -28,9 +28,53 @@ namespace NuGet.Services.EndToEnd.Support
 
         private static TestSettings _testSettings = null;
         private static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private readonly Lazy<Task> _initializePublishingKey;
 
-        private TestSettings()
+        internal TestSettings(E2EPublishingKeyProvider publishingKeyProvider)
         {
+            if (publishingKeyProvider == null) { throw new ArgumentNullException(nameof(publishingKeyProvider)); }
+
+            // Share the same authentication task across fixtures, even if it fails.
+            _initializePublishingKey = new Lazy<Task>(() => InitializePublishingKeyCoreAsync(publishingKeyProvider),
+                LazyThreadSafetyMode.ExecutionAndPublication);
+        }
+
+        internal string ConfigurationName { get; set; }
+
+        internal string ManagedIdentityClientId { get; set; }
+
+        internal TrustedPublishingSettings TrustedPublishing { get; set; }
+
+        public DateTimeOffset? PublishingKeyExpires { get; private set; }
+
+        internal Task InitializePublishingKeyAsync() => _initializePublishingKey.Value;
+
+        private async Task InitializePublishingKeyCoreAsync(E2EPublishingKeyProvider provider)
+        {
+            // Only standalone local configurations may use a supplied API key.
+            // Identity or deployment settings always require trusted publishing, with no fallback.
+            if (IsLocalConfiguration(ConfigurationName) &&
+                string.IsNullOrEmpty(ManagedIdentityClientId) && TrustedPublishing == null)
+            {
+                if (string.IsNullOrWhiteSpace(ApiKey) || ApiKey == "API_KEY")
+                {
+                    throw new InvalidOperationException("Local E2E execution requires a non-empty TestSettings.ApiKey; replace the API_KEY placeholder with your own key.");
+                }
+
+                return;
+            }
+
+            ApiKey = null;
+            var key = await provider.AcquireAsync(this).ConfigureAwait(false);
+            ApiKey = key.ApiKey;
+            PublishingKeyExpires = key.Expires;
+        }
+
+        private static bool IsLocalConfiguration(string configurationName)
+        {
+            return string.Equals(configurationName, "Dev", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(configurationName, "Int", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(configurationName, "Prod", StringComparison.OrdinalIgnoreCase);
         }
 
         public string V3IndexUrl { get; set; }
@@ -85,9 +129,7 @@ namespace NuGet.Services.EndToEnd.Support
 
         public static async Task<TestSettings> CreateLocalTestConfigurationAsync(string configurationName)
         {
-            if (configurationName == "Dev" ||
-                configurationName == "Int" ||
-                configurationName == "Prod")
+            if (IsLocalConfiguration(configurationName))
             {
                 return await CreateInternalAsync(configurationName);
             }
@@ -137,11 +179,22 @@ namespace NuGet.Services.EndToEnd.Support
 
             var configurationRoot = builder.Build();
 
+            return await CreateFromConfigurationAsync(configurationRoot, configurationName, new E2EPublishingKeyProvider());
+        }
+
+        internal static async Task<TestSettings> CreateFromConfigurationAsync(
+            IConfigurationRoot configurationRoot, string configurationName, E2EPublishingKeyProvider publishingKeyProvider)
+        {
+            var managedIdentityClientId = configurationRoot["ManagedIdentityClientId"];
+
             var configuration = new E2ESecretConfigurationReader(configurationRoot, new ConfigurationRootSecretReaderFactory(configurationRoot));
             await configuration.InjectSecrets();
 
-            var testSettings = new TestSettings();
+            var testSettings = new TestSettings(publishingKeyProvider);
             configurationRoot.GetSection("TestSettings").Bind(testSettings);
+            testSettings.ConfigurationName = configurationName;
+            testSettings.ManagedIdentityClientId = managedIdentityClientId;
+            testSettings.TrustedPublishing = configurationRoot.GetSection("TrustedPublishing").Get<TrustedPublishingSettings>();
 
             return testSettings;
         }

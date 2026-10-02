@@ -14,6 +14,8 @@ namespace NuGet.Services.EndToEnd.Support
         public virtual async Task InitializeAsync()
         {
             TestSettings = await TestSettings.CreateAsync();
+            // Initialize publishing authentication only during execution.
+            await TestSettings.InitializePublishingKeyAsync();
             Clients = Clients.Initialize(TestSettings);
         }
 

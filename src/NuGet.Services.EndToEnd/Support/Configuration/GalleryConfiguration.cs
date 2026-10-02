@@ -13,5 +13,9 @@ namespace NuGet.Services.EndToEnd.Support
         public string GalleryBaseUrl { get; set; }
 
         public ServiceDetails ServiceDetails { get; set; }
+
+        // Use GalleryBaseUrl only when the service URL is null. Keep empty or invalid
+        // service URLs so they fail validation instead of silently targeting a different Gallery.
+        internal string GetServiceBaseUrl() => ServiceDetails?.BaseUrl ?? GalleryBaseUrl;
     }
 }
