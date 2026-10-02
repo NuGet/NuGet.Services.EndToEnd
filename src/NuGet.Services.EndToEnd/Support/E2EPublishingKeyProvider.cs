@@ -53,7 +53,8 @@ namespace NuGet.Services.EndToEnd.Support
             try
             {
                 var credential = _createCredential(clientId.ToString());
-                var request = new TokenRequestContext(new[] { context.ResourceUri });
+                // Azure.Identity sends this Gallery application ID as the managed-identity token resource.
+                var request = new TokenRequestContext(new[] { context.Audience });
                 token = await credential.GetTokenAsync(request, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception)
@@ -126,7 +127,7 @@ namespace NuGet.Services.EndToEnd.Support
             }
         }
 
-        private static (string ResourceUri, Uri GalleryUri) ValidateConfiguration(TestSettings settings)
+        private static (string Audience, Uri GalleryUri) ValidateConfiguration(TestSettings settings)
         {
             if (settings == null) { throw new ArgumentNullException(nameof(settings)); }
             var match = Regex.Match(settings.ConfigurationName ?? string.Empty,
@@ -140,15 +141,15 @@ namespace NuGet.Services.EndToEnd.Support
                 throw new InvalidOperationException("E2E trusted publishing requires a non-empty policy username.");
             }
 
-            // Resource and destination allowlist come from NuGet.Services deployment configuration.
+            // Audience and destination allowlist come from NuGet.Services deployment configuration.
             var publishing = settings.TrustedPublishing;
             if (publishing == null ||
                 !string.Equals(publishing.Environment, match.Groups[1].Value, StringComparison.OrdinalIgnoreCase) ||
-                !TryGetHttpsRootUri(publishing.ResourceUri, out _) ||
+                !Guid.TryParse(publishing.Audience, out var audience) || audience == Guid.Empty ||
                 publishing.AllowedGalleryHosts == null || publishing.AllowedGalleryHosts.Length == 0 ||
                 publishing.AllowedGalleryHosts.Any(host => Uri.CheckHostName(host) != UriHostNameType.Dns))
             {
-                throw new InvalidOperationException("E2E trusted publishing requires deployment configuration with a matching environment, HTTPS resource URI, and approved Gallery hosts.");
+                throw new InvalidOperationException("E2E trusted publishing requires deployment configuration with a matching environment, non-empty Gallery audience GUID, and approved Gallery hosts.");
             }
 
             var baseUrl = settings.GalleryConfiguration?.GetServiceBaseUrl();
@@ -158,7 +159,7 @@ namespace NuGet.Services.EndToEnd.Support
                 throw new InvalidOperationException("E2E trusted publishing requires an approved HTTPS Gallery root URL for the configuration environment.");
             }
 
-            return (publishing.ResourceUri, gallery);
+            return (audience.ToString(), gallery);
         }
 
         private static bool TryGetHttpsRootUri(string value, out Uri uri)

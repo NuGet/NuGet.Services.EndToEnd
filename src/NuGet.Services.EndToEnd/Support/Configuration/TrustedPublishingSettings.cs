@@ -7,7 +7,8 @@ namespace NuGet.Services.EndToEnd.Support
     {
         public string Environment { get; set; }
 
-        public string ResourceUri { get; set; }
+        // Gallery's Entra application client ID..
+        public string Audience { get; set; }
 
         public string[] AllowedGalleryHosts { get; set; }
     }

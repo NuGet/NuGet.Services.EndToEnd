@@ -19,22 +19,25 @@ namespace NuGet.Services.EndToEnd.Support
     public class E2EPublishingKeyProviderTests
     {
         private const string ClientId = "11111111-2222-4333-8444-555555555555";
+        private const string DevAudience = "22222222-2222-4222-8222-222222222222";
+        private const string IntAudience = "33333333-3333-4333-8333-333333333333";
+        private const string ProdAudience = "44444444-4444-4444-8444-444444444444";
         private static readonly DateTimeOffset Now = new DateTimeOffset(2026, 9, 30, 0, 0, 0, TimeSpan.Zero);
 
         [Theory]
-        [InlineData("Dev-Test", "https://staging.dev.example.test", "https://dev-resource.example.test")]
-        [InlineData("Int-Test", "https://staging.int.example.test", "https://int-resource.example.test")]
-        [InlineData("Prod-Test", "https://prod.example.test", "https://prod-resource.example.test")]
-        [InlineData("dev-test", "https://staging.dev.example.test", "https://dev-resource.example.test")]
-        [InlineData("iNt-Test", "https://staging.int.example.test", "https://int-resource.example.test")]
-        [InlineData("pRoD-test", "https://prod.example.test", "https://prod-resource.example.test")]
-        public async Task ExchangesOnceWithExplicitIdentityAndEnvironmentScope(string name, string gallery, string resource)
+        [InlineData("Dev-Test", "https://staging.dev.example.test", DevAudience)]
+        [InlineData("Int-Test", "https://staging.int.example.test", IntAudience)]
+        [InlineData("Prod-Test", "https://prod.example.test", ProdAudience)]
+        [InlineData("dev-test", "https://staging.dev.example.test", DevAudience)]
+        [InlineData("iNt-Test", "https://staging.int.example.test", IntAudience)]
+        [InlineData("pRoD-test", "https://prod.example.test", ProdAudience)]
+        public async Task ExchangesOnceWithExplicitIdentityAndEnvironmentScope(string name, string gallery, string audience)
         {
             var harness = new Harness();
             var settings = harness.Settings;
             settings.ConfigurationName = name;
             settings.TrustedPublishing.Environment = name.Split('-')[0].ToUpperInvariant();
-            settings.TrustedPublishing.ResourceUri = resource;
+            settings.TrustedPublishing.Audience = audience;
             settings.TrustedPublishing.AllowedGalleryHosts = new[] { new Uri(gallery).Host };
             settings.GalleryConfiguration.ServiceDetails.BaseUrl = gallery;
             settings.TestAccountOwner = "ConfiguredOwner";
@@ -42,7 +45,7 @@ namespace NuGet.Services.EndToEnd.Support
             await settings.InitializePublishingKeyAsync();
 
             Assert.Equal(ClientId, harness.SelectedClientId);
-            Assert.Equal(new[] { resource }, harness.Credential.Scopes);
+            Assert.Equal(new[] { audience }, harness.Credential.Scopes);
             Assert.Equal(1, harness.Credential.Calls);
             Assert.Equal(1, harness.HttpCalls);
             Assert.Equal(gallery + "/api/v2/token", harness.RequestUri.AbsoluteUri);
@@ -65,12 +68,21 @@ namespace NuGet.Services.EndToEnd.Support
                 settings => settings.ConfigurationName = "dev-test\n",
                 settings => { settings.ConfigurationName = "Dev"; settings.TrustedPublishing = null; },
                 settings => settings.TrustedPublishing = null,
-                settings => settings.TrustedPublishing.ResourceUri = null,
-                settings => settings.TrustedPublishing.ResourceUri = "http://dev.example.test",
+                settings => settings.TrustedPublishing.Audience = null,
+                settings => settings.TrustedPublishing.Audience = "",
+                settings => settings.TrustedPublishing.Audience = "not-a-guid",
+                settings => settings.TrustedPublishing.Audience = Guid.Empty.ToString(),
+                settings => settings.TrustedPublishing.Audience = "https://dev.example.test",
                 settings => settings.TrustedPublishing.Environment = "Prod",
                 settings => settings.TrustedPublishing.AllowedGalleryHosts = null,
                 settings => settings.TrustedPublishing.AllowedGalleryHosts = new[] { "*.dev.nugettest.org" },
-                settings => settings.TrustedPublishing.AllowedGalleryHosts = new[] { "other.example.test" }
+                settings => settings.TrustedPublishing.AllowedGalleryHosts = new[] { "other.example.test" },
+                settings => settings.GalleryConfiguration.ServiceDetails.BaseUrl = "http://dev.nugettest.org",
+                settings => settings.GalleryConfiguration.ServiceDetails.BaseUrl = "https://dev.nugettest.org:8443",
+                settings => settings.GalleryConfiguration.ServiceDetails.BaseUrl = "https://user@dev.nugettest.org",
+                settings => settings.GalleryConfiguration.ServiceDetails.BaseUrl = "https://dev.nugettest.org/path",
+                settings => settings.GalleryConfiguration.ServiceDetails.BaseUrl = "https://dev.nugettest.org?query=value",
+                settings => settings.GalleryConfiguration.ServiceDetails.BaseUrl = "https://dev.nugettest.org#fragment"
             };
             foreach (var invalidate in invalidSettings)
             {
@@ -110,7 +122,7 @@ namespace NuGet.Services.EndToEnd.Support
                 var root = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
                 {
                     { "TrustedPublishing:Environment", name.Split('-')[0] },
-                    { "TrustedPublishing:ResourceUri", "https://resource.example.test" },
+                    { "TrustedPublishing:Audience", DevAudience },
                     { "TrustedPublishing:AllowedGalleryHosts:0", "gallery.example.test" },
                     { "TestSettings:ApiKey", "fake-stored-key" },
                     { "TestSettings:TestAccountOwner", "ConfiguredOwner" },
@@ -183,7 +195,7 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 { "ManagedIdentityClientId", ClientId },
                 { "TrustedPublishing:Environment", "Dev" },
-                { "TrustedPublishing:ResourceUri", "https://configured-resource.example.test" },
+                { "TrustedPublishing:Audience", IntAudience },
                 { "TrustedPublishing:AllowedGalleryHosts:0", "dev.nugettest.org" },
                 { "TestSettings:TestAccountOwner", "ConfiguredOwner" },
                 { "TestSettings:GalleryConfiguration:GalleryBaseUrl", "https://dev.nugettest.org" }
@@ -193,7 +205,7 @@ namespace NuGet.Services.EndToEnd.Support
             Assert.Equal(ClientId, settings.ManagedIdentityClientId);
             Assert.Equal("Dev-Test", settings.ConfigurationName);
             Assert.Equal("Dev", settings.TrustedPublishing.Environment);
-            Assert.Equal("https://configured-resource.example.test", settings.TrustedPublishing.ResourceUri);
+            Assert.Equal(IntAudience, settings.TrustedPublishing.Audience);
             Assert.Equal(new[] { "dev.nugettest.org" }, settings.TrustedPublishing.AllowedGalleryHosts);
             Assert.Null(settings.ApiKey);
             Assert.Equal(0, harness.Credential.Calls);
@@ -210,7 +222,7 @@ namespace NuGet.Services.EndToEnd.Support
             await Task.WhenAll(tasks);
             await settings.InitializePublishingKeyAsync();
             Assert.Equal(1, harness.HttpCalls);
-            Assert.Equal(new[] { "https://configured-resource.example.test" }, harness.Credential.Scopes);
+            Assert.Equal(new[] { IntAudience }, harness.Credential.Scopes);
             Assert.Equal("fake-publishing-key", settings.ApiKey);
             Assert.Equal("https://dev.nugettest.org/api/v2/token", harness.RequestUri.AbsoluteUri);
             Assert.Null(root["TestSettings:ApiKey"]); // Key exists only on the in-memory settings object.
@@ -269,7 +281,7 @@ namespace NuGet.Services.EndToEnd.Support
                     TrustedPublishing = new TrustedPublishingSettings
                     {
                         Environment = "Dev",
-                        ResourceUri = "https://dev-resource.example.test",
+                        Audience = DevAudience,
                         AllowedGalleryHosts = new[] { "dev.nugettest.org", "gallery-usnc-ase-staging.dev.nugettest.org" }
                     },
                     TestAccountOwner = "ExamplePublishingOwner",
