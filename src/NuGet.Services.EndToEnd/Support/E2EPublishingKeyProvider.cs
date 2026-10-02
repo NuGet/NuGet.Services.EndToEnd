@@ -131,7 +131,8 @@ namespace NuGet.Services.EndToEnd.Support
         {
             if (settings == null) { throw new ArgumentNullException(nameof(settings)); }
             var match = Regex.Match(settings.ConfigurationName ?? string.Empty,
-                @"\A(Dev|Int|Prod)(?:-[A-Za-z0-9][A-Za-z0-9_-]*)?\z", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+                @"\A(Dev|Int|Prod)(?:-[A-Za-z0-9][A-Za-z0-9_-]*)?\z", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
+                TimeSpan.FromSeconds(1));
             if (!match.Success)
             {
                 throw new InvalidOperationException("E2E trusted publishing requires a Dev, Int, or Prod configuration.");
@@ -185,13 +186,6 @@ namespace NuGet.Services.EndToEnd.Support
             {
                 Timeout = TimeSpan.FromSeconds(20)
             };
-        }
-
-        internal sealed class PublishingKey
-        {
-            public string TokenType { get; set; }
-            public string ApiKey { get; set; }
-            public DateTimeOffset? Expires { get; set; }
         }
 
     }
