@@ -32,7 +32,7 @@ namespace NuGet.Services.EndToEnd.Support
         public static string SignedPackagePath = GetEnvironmentVariable("SignedPackagePath", required: false);
 
         /// <summary>
-        /// The path to the signed package that should be used for tests.
+        /// The path to the .NET installation directory (DOTNET_INSTALL_DIR) that contains the dotnet executable.
         /// </summary>
         public static string DotnetInstallDirectory = GetEnvironmentVariable("DOTNET_INSTALL_DIR", required: false);
 
