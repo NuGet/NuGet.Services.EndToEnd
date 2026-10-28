@@ -23,7 +23,7 @@ namespace NuGet.Services.EndToEnd.Support
         public static TestDirectory Create()
         {
             var baseDirectoryPath = Path.Combine(Path.GetTempPath(), "E2E");
-            var subdirectoryName = DateTimeOffset.UtcNow.Ticks.ToString();
+            var subdirectoryName = Guid.NewGuid().ToString("N");
             var fullPath = Path.Combine(baseDirectoryPath, subdirectoryName);
 
             Directory.CreateDirectory(fullPath);
