@@ -303,8 +303,8 @@ namespace NuGet.Services.EndToEnd
                 .NuGetExe
                 .WithVersion(version)
                 .WithSourceType(sourceType)
-                .WithGlobalPackagesPath(Path.Combine(_testDirectory, "global-packages"))
-                .WithHttpCachePath(Path.Combine(_testDirectory, "http-cache"));
+                .WithGlobalPackagesPath(Path.Combine(_testDirectory, "g"))
+                .WithHttpCachePath(Path.Combine(_testDirectory, "h"));
         }
 
         public static IEnumerable<object[]> SemVer2PackageTypes

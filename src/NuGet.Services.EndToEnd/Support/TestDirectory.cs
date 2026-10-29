@@ -23,7 +23,8 @@ namespace NuGet.Services.EndToEnd.Support
         public static TestDirectory Create()
         {
             var baseDirectoryPath = Path.Combine(Path.GetTempPath(), "E2E");
-            var subdirectoryName = Guid.NewGuid().ToString("N");
+            // Legacy NuGet clients need room for long HTTP cache file names under MAX_PATH.
+            var subdirectoryName = Path.GetRandomFileName();
             var fullPath = Path.Combine(baseDirectoryPath, subdirectoryName);
 
             Directory.CreateDirectory(fullPath);
