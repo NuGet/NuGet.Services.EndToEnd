@@ -100,7 +100,7 @@ namespace NuGet.Services.EndToEnd.Support
 
             ReadOnlyCollection<byte> nupkgBytes;
 
-            using (var nupkgStream = File.Open(EnvironmentSettings.SignedPackagePath, FileMode.Open))
+            using (var nupkgStream = File.OpenRead(EnvironmentSettings.SignedPackagePath))
             {
                 // Extract the package's id and version.
                 using (var packageReader = new PackageArchiveReader(nupkgStream, leaveStreamOpen: true))

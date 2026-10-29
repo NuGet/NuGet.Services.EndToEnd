@@ -443,9 +443,9 @@ namespace NuGet.Services.EndToEnd.Support
                 var projectPath = CopyDotnetToolProjectFromTemplate(id, version, testDirectory.FullPath);
 
                 var packCommandResult = await DotNetExeClient.PackProjectAsync(id, version, projectPath, logger);
-                if (!string.IsNullOrEmpty(packCommandResult.Error))
+                if (packCommandResult.ExitCode != 0)
                 {
-                    throw new ExternalException($"Error packing the .NET tool package! Error: {packCommandResult.Error} Output: {packCommandResult.Output}");
+                    throw new ExternalException($"Error packing the .NET tool package! Exit code: {packCommandResult.ExitCode} Error: {packCommandResult.Error} Output: {packCommandResult.Output}");
                 }
 
                 var buildOutput = Path.Combine(testDirectory.FullPath, "bin", "Debug");
@@ -471,9 +471,9 @@ namespace NuGet.Services.EndToEnd.Support
 
                 // Build the symbols project with the DotNet
                 var buildCommandResult = await DotNetExeClient.BuildProjectAsync(projectPath, logger);
-                if (!string.IsNullOrEmpty(buildCommandResult.Error))
+                if (buildCommandResult.ExitCode != 0)
                 {
-                    throw new ExternalException($"Error building symbols package! Error: {buildCommandResult.Error} Output: {buildCommandResult.Output}");
+                    throw new ExternalException($"Error building symbols package! Exit code: {buildCommandResult.ExitCode} Error: {buildCommandResult.Error} Output: {buildCommandResult.Output}");
                 }
 
                 // Build nupkg and snupkg from appropriate files
@@ -573,8 +573,7 @@ namespace NuGet.Services.EndToEnd.Support
                 string id;
                 if (!_packageIds.TryGetValue(packageType, out id))
                 {
-                    var timestamp = DateTimeOffset.UtcNow.ToString("yyMMdd.HHmmss.fffffff");
-                    id = $"E2E.{packageType.ToString()}.{timestamp}";
+                    id = $"E2E.{packageType.ToString()}.{Guid.NewGuid():N}";
                     _packageIds[packageType] = id;
                 }
 

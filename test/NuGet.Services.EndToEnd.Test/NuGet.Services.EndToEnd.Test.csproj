@@ -46,9 +46,11 @@
     <Compile Include="Support\ExceptionExtensionsTests.cs" />
     <Compile Include="Support\E2EPublishingKeyProviderTests.cs" />
     <Compile Include="Support\HttpResponseMessageExtensionsTests.cs" />
+    <Compile Include="Support\PackageTests.cs" />
     <Compile Include="Support\PushedPackagesFixtureTests.cs" />
     <Compile Include="Support\RetryUtilityTests.cs" />
     <Compile Include="Support\TestDataTests.cs" />
+    <Compile Include="Support\TestDirectoryTests.cs" />
     <Compile Include="Support\TestSettingsTests.cs" />
   </ItemGroup>
   <ItemGroup>
